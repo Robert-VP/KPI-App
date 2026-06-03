@@ -8,41 +8,23 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root {
-  --bg: #f5f4f0;
-  --surface: #ffffff;
-  --border: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.15);
-  --text: #1a1a18;
-  --text-muted: #888780;
-  --green: #1D9E75;
-  --green-bg: #E1F5EE;
-  --green-text: #085041;
-  --blue: #378ADD;
-  --blue-bg: #E6F1FB;
-  --blue-text: #0C447C;
-  --amber: #BA7517;
-  --amber-bg: #FAEEDA;
-  --amber-text: #633806;
-  --red: #E24B4A;
-  --red-bg: #FCEBEB;
-  --red-text: #791F1F;
-  --alb: #378ADD;
-  --mam: #1D9E75;
-  --meg: #D4537E;
-  --deg: #BA7517;
-  --pap: #7F77DD;
+  --bg: #f5f4f0; --surface: #ffffff; --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.15);
+  --text: #1a1a18; --text-muted: #888780;
+  --green: #1D9E75; --green-bg: #E1F5EE; --green-text: #085041;
+  --blue: #378ADD; --blue-bg: #E6F1FB; --blue-text: #0C447C;
+  --amber: #BA7517; --amber-bg: #FAEEDA; --amber-text: #633806;
+  --red: #E24B4A; --red-bg: #FCEBEB; --red-text: #791F1F;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 .app { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem; }
 .header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid var(--border-strong); padding-bottom: 1rem; }
-.header h1 { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; letter-spacing: -0.5px; }
-.header .sub { font-size: 13px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.header h1 { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; }
 .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 20px; background: var(--green-bg); color: var(--green-text); }
 .status.loading { background: var(--blue-bg); color: var(--blue-text); }
 .status.err { background: var(--red-bg); color: var(--red-text); }
 .status .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-nav { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+nav { display: flex; margin-bottom: 1.5rem; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
 nav button { flex: 1; padding: 10px; background: none; border: none; border-right: 1px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
 nav button:last-child { border-right: none; }
 nav button.active { background: var(--text); color: #fff; font-weight: 500; }
@@ -81,7 +63,7 @@ select:focus, input:focus { border-color: var(--text); background: var(--surface
 .chart-wrap { position: relative; width: 100%; height: 260px; }
 .rank-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
 .rank-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 500; }
-.r1 { background: #FAEEDA; color: #633806; } .r2 { background: #F1EFE8; color: #444441; } .r3 { background: #FAECE7; color: #712B13; } .rn { background: var(--bg); color: var(--text-muted); }
+.r1{background:#FAEEDA;color:#633806}.r2{background:#F1EFE8;color:#444441}.r3{background:#FAECE7;color:#712B13}.rn{background:var(--bg);color:var(--text-muted)}
 .rank-name { width: 42px; font-weight: 500; font-size: 14px; font-family: 'DM Mono', monospace; }
 .bar-track { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
@@ -89,9 +71,20 @@ select:focus, input:focus { border-color: var(--text); background: var(--surface
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th { text-align: left; padding: 8px 10px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); border-bottom: 1px solid var(--border-strong); text-transform: uppercase; letter-spacing: 0.5px; }
 tbody td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
-.up { color: var(--green); } .dn { color: var(--red); } .eq { color: var(--text-muted); }
-.refresh-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.up{color:var(--green)}.dn{color:var(--red)}.eq{color:var(--text-muted)}
+.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; }
+.login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem 2rem; max-width: 360px; width: 100%; }
+.login-icon { font-size: 40px; margin-bottom: 1rem; }
+.login-box h2 { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+.login-box p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
+.btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 11px 18px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; color: var(--text); transition: all 0.15s; }
+.btn-google:hover { background: var(--bg); }
+.btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
+.user-pill { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; background: var(--bg); border-radius: 20px; font-size: 12px; color: var(--text-muted); }
+.user-pill button { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--text-muted); padding: 0; margin-left: 4px; }
+.user-pill button:hover { color: var(--text); }
 .sync-note { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); margin-top: 6px; }
+.refresh-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -99,109 +92,153 @@ tbody td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
   <div class="header">
     <h1>KPI — Recruiting</h1>
     <div style="display:flex;align-items:center;gap:10px">
-      <span id="status" class="status"><span class="dot"></span><span id="status-text">Verbinde…</span></span>
-    </div>
-  </div>
-
-  <nav>
-    <button class="active" onclick="showTab('eingabe',this)">Eingabe</button>
-    <button onclick="showTab('dashboard',this)">Dashboard</button>
-    <button onclick="showTab('ranking',this)">Ranking</button>
-    <button onclick="showTab('verlauf',this)">Verlauf</button>
-  </nav>
-
-  <div id="sec-eingabe" class="section show">
-    <div class="card">
-      <div class="form-grid">
-        <div class="field"><label>Mitarbeiter</label>
-          <select id="inp-ma"><option>ALB</option><option>MAM</option><option>MEG</option><option>DEG</option><option>PAP</option></select>
-        </div>
-        <div class="field"><label>Kalenderwoche</label>
-          <select id="inp-kw"></select>
-        </div>
-        <div class="field"><label>Lebensläufe</label>
-          <input type="number" id="inp-dok" min="0" value="2">
-        </div>
+      <div id="user-pill" style="display:none" class="user-pill">
+        <span id="user-name"></span>
+        <button onclick="logout()" title="Abmelden">✕</button>
       </div>
-      <div class="form-grid">
-        <div class="field"><label>Stunden</label>
-          <input type="number" id="inp-std" min="0.1" value="20">
+      <span id="status" class="status loading"><span class="dot"></span><span id="status-text">Warte auf Login…</span></span>
+    </div>
+  </div>
+
+  <div id="login-screen" class="login-screen">
+    <div class="login-box">
+      <div class="login-icon">📊</div>
+      <h2>KPI App</h2>
+      <p>Melde dich mit deinem Google-Account an um Daten zu lesen und zu speichern.</p>
+      <button class="btn-google" onclick="startLogin()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Mit Google anmelden
+      </button>
+      <p style="font-size:11px;margin-top:1rem;margin-bottom:0">Nur Zugriff auf das KPI Google Sheet.</p>
+    </div>
+  </div>
+
+  <div id="main-screen" style="display:none">
+    <nav>
+      <button class="active" onclick="showTab('eingabe',this)">Eingabe</button>
+      <button onclick="showTab('dashboard',this)">Dashboard</button>
+      <button onclick="showTab('ranking',this)">Ranking</button>
+      <button onclick="showTab('verlauf',this)">Verlauf</button>
+    </nav>
+
+    <div id="sec-eingabe" class="section show">
+      <div class="card">
+        <div class="form-grid">
+          <div class="field"><label>Mitarbeiter</label>
+            <select id="inp-ma"><option>ALB</option><option>MAM</option><option>MEG</option><option>DEG</option><option>PAP</option></select>
+          </div>
+          <div class="field"><label>Kalenderwoche</label>
+            <select id="inp-kw"></select>
+          </div>
+          <div class="field"><label>Lebensläufe</label>
+            <input type="number" id="inp-dok" min="0" value="2">
+          </div>
         </div>
-        <div class="field"><label>Aktivitäten</label>
-          <input type="number" id="inp-akt" min="1" value="80">
+        <div class="form-grid">
+          <div class="field"><label>Stunden</label>
+            <input type="number" id="inp-std" min="0.1" value="20">
+          </div>
+          <div class="field"><label>Aktivitäten</label>
+            <input type="number" id="inp-akt" min="1" value="80">
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end">
+            <button class="btn btn-primary" id="btn-save" onclick="saveEntry()" style="width:100%">Speichern</button>
+          </div>
         </div>
-        <div class="field" style="display:flex;align-items:flex-end">
-          <button class="btn btn-primary" id="btn-save" onclick="saveEntry()" style="width:100%">Speichern</button>
+        <div class="kpi-preview">
+          <div class="kpi-num" id="kpi-val">—</div>
+          <div class="kpi-meta">
+            <div class="kpi-formula">( Lebensläufe² / ( Std × Akt ) ) × 40.000</div>
+            <div class="kpi-bar-track"><div class="kpi-bar-fill" id="kpi-bar" style="width:0%"></div></div>
+            <div class="kpi-note" id="kpi-note">Ziel: 100</div>
+          </div>
         </div>
+        <div class="msg" id="msg"></div>
       </div>
-      <div class="kpi-preview">
-        <div class="kpi-num" id="kpi-val">—</div>
-        <div class="kpi-meta">
-          <div class="kpi-formula">( Lebensläufe² / ( Std × Akt ) ) × 40.000</div>
-          <div class="kpi-bar-track"><div class="kpi-bar-fill" id="kpi-bar" style="width:0%"></div></div>
-          <div class="kpi-note" id="kpi-note">Ziel: 100</div>
-        </div>
+      <p class="sync-note">Daten werden automatisch mit Google Sheets synchronisiert.</p>
+    </div>
+
+    <div id="sec-dashboard" class="section">
+      <div class="metrics" id="metrics"></div>
+      <div class="card">
+        <div class="legend" id="legend"></div>
+        <div class="chart-wrap"><canvas id="chart" role="img" aria-label="KPI-Verlauf je Mitarbeiter">KPI-Verlauf</canvas></div>
       </div>
-      <div class="msg" id="msg"></div>
     </div>
-    <p class="sync-note">Daten werden automatisch mit Google Sheets synchronisiert.</p>
-  </div>
 
-  <div id="sec-dashboard" class="section">
-    <div class="metrics" id="metrics"></div>
-    <div class="card">
-      <div class="legend" id="legend"></div>
-      <div class="chart-wrap"><canvas id="chart" role="img" aria-label="KPI-Verlauf je Mitarbeiter">KPI-Verlauf</canvas></div>
+    <div id="sec-ranking" class="section">
+      <div class="card" id="rank-list"></div>
     </div>
-  </div>
 
-  <div id="sec-ranking" class="section">
-    <div class="card" id="rank-list"></div>
-  </div>
-
-  <div id="sec-verlauf" class="section">
-    <div class="refresh-row">
-      <button class="btn" onclick="loadData()">↻ Aktualisieren</button>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <table><thead><tr><th>KW</th><th>Mitarbeiter</th><th>Lebensläufe</th><th>Std</th><th>Akt</th><th>KPI</th><th>vs. Ziel</th></tr></thead>
-      <tbody id="tbl"></tbody></table>
+    <div id="sec-verlauf" class="section">
+      <div class="refresh-row">
+        <button class="btn" onclick="loadData()">↻ Aktualisieren</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table><thead><tr><th>KW</th><th>Mitarbeiter</th><th>Lebensläufe</th><th>Std</th><th>Akt</th><th>KPI</th><th>vs. Ziel</th></tr></thead>
+        <tbody id="tbl"></tbody></table>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-const API_KEY = 'AIzaSyDONlFb3u4mHpL0xiYXUkj5ZMaWRhMmTX0';
+const CLIENT_ID = '216897583124-n6o2jjk08le9vtu3bkmroaspqn27d11u.apps.googleusercontent.com';
 const SHEET_ID = '1mdZrk40MRS8H6liE3hQiLMKtsgDBjqqeaICBPrzmoTc';
 const SHEET_NAME = 'Eingabe';
-const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+const REDIRECT = 'https://robert-vp.github.io/kpi-app';
 
 const COLORS = {ALB:'#378ADD',MAM:'#1D9E75',MEG:'#D4537E',DEG:'#BA7517',PAP:'#7F77DD'};
 const MAS = ['ALB','MAM','MEG','DEG','PAP'];
-const KWS = (()=>{
-  const kws=[];
-  for(let i=1;i<=52;i++) kws.push('KW '+String(i).padStart(2,'0'));
-  return kws;
-})();
+const KWS = (()=>{ const k=[]; for(let i=1;i<=52;i++) k.push('KW '+String(i).padStart(2,'0')); return k; })();
 
+let token = null;
 let data = [];
 let lineChart = null;
 
-function calcKPI(d,s,a){ return (!d||!s||!a)?0:Math.round(d*d/(s*a)*40000); }
+function calcKPI(d,s,a){ return(!d||!s||!a)?0:Math.round(d*d/(s*a)*40000); }
 function badge(k){ return k>=200?'<span class="badge b-top">Top</span>':k>=100?'<span class="badge b-gut">Gut</span>':k>=70?'<span class="badge b-ok">OK</span>':'<span class="badge b-low">Unter Ziel</span>'; }
 function avgKPI(ma){ const r=data.filter(d=>d.ma===ma); return r.length?Math.round(r.map(d=>calcKPI(d.dok,d.std,d.akt)).reduce((a,b)=>a+b)/r.length):null; }
 
 function setStatus(type,txt){
   const el=document.getElementById('status');
-  el.className='status'+(type?(' '+type):'');
+  el.className='status'+(type?' '+type:'');
   document.getElementById('status-text').textContent=txt;
+}
+
+function startLogin(){
+  const params=new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT,
+    response_type: 'token',
+    scope: SCOPES,
+    prompt: 'select_account'
+  });
+  window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params;
+}
+
+function logout(){
+  token=null; data=[];
+  sessionStorage.removeItem('gtoken');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('main-screen').style.display='none';
+  document.getElementById('user-pill').style.display='none';
+  setStatus('loading','Warte auf Login…');
 }
 
 async function loadData(){
   setStatus('loading','Lädt…');
   try {
-    const r=await fetch(`${BASE}/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`);
-    if(!r.ok) throw new Error('Sheets API Fehler '+r.status);
+    const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}`,
+      {headers:{Authorization:'Bearer '+token}});
+    if(r.status===401){logout();return;}
+    if(!r.ok) throw new Error('Fehler '+r.status);
     const j=await r.json();
     const rows=(j.values||[]).slice(1);
     data=rows.filter(r=>r[2]&&r[3]).map(r=>({ma:r[2],kw:r[1]||'',dok:+r[3]||0,std:+r[4]||0,akt:+r[5]||0}));
@@ -221,7 +258,8 @@ async function saveEntry(){
   btn.disabled=true; btn.textContent='Speichert…';
   setStatus('loading','Speichert…');
   try {
-    const r=await fetch(`${BASE}/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`);
+    const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}`,
+      {headers:{Authorization:'Bearer '+token}});
     const j=await r.json();
     const rows=j.values||[];
     let rowIdx=-1;
@@ -230,14 +268,15 @@ async function saveEntry(){
     const vals=[[today,kw,ma,dok,std,akt,kpi]];
     let url, method;
     if(rowIdx>0){
-      url=`${BASE}/${SHEET_ID}/values/${SHEET_NAME}!A${rowIdx}:G${rowIdx}?valueInputOption=RAW&key=${API_KEY}`;
+      url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIdx}:G${rowIdx}?valueInputOption=RAW`;
       method='PUT';
     } else {
-      url=`${BASE}/${SHEET_ID}/values/${SHEET_NAME}!A${rows.length+1}:G${rows.length+1}?valueInputOption=RAW&key=${API_KEY}`;
-      method='PUT';
+      url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+      method='POST';
     }
-    const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify({values:vals})});
-    if(!res.ok) throw new Error('Speichern fehlgeschlagen: '+res.status);
+    const res=await fetch(url,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values:vals})});
+    if(res.status===401){logout();return;}
+    if(!res.ok) throw new Error('Speichern fehlgeschlagen '+res.status);
     const msg=document.getElementById('msg');
     msg.style.color='var(--green)'; msg.textContent=`✓ ${ma} / ${kw} gespeichert — KPI: ${kpi}`;
     setTimeout(()=>msg.textContent='',3000);
@@ -306,7 +345,7 @@ function renderTable(){
 
 function renderAll(){ renderMetrics(); renderChart(); renderRanking(); renderTable(); }
 
-function showTab(name, btn){
+function showTab(name,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('show'));
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+name).classList.add('show');
@@ -314,25 +353,48 @@ function showTab(name, btn){
   if(name==='dashboard') renderChart();
 }
 
-['inp-dok','inp-std','inp-akt'].forEach(id=>document.getElementById(id).addEventListener('input',updatePreview));
-(()=>{
+function initKWSelect(){
   const sel=document.getElementById('inp-kw');
-  for(let i=1;i<=52;i++){
-    const o=document.createElement('option');
-    const kw='KW '+String(i).padStart(2,'0');
-    o.value=kw; o.textContent=kw;
-    sel.appendChild(o);
-  }
-  // pre-select current week
-  const now=new Date();
-  const start=new Date(now.getFullYear(),0,4);
+  KWS.forEach(kw=>{ const o=document.createElement('option'); o.value=kw; o.textContent=kw; sel.appendChild(o); });
+  const now=new Date(), start=new Date(now.getFullYear(),0,4);
   start.setDate(start.getDate()-(start.getDay()||7)+1);
-  const curWeek=Math.ceil((now-start)/604800000)+1;
-  sel.value='KW '+String(Math.min(curWeek,52)).padStart(2,'0');
+  const cur=Math.min(Math.ceil((now-start)/604800000)+1,52);
+  sel.value='KW '+String(cur).padStart(2,'0');
+}
+
+async function getUserName(){
+  try {
+    const r=await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:'Bearer '+token}});
+    const j=await r.json();
+    document.getElementById('user-name').textContent=j.name||j.email||'Angemeldet';
+    document.getElementById('user-pill').style.display='inline-flex';
+  } catch(e){}
+}
+
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('main-screen').style.display='block';
+  initKWSelect();
+  ['inp-dok','inp-std','inp-akt'].forEach(id=>document.getElementById(id).addEventListener('input',updatePreview));
+  updatePreview();
+  getUserName();
+  loadData();
+  setInterval(loadData,30000);
+}
+
+(function init(){
+  const hash=new URLSearchParams(window.location.hash.replace('#',''));
+  const t=hash.get('access_token');
+  if(t){
+    token=t;
+    sessionStorage.setItem('gtoken',t);
+    window.history.replaceState(null,'',window.location.pathname);
+    showApp(); return;
+  }
+  const saved=sessionStorage.getItem('gtoken');
+  if(saved){ token=saved; showApp(); return; }
+  setStatus('loading','Warte auf Login…');
 })();
-updatePreview();
-loadData();
-setInterval(loadData, 30000);
 </script>
 </body>
 </html>
