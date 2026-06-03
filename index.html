@@ -268,13 +268,13 @@ async function saveEntry(){
     const vals=[[today,kw,ma,dok,std,akt,kpi]];
     let url, method;
     if(rowIdx>0){
-      url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIdx}:G${rowIdx}?valueInputOption=RAW`;
+      url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME+'!A'+rowIdx+':G'+rowIdx)}?valueInputOption=RAW`;
       method='PUT';
     } else {
-      url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+      url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
       method='POST';
     }
-    const res=await fetch(url,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values:vals})});
+    const res=await fetch(url,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({range: rowIdx>0 ? SHEET_NAME+'!A'+rowIdx+':G'+rowIdx : SHEET_NAME, majorDimension:'ROWS', values:vals})});
     if(res.status===401){logout();return;}
     if(!res.ok) throw new Error('Speichern fehlgeschlagen '+res.status);
     const msg=document.getElementById('msg');
