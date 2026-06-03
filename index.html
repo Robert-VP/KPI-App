@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI App</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.15);
+  --text: #1a1a18;
+  --text-muted: #888780;
+  --green: #1D9E75;
+  --green-bg: #E1F5EE;
+  --green-text: #085041;
+  --blue: #378ADD;
+  --blue-bg: #E6F1FB;
+  --blue-text: #0C447C;
+  --amber: #BA7517;
+  --amber-bg: #FAEEDA;
+  --amber-text: #633806;
+  --red: #E24B4A;
+  --red-bg: #FCEBEB;
+  --red-text: #791F1F;
+  --alb: #378ADD;
+  --mam: #1D9E75;
+  --meg: #D4537E;
+  --deg: #BA7517;
+  --pap: #7F77DD;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.app { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem; }
+.header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid var(--border-strong); padding-bottom: 1rem; }
+.header h1 { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; letter-spacing: -0.5px; }
+.header .sub { font-size: 13px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 20px; background: var(--green-bg); color: var(--green-text); }
+.status.loading { background: var(--blue-bg); color: var(--blue-text); }
+.status.err { background: var(--red-bg); color: var(--red-text); }
+.status .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+nav { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+nav button { flex: 1; padding: 10px; background: none; border: none; border-right: 1px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+nav button:last-child { border-right: none; }
+nav button.active { background: var(--text); color: #fff; font-weight: 500; }
+nav button:hover:not(.active) { background: var(--bg); color: var(--text); }
+.section { display: none; } .section.show { display: block; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+select, input[type=number] { width: 100%; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); outline: none; }
+select:focus, input:focus { border-color: var(--text); background: var(--surface); }
+.btn { padding: 9px 18px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text); transition: all 0.15s; }
+.btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+.btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+.btn-primary:hover { opacity: 0.85; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.kpi-preview { display: flex; align-items: center; gap: 1.5rem; padding: 1rem; background: var(--bg); border-radius: 8px; margin-top: 12px; }
+.kpi-num { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; min-width: 80px; }
+.kpi-meta { flex: 1; }
+.kpi-formula { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); margin-bottom: 8px; }
+.kpi-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+.kpi-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s; }
+.kpi-note { font-size: 12px; color: var(--text-muted); }
+.msg { font-size: 13px; font-family: 'DM Mono', monospace; min-height: 20px; margin-top: 10px; }
+.metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.metric-name { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); margin-bottom: 6px; }
+.metric-val { font-size: 22px; font-family: 'DM Mono', monospace; font-weight: 500; margin-bottom: 4px; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 20px; font-family: 'DM Mono', monospace; }
+.b-top { background: var(--green-bg); color: var(--green-text); }
+.b-gut { background: var(--blue-bg); color: var(--blue-text); }
+.b-ok  { background: var(--amber-bg); color: var(--amber-text); }
+.b-low { background: var(--red-bg); color: var(--red-text); }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.chart-wrap { position: relative; width: 100%; height: 260px; }
+.rank-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.rank-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 500; }
+.r1 { background: #FAEEDA; color: #633806; } .r2 { background: #F1EFE8; color: #444441; } .r3 { background: #FAECE7; color: #712B13; } .rn { background: var(--bg); color: var(--text-muted); }
+.rank-name { width: 42px; font-weight: 500; font-size: 14px; font-family: 'DM Mono', monospace; }
+.bar-track { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.rank-val { width: 44px; text-align: right; font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { text-align: left; padding: 8px 10px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); border-bottom: 1px solid var(--border-strong); text-transform: uppercase; letter-spacing: 0.5px; }
+tbody td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+.up { color: var(--green); } .dn { color: var(--red); } .eq { color: var(--text-muted); }
+.refresh-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.sync-note { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>KPI — Recruiting</h1>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="status" class="status"><span class="dot"></span><span id="status-text">Verbinde…</span></span>
+    </div>
+  </div>
+
+  <nav>
+    <button class="active" onclick="showTab('eingabe',this)">Eingabe</button>
+    <button onclick="showTab('dashboard',this)">Dashboard</button>
+    <button onclick="showTab('ranking',this)">Ranking</button>
+    <button onclick="showTab('verlauf',this)">Verlauf</button>
+  </nav>
+
+  <div id="sec-eingabe" class="section show">
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label>Mitarbeiter</label>
+          <select id="inp-ma"><option>ALB</option><option>MAM</option><option>MEG</option><option>DEG</option><option>PAP</option></select>
+        </div>
+        <div class="field"><label>Kalenderwoche</label>
+          <select id="inp-kw"></select>
+        </div>
+        <div class="field"><label>Lebensläufe</label>
+          <input type="number" id="inp-dok" min="0" value="2">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>Stunden</label>
+          <input type="number" id="inp-std" min="0.1" value="20">
+        </div>
+        <div class="field"><label>Aktivitäten</label>
+          <input type="number" id="inp-akt" min="1" value="80">
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end">
+          <button class="btn btn-primary" id="btn-save" onclick="saveEntry()" style="width:100%">Speichern</button>
+        </div>
+      </div>
+      <div class="kpi-preview">
+        <div class="kpi-num" id="kpi-val">—</div>
+        <div class="kpi-meta">
+          <div class="kpi-formula">( Lebensläufe² / ( Std × Akt ) ) × 40.000</div>
+          <div class="kpi-bar-track"><div class="kpi-bar-fill" id="kpi-bar" style="width:0%"></div></div>
+          <div class="kpi-note" id="kpi-note">Ziel: 100</div>
+        </div>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+    <p class="sync-note">Daten werden automatisch mit Google Sheets synchronisiert.</p>
+  </div>
+
+  <div id="sec-dashboard" class="section">
+    <div class="metrics" id="metrics"></div>
+    <div class="card">
+      <div class="legend" id="legend"></div>
+      <div class="chart-wrap"><canvas id="chart" role="img" aria-label="KPI-Verlauf je Mitarbeiter">KPI-Verlauf</canvas></div>
+    </div>
+  </div>
+
+  <div id="sec-ranking" class="section">
+    <div class="card" id="rank-list"></div>
+  </div>
+
+  <div id="sec-verlauf" class="section">
+    <div class="refresh-row">
+      <button class="btn" onclick="loadData()">↻ Aktualisieren</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table><thead><tr><th>KW</th><th>Mitarbeiter</th><th>Lebensläufe</th><th>Std</th><th>Akt</th><th>KPI</th><th>vs. Ziel</th></tr></thead>
+      <tbody id="tbl"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyDONlFb3u4mHpL0xiYXUkj5ZMaWRhMmTX0';
+const SHEET_ID = '1mdZrk40MRS8H6liE3hQiLMKtsgDBjqqeaICBPrzmoTc';
+const SHEET_NAME = 'Eingabe';
+const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
+
+const COLORS = {ALB:'#378ADD',MAM:'#1D9E75',MEG:'#D4537E',DEG:'#BA7517',PAP:'#7F77DD'};
+const MAS = ['ALB','MAM','MEG','DEG','PAP'];
+const KWS = (()=>{
+  const kws=[];
+  for(let i=1;i<=52;i++) kws.push('KW '+String(i).padStart(2,'0'));
+  return kws;
+})();
+
+let data = [];
+let lineChart = null;
+
+function calcKPI(d,s,a){ return (!d||!s||!a)?0:Math.round(d*d/(s*a)*40000); }
+function badge(k){ return k>=200?'<span class="badge b-top">Top</span>':k>=100?'<span class="badge b-gut">Gut</span>':k>=70?'<span class="badge b-ok">OK</span>':'<span class="badge b-low">Unter Ziel</span>'; }
+function avgKPI(ma){ const r=data.filter(d=>d.ma===ma); return r.length?Math.round(r.map(d=>calcKPI(d.dok,d.std,d.akt)).reduce((a,b)=>a+b)/r.length):null; }
+
+function setStatus(type,txt){
+  const el=document.getElementById('status');
+  el.className='status'+(type?(' '+type):'');
+  document.getElementById('status-text').textContent=txt;
+}
+
+async function loadData(){
+  setStatus('loading','Lädt…');
+  try {
+    const r=await fetch(`${BASE}/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`);
+    if(!r.ok) throw new Error('Sheets API Fehler '+r.status);
+    const j=await r.json();
+    const rows=(j.values||[]).slice(1);
+    data=rows.filter(r=>r[2]&&r[3]).map(r=>({ma:r[2],kw:r[1]||'',dok:+r[3]||0,std:+r[4]||0,akt:+r[5]||0}));
+    setStatus('','Synchronisiert · '+data.length+' Einträge');
+    renderAll();
+  } catch(e){ setStatus('err','Fehler: '+e.message); }
+}
+
+async function saveEntry(){
+  const ma=document.getElementById('inp-ma').value;
+  const kw=document.getElementById('inp-kw').value;
+  const dok=+document.getElementById('inp-dok').value;
+  const std=+document.getElementById('inp-std').value;
+  const akt=+document.getElementById('inp-akt').value;
+  const kpi=calcKPI(dok,std,akt);
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.textContent='Speichert…';
+  setStatus('loading','Speichert…');
+  try {
+    const r=await fetch(`${BASE}/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`);
+    const j=await r.json();
+    const rows=j.values||[];
+    let rowIdx=-1;
+    for(let i=1;i<rows.length;i++){ if(rows[i][2]===ma&&rows[i][1]===kw){rowIdx=i+1;break;} }
+    const today=new Date().toLocaleDateString('de-DE');
+    const vals=[[today,kw,ma,dok,std,akt,kpi]];
+    let url, method;
+    if(rowIdx>0){
+      url=`${BASE}/${SHEET_ID}/values/${SHEET_NAME}!A${rowIdx}:G${rowIdx}?valueInputOption=RAW&key=${API_KEY}`;
+      method='PUT';
+    } else {
+      url=`${BASE}/${SHEET_ID}/values/${SHEET_NAME}!A${rows.length+1}:G${rows.length+1}?valueInputOption=RAW&key=${API_KEY}`;
+      method='PUT';
+    }
+    const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify({values:vals})});
+    if(!res.ok) throw new Error('Speichern fehlgeschlagen: '+res.status);
+    const msg=document.getElementById('msg');
+    msg.style.color='var(--green)'; msg.textContent=`✓ ${ma} / ${kw} gespeichert — KPI: ${kpi}`;
+    setTimeout(()=>msg.textContent='',3000);
+    await loadData();
+  } catch(e){
+    setStatus('err',e.message);
+    const msg=document.getElementById('msg');
+    msg.style.color='var(--red)'; msg.textContent='Fehler: '+e.message;
+  }
+  btn.disabled=false; btn.textContent='Speichern';
+}
+
+function updatePreview(){
+  const d=+document.getElementById('inp-dok').value||0;
+  const s=+document.getElementById('inp-std').value||0;
+  const a=+document.getElementById('inp-akt').value||0;
+  const k=calcKPI(d,s,a);
+  document.getElementById('kpi-val').textContent=k;
+  const pct=Math.min(k/300*100,100);
+  const bar=document.getElementById('kpi-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=k>=100?'#1D9E75':k>=70?'#BA7517':'#E24B4A';
+  document.getElementById('kpi-note').textContent='Ziel: 100 — '+(k>=100?'✓ Ziel erreicht':'Unter Ziel');
+}
+
+function renderMetrics(){
+  document.getElementById('metrics').innerHTML=MAS.map(ma=>{
+    const avg=avgKPI(ma);
+    return `<div class="metric"><div class="metric-name">${ma}</div><div class="metric-val">${avg===null?'—':avg}</div>${avg!==null?badge(avg):''}</div>`;
+  }).join('');
+}
+
+function renderChart(){
+  const kwsD=KWS.filter(kw=>data.some(d=>d.kw===kw));
+  const datasets=MAS.map(ma=>({
+    label:ma,
+    data:kwsD.map(kw=>{const r=data.find(d=>d.ma===ma&&d.kw===kw);return r?calcKPI(r.dok,r.std,r.akt):null;}),
+    borderColor:COLORS[ma],backgroundColor:COLORS[ma]+'22',tension:0.3,pointRadius:4,spanGaps:false
+  }));
+  datasets.push({label:'Ziel',data:kwsD.map(()=>100),borderColor:'#888780',borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false});
+  document.getElementById('legend').innerHTML=MAS.map(ma=>`<span><span class="legend-dot" style="background:${COLORS[ma]}"></span>${ma}</span>`).join('')+`<span><span style="width:14px;height:2px;border-top:2px dashed #888780;display:inline-block"></span> Ziel</span>`;
+  if(lineChart) lineChart.destroy();
+  lineChart=new Chart(document.getElementById('chart'),{
+    type:'line',data:{labels:kwsD,datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{min:0,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11,family:'DM Mono'}}},
+              x:{grid:{display:false},ticks:{font:{size:11,family:'DM Mono'},autoSkip:false}}}}
+  });
+}
+
+function renderRanking(){
+  const avgs=MAS.map(ma=>({ma,avg:avgKPI(ma)??0})).sort((a,b)=>b.avg-a.avg);
+  const max=avgs[0].avg||1;
+  document.getElementById('rank-list').innerHTML=avgs.map((r,i)=>{
+    const cls=i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+    return `<div class="rank-row"><div class="rank-num ${cls}">${i+1}</div><div class="rank-name">${r.ma}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.avg/max*100)}%;background:${COLORS[r.ma]}"></div></div><div class="rank-val">${r.avg}</div>${badge(r.avg)}</div>`;
+  }).join('');
+}
+
+function renderTable(){
+  document.getElementById('tbl').innerHTML=[...data].sort((a,b)=>KWS.indexOf(a.kw)-KWS.indexOf(b.kw)).map(d=>{
+    const k=calcKPI(d.dok,d.std,d.akt),diff=k-100;
+    return `<tr><td style="font-family:DM Mono,monospace">${d.kw}</td><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:${COLORS[d.ma]};display:inline-block"></span>${d.ma}</span></td><td>${d.dok}</td><td>${d.std}</td><td>${d.akt}</td><td style="font-family:DM Mono,monospace;font-weight:500">${k}</td><td class="${diff>0?'up':diff<0?'dn':'eq'}" style="font-family:DM Mono,monospace">${diff>0?'+':''}${diff}</td></tr>`;
+  }).join('');
+}
+
+function renderAll(){ renderMetrics(); renderChart(); renderRanking(); renderTable(); }
+
+function showTab(name, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('show'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('show');
+  btn.classList.add('active');
+  if(name==='dashboard') renderChart();
+}
+
+['inp-dok','inp-std','inp-akt'].forEach(id=>document.getElementById(id).addEventListener('input',updatePreview));
+(()=>{
+  const sel=document.getElementById('inp-kw');
+  for(let i=1;i<=52;i++){
+    const o=document.createElement('option');
+    const kw='KW '+String(i).padStart(2,'0');
+    o.value=kw; o.textContent=kw;
+    sel.appendChild(o);
+  }
+  // pre-select current week
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,4);
+  start.setDate(start.getDate()-(start.getDay()||7)+1);
+  const curWeek=Math.ceil((now-start)/604800000)+1;
+  sel.value='KW '+String(Math.min(curWeek,52)).padStart(2,'0');
+})();
+updatePreview();
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>
