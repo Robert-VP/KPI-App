@@ -55,3 +55,7 @@ Delivered as out/film_recruiter_1080x1920.mp4, _1080x1350.mp4, _1080x1080.mp4. C
 ## Version 2 (28 s, growth story + crosshair) — frames at 1.7, 5.2, 8.4, 10.0, 10.7, 13.6, 15.5, 16.5, 18.9, 22.0, 24.6, 27.9 s
 Scores: hook 8 · phone readability 8 · motion 9 · variety 10 · brand accuracy 9 · sound sync 8
 Every 1.5–3 s a new idea. Crosshair scan, customers, three growth lines with distinct motion, lock-on on the open slot, ad end frame identical to the template. Go for the full render.
+
+## Version 3 (36 s, end sequence) — frames at 25.5, 26.7, 28.4, 30.9, 32.2, 32.85, 33.4, 35.9 s
+1. Pixel box measured with regular weight, but the number is bold once highlighted: digits 025 and 77 stayed readable. Fix: measure bold, coverage threshold 0.04. Re-check at 33.0 and 35.9 s: number fully covered.
+Scores: hook 8 · phone readability 8 · motion 9 · variety 10 · brand accuracy 9 · sound sync 8. Go for the full render.

@@ -58,3 +58,15 @@ Länge 28 s (56 Beats), weil die neuen Zeilen in 20 s nicht lesbar wären. Kein 
 | 20–28 s | Säulen verschwinden, Feld zieht sich ins Motiv zurück, Anzeige baut sich auf, Pille: Ahlen → Erste Recruiting-Erfahrung → Quereinstieg → Ahlen | Recruiter (m/w/d), Fußband ohne QR, goldener Punkt pulst |
 
 Texte stehen in `templates/recruiter-film/job.js` unter `story` und sind dort änderbar.
+
+
+# Version 3 (15.10.2026) — Ende mit Rätsel um die Rufnummer, 36 s
+
+| Zeit | Bild | Text |
+|---|---|---|
+| 26,5 s | Der Anzeigenblock quetscht sich zur Goldlinie, Fußband bleibt | — |
+| 27–29 s | Eyebrow mit Goldstrich bleibt bis zum Schluss stehen | „Recruiter (m/w/d) · Ahlen (Westfalen)“ · „Interessiert? / Melde Dich!“ |
+| 29–31,5 s | Bei „Telefon“ leuchtet die Nummer im Fußband gold auf, das Telefon klingelt | „Wie Du uns erreichst? / Am liebsten natürlich / über das Telefon.“ |
+| 31,5–36 s | Die Rufnummer zerfällt in sechs Stufen zu goldenen Pixelblöcken, nur voss-partner.de bleibt lesbar | „Unter welcher Rufnummer? / Finds heraus!“ |
+
+Hinweis: Hook und Mitte siezen („Sie überzeugen am Telefon?“), das Ende duzt („Melde Dich!“). Alle Texte stehen in `job.js` und lassen sich vereinheitlichen.

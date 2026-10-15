@@ -122,6 +122,7 @@ if (qrAn) { try { const q = qrcode(0, 'M'); q.addData(qrUrl); q.make(); const n 
 
 /* ============================================================
    FILM „Recruiter in eigener Sache“ – 28 s, 120 BPM (docs/drehbuch_recruiter.md, Version 2)
+   … → Anzeige → Interessiert? Melde Dich! → über das Telefon → Rufnummer? Finds heraus! (Nummer ausgepixelt)
    Hook → Die Richtigen überall gesucht (Fadenkreuz) → Kunden zählen auf uns → größer, schneller,
    wir wachsen → Recruiter gesucht! (Fadenkreuz rastet auf die offene Stelle ein) → Direktansprache → Anzeige
    ============================================================ */
@@ -140,6 +141,8 @@ const T = {
   eyebrow2: bt(34), wort: [bt(35), bt(36), bt(37)], ring1: bt(35), ring2: bt(37), s6out: bt(40),
   shrink: bt(40), chartOut: bt(40), kick: bt(41), title: bt(42.5), mwd: bt(44), sub: bt(44.5),
   pill: bt(46), pillA: bt(47.5), pillB: bt(49.5), pillBack: bt(51.5), foot: bt(48), claim: bt(49), dot: bt(53.5), goldEnd: bt(54.5),
+  // Ende: Anzeigenblock geht, Fragen und Antworten, Rufnummer wird ausgepixelt
+  adOut: bt(53), eb: bt(54), q1a: bt(54), q1b: bt(55), q1out: bt(58), q2a: bt(58.5), q2b: bt(60), q2c: bt(60.5), telHi: bt(61), q2out: bt(63), q3a: bt(63.5), q3b: bt(65), pix: bt(65.5),
 };
 const textZone = { x: M, y: H * 0.63, w: W - 2 * M, h: H * 0.27 };
 const fit = (txts, start, weight = 800) => { let s = Math.round(start); ctx.font = `${weight} ${s}px ${FF}`; while (s > 20 && Math.max(...txts.map((x) => ctx.measureText(x).width)) > W - 2 * M) { s -= 2; ctx.font = `${weight} ${s}px ${FF}`; } return s; };
@@ -344,6 +347,50 @@ function drawS6() {
   if (t >= T.s6out) { const lw = (W - 2 * M) * crush * (1 - sstep((t - T.s6out - 0.35) / 0.3)); ctx.fillStyle = CI.gold; ctx.fillRect(W / 2 - lw / 2, zc - 4, lw, 8); }
 }
 
+/* ---------- Ende: Anzeigenblock quetscht sich weg, Fragen und Antworten, Rufnummer ausgepixelt ---------- */
+function drawAdWrapped() {
+  if (t > T.adOut + 0.8) return;
+  if (t < T.adOut) { drawAd(); return; }
+  const crush = spring(t - T.adOut, 250, 32), zc = yStart + blockH / 2;
+  ctx.save(); ctx.translate(0, zc); ctx.scale(1, Math.max(0.0001, 1 - crush)); ctx.translate(0, -zc); drawAd(); ctx.restore();
+  const lw = (W - 2 * M) * crush * (1 - sstep((t - T.adOut - 0.35) / 0.3)); ctx.fillStyle = CI.gold; ctx.fillRect(W / 2 - lw / 2, zc - 4, lw, 8);
+}
+const EN = J.ende;
+const ebH = kickS * 2.3, endAvail = footTop - Math.round(H * 0.05) - yStart;
+let endS = fit([...EN.q1, ...EN.q2, EN.q3[0]], SB * 0.085); endS = Math.max(16, Math.min(endS, Math.floor((endAvail - ebH) / (3 * 1.12))));
+let finS = fit([EN.q3[1]], SB * 0.14); finS = Math.max(16, Math.min(finS, Math.floor((endAvail - ebH - endS * 1.12) / 1.12)));
+let ebS = kickS; { const kw = (s) => { ctx.font = `700 ${s}px ${FF}`; let w = s * 1.7 + s * 0.6; for (const ch of EN.eyebrow.toUpperCase()) w += ctx.measureText(ch).width + s * 0.34; return w; }; while (ebS > 10 && kw(ebS) > W - 2 * M) ebS -= 1; }
+function drawEnd() {
+  if (t < T.eb) return;
+  const y = yStart + kickS; ctx.font = `700 ${ebS}px ${FF}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  const kbH = Math.max(3, ebS * 0.26), kbW = ebS * 1.7; ctx.fillStyle = CI.gold; rr(M, y - ebS * 0.36 - kbH / 2, kbW * clamp(sp(T.eb, 220, 24)), kbH, kbH / 2); ctx.fill();
+  const txt = EN.eyebrow.toUpperCase(), n = typeN(txt, T.eb + 0.15, 0.035); let x = M + kbW + ebS * 0.6; ctx.fillStyle = CI.navy;
+  for (let i = 0; i < n; i++) { const pop = sp(T.eb + 0.15 + i * 0.035, 300, 22); ctx.save(); ctx.globalAlpha = clamp(pop * 2); ctx.translate(x, y + (1 - clamp(pop)) * ebS * 0.4); ctx.fillText(txt[i], 0, 0); ctx.restore(); x += ctx.measureText(txt[i]).width + ebS * 0.34; }
+  const y0 = yStart + ebH;
+  typeBlock([{ txt: EN.q1[0], size: endS, color: CI.ink, t0: T.q1a }, { txt: EN.q1[1], size: endS, color: CI.navy, t0: T.q1b }], T.q1out, y0);
+  typeBlock([{ txt: EN.q2[0], size: endS, color: CI.ink, t0: T.q2a }, { txt: EN.q2[1], size: endS, color: CI.navy, t0: T.q2b }, { txt: EN.q2[2], size: endS, color: CI.navy, t0: T.q2c }], T.q2out, y0);
+  typeBlock([{ txt: EN.q3[0], size: endS, color: CI.ink, t0: T.q3a }, { txt: EN.q3[1], size: finS, color: CI.navy, t0: T.q3b }], Infinity, y0);
+}
+// Rufnummer im Fußband: erst gold hervorgehoben, dann in Stufen zu goldenen Pixelblöcken
+function drawPixel() {
+  if (t < T.pix) return;
+  const fuss2 = Math.max(11, Math.round(SB * 0.017)), tel = (J.telefon || '').trim(), k = tel.search(/\d/); if (k < 0) return;
+  ctx.font = `700 ${fuss2}px ${FF}`;   // Nummer ist ab telHi fett und gold
+  const x0 = Math.floor(M + ctx.measureText(tel.slice(0, k)).width) - 2, w = Math.ceil(ctx.measureText(tel.slice(k)).width) + 8;
+  const yb = footTop + footH * 0.82, y0 = Math.floor(yb - fuss2 * 1.0), h = Math.ceil(fuss2 * 1.3);
+  const steps = [2, 3, 5, 8, 11, 14].map((v) => Math.max(2, Math.round(v * fuss2 / 18)));
+  const bs = steps[Math.min(steps.length - 1, Math.floor((t - T.pix) / 0.0625))];
+  const img = ctx.getImageData(x0, y0, w, h), d = img.data;
+  for (let by = 0; by < h; by += bs) for (let bx = 0; bx < w; bx += bs) {
+    let r = 0, g = 0, b = 0, n = 0, hit = 0;
+    for (let yy = by; yy < Math.min(h, by + bs); yy++) for (let xx = bx; xx < Math.min(w, bx + bs); xx++) { const i = (yy * w + xx) * 4; r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; if (d[i] > 140 && d[i + 1] > 110) hit++; }
+    const cov = hit / n;
+    if (cov > 0.04) { ctx.globalAlpha = Math.min(1, 0.6 + cov * 2); ctx.fillStyle = CI.gold; } else { ctx.globalAlpha = 1; ctx.fillStyle = `rgb(${r / n | 0},${g / n | 0},${b / n | 0})`; }
+    ctx.fillRect(x0 + bx, y0 + by, Math.min(bs, w - bx), Math.min(bs, h - by));
+  }
+  ctx.globalAlpha = 1;
+}
+
 /* ---------- Logo ---------- */
 function drawLogo() {
   if (!L) return; const s = sp(T.logo, 110, 17); if (s <= 0) return;
@@ -401,7 +448,7 @@ function drawFoot() {
   const row = (txt, x, yy, font, color, t0) => { const s = springType(t - t0, 120); if (s <= 0) return; ctx.font = font; ctx.fillStyle = color; ctx.save(); ctx.globalAlpha = Math.min(1, s * 1.4); ctx.fillText(txt, x, yy + (1 - s) * fuss2 * 0.8); ctx.restore(); };
   row(web, M, footTop + footH * 0.38, `700 ${fuss1}px ${FF}`, '#FFFFFF', T.foot + 0.2);
   row('Ahlen · Stuttgart', M, footTop + footH * 0.60, `400 ${fuss2}px ${FF}`, 'rgba(255,255,255,.55)', T.foot + 0.3);
-  if (tel) row(tel, M, footTop + footH * 0.82, `400 ${fuss2}px ${FF}`, 'rgba(255,255,255,.55)', T.foot + 0.4);
+  if (tel) row(tel, M, footTop + footH * 0.82, `${t >= T.telHi ? 700 : 400} ${fuss2}px ${FF}`, t >= T.telHi ? CI.gold : 'rgba(255,255,255,.55)', T.foot + 0.4);
   if (J.claim) {
     ctx.font = `700 ${fuss1}px ${FF}`; const wClaim1 = ctx.measureText('Wir finden die Richtigen.').width; ctx.font = `400 ${fuss2}px ${FF}`;
     const wClaim = Math.max(wClaim1, ctx.measureText('Personalberatung seit 1992.').width, zusatz ? ctx.measureText(zusatz).width : 0);
@@ -419,7 +466,7 @@ window.seek = (tt) => {
   t = tt; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.setLineDash([]);
   ctx.fillStyle = CI.bg; ctx.fillRect(0, 0, W, H);
   drawField(); drawBuildings(); drawChart(); drawLogo(); drawCross1(); drawCross2();
-  drawHook(); drawS2(); drawS3(); drawS4(); drawS5(); drawS6(); drawAd(); drawFoot();
+  drawHook(); drawS2(); drawS3(); drawS4(); drawS5(); drawS6(); drawAdWrapped(); drawEnd(); drawFoot(); drawPixel();
 };
 window.seek(0);
 </script>
