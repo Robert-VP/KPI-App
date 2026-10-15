@@ -36,3 +36,25 @@ Alles bleibt im Anzeigen-CI: heller Canvas, Marine, Gold als einziger Akzent, In
 3. 20 Sekunden.
 
 Umsetzung: `templates/recruiter-film/` (job.js, index.html, cues.json). Render: `MUSIC_ARGS=--calm bash scripts/anzeige.sh templates/recruiter-film 20`.
+
+
+---
+
+# Version 2 (15.10.2026) — mit Wachstums-Story und Fadenkreuz, 28 s
+
+Neue Inhalte auf Wunsch: „Die Richtigen werden überall gesucht. Unsere treuen Kunden zählen auf uns. Wir wollen größer werden. Wir wollen schneller werden. Wir wachsen! Recruiter gesucht!“ — das Fadenkreuz ersetzt den Lichtkegel.
+Länge 28 s (56 Beats), weil die neuen Zeilen in 20 s nicht lesbar wären. Kein QR, kein Job-Alarm.
+
+| Zeit | Bild | Text |
+|---|---|---|
+| 0–2 s | Hook in vier Zeilen | „Sie überzeugen am Telefon? Dann sollten wir reden.“ |
+| 2–6 s | Figurenfeld fällt, Fadenkreuz springt über das Feld und rastet viermal ein, jede Fundstelle wird gold | „Die Richtigen werden überall gesucht.“ |
+| 6–9 s | Feld dimmt, vier Gebäude (Kunden) wachsen auf einer Linie, Goldlinien verbinden das Logo mit jedem Gebäude | „Unsere treuen Kunden zählen auf uns.“ |
+| 9–10,5 s | Säulen aus Figuren entstehen | „Wir wollen / größer werden.“ – „größer werden.“ wächst langsam aus kleiner Schrift |
+| 10,5–12 s | Säulen wachsen schnell | „Wir wollen / schneller werden.“ – schießt von rechts rein, Schräglage, goldene Speedlines |
+| 12–14 s | Säulen wachsen auf 3–8 Figuren, oben auf der höchsten Säule eine gestrichelte, leere Figur | „Wir wachsen!“ |
+| 14–17 s | Fadenkreuz fällt groß und gedreht auf die leere Figur, Goldklammern rasten ein, die Figur wird gold | „Recruiter gesucht!“ |
+| 17–20 s | Die neue goldene Figur telefoniert: zwei Goldringe | „Direktansprache“ · „Suchen. Ansprechen. Überzeugen.“ |
+| 20–28 s | Säulen verschwinden, Feld zieht sich ins Motiv zurück, Anzeige baut sich auf, Pille: Ahlen → Erste Recruiting-Erfahrung → Quereinstieg → Ahlen | Recruiter (m/w/d), Fußband ohne QR, goldener Punkt pulst |
+
+Texte stehen in `templates/recruiter-film/job.js` unter `story` und sind dort änderbar.

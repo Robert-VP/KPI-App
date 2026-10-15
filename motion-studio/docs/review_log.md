@@ -51,3 +51,7 @@ Hook fits, cone search and call read as scripted, ad block and footer identical 
 
 ## Final (60 fps, 4 subframes, calm music, -14.1 LUFS, TP -3.3 dBTP)
 Delivered as out/film_recruiter_1080x1920.mp4, _1080x1350.mp4, _1080x1080.mp4. Contact sheet matches the script: hook fits, cone search, gold figures, call line and three words, ad builds, pill states, footer, gold figure in the motif at 19 s. No QR, no job alarm.
+
+## Version 2 (28 s, growth story + crosshair) — frames at 1.7, 5.2, 8.4, 10.0, 10.7, 13.6, 15.5, 16.5, 18.9, 22.0, 24.6, 27.9 s
+Scores: hook 8 · phone readability 8 · motion 9 · variety 10 · brand accuracy 9 · sound sync 8
+Every 1.5–3 s a new idea. Crosshair scan, customers, three growth lines with distinct motion, lock-on on the open slot, ad end frame identical to the template. Go for the full render.

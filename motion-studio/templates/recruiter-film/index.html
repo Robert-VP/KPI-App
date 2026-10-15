@@ -121,43 +121,30 @@ let QR = null;
 if (qrAn) { try { const q = qrcode(0, 'M'); q.addData(qrUrl); q.make(); const n = q.getModuleCount(); const cell = Math.max(2, Math.floor(qrQs / (n + 8))); const pad = Math.round((qrQs - cell * n) / 2); const mods = []; const finder = (r, cc) => (r < 7 && cc < 7) || (r < 7 && cc >= n - 7) || (r >= n - 7 && cc < 7); for (let r = 0; r < n; r++) for (let cc = 0; cc < n; cc++) if (q.isDark(r, cc)) mods.push({ r, cc, f: finder(r, cc) }); QR = { n, cell, pad, mods, bx: Math.round(W - M - qrQs), by: Math.round(footTop - qrChh * 0.5) }; } catch (e) { QR = null; } }
 
 /* ============================================================
-   FILM „Recruiter in eigener Sache“ – 20 s, 120 BPM (docs/drehbuch_recruiter.md)
+   FILM „Recruiter in eigener Sache“ – 28 s, 120 BPM (docs/drehbuch_recruiter.md, Version 2)
+   Hook → Die Richtigen überall gesucht (Fadenkreuz) → Kunden zählen auf uns → größer, schneller,
+   wir wachsen → Recruiter gesucht! (Fadenkreuz rastet auf die offene Stelle ein) → Direktansprache → Anzeige
    ============================================================ */
 let t = 0;
+const ST = J.story;
 const sp = (t0, k = 170, d = 26) => spring(t - t0, k, d);
 const pulse = (t0, k = 260, d = 18) => clamp(spring(t - t0, k, d) - spring(t - t0 - 0.16, k, d));
 const typeN = (str, t0, step) => t < t0 ? 0 : Math.min(str.length, Math.floor((t - t0) / step) + 1);
 const sstep = (x) => { x = clamp(x); return x * x * (3 - 2 * x); };
 const T = {
-  hook1: bt(0), hook2: bt(2), crush: bt(4), field: bt(4.5), logo: bt(5), cone: bt(5.5), coneStop: bt(10),
-  gold1: bt(10.5), gold2: bt(11.5), gold3: bt(12.5), eyebrow2: bt(12), line: bt(16), ring1: bt(17), ring2: bt(19),
-  wort: [bt(18), bt(19), bt(20)], crush2: bt(22), shrink: bt(22), kick: bt(23), title: bt(24.5), mwd: bt(26), sub: bt(26.5),
-  pill: bt(28), pillA: bt(29), pillB: bt(31), pillBack: bt(33), foot: bt(30), claim: bt(31), dot: bt(36), goldEnd: bt(38),
+  hook1: bt(0), hook2: bt(2), crush: bt(4), field: bt(4.5), logo: bt(5),
+  cross: bt(6), s2a: bt(6), s2b: bt(7), crossOut: bt(11), s2out: bt(12),
+  bld: bt(12.5), s3a: bt(13), s3b: bt(14), links: bt(15), s3out: bt(18),
+  p1: bt(18), p2: bt(21), p3: bt(24), s4out: bt(28),
+  lock: bt(28), s5a: bt(29), s5b: bt(29.5), fill: bt(32), crossOut2: bt(33), s5out: bt(34),
+  eyebrow2: bt(34), wort: [bt(35), bt(36), bt(37)], ring1: bt(35), ring2: bt(37), s6out: bt(40),
+  shrink: bt(40), chartOut: bt(40), kick: bt(41), title: bt(42.5), mwd: bt(44), sub: bt(44.5),
+  pill: bt(46), pillA: bt(47.5), pillB: bt(49.5), pillBack: bt(51.5), foot: bt(48), claim: bt(49), dot: bt(53.5), goldEnd: bt(54.5),
 };
+const textZone = { x: M, y: H * 0.63, w: W - 2 * M, h: H * 0.27 };
+const fit = (txts, start, weight = 800) => { let s = Math.round(start); ctx.font = `${weight} ${s}px ${FF}`; while (s > 20 && Math.max(...txts.map((x) => ctx.measureText(x).width)) > W - 2 * M) { s -= 2; ctx.font = `${weight} ${s}px ${FF}`; } return s; };
 
-/* ---------- vollflächiges Figurenfeld auf demselben Raster wie das Motiv ---------- */
-const cellP = Math.max(15, Math.round(W / 32));
-const motifAt = new Map(); for (const p of PEOPLE) motifAt.set(p.r + ',' + p.cc, p);
-const FIELD = [];
-{
-  const rows = Math.ceil(H / cellP) + 1, cols = Math.ceil(W / cellP) + 2;
-  for (let r = 0; r < rows; r++) for (let cc = -1; cc < cols; cc++) {
-    const x = cc * cellP + (r % 2 ? cellP * 0.5 : 0), y = r * cellP + cellP * 0.5;
-    const h = hash(r * 31.7 + cc * 7.3 + 0.5);
-    FIELD.push({ r, cc, x, y, s: cellP * (0.56 + 0.08 * h), motif: motifAt.get(r + ',' + cc) || null, h });
-  }
-}
-const nearest = (fx, fy) => { let best = null, bd = 1e9; for (const f of FIELD) { if (f.x < M || f.x > W - M || f.y < H * 0.12 || f.y > H * 0.6) continue; const d = Math.hypot(f.x - fx, f.y - fy); if (d < bd) { bd = d; best = f; } } return best; };
-const GOLD = [nearest(W * 0.5, H * 0.45), nearest(W * 0.28, H * 0.3), nearest(W * 0.74, H * 0.56)];
-const goldT = [T.gold1, T.gold2, T.gold3];
-const motifGoldEnd = PEOPLE.length ? PEOPLE[Math.floor(PEOPLE.length * 0.55)] : null;
-const textZone = { x: M, y: H * 0.62, w: W - 2 * M, h: H * 0.28 };
-
-/* Lichtkegel: wandert auf 8teln, bleibt auf der ersten goldenen Figur stehen */
-const coneKeys = [[T.cone, [W * 0.22, H * 0.28]], [T.cone + 0.5, [W * 0.7, H * 0.22]], [T.cone + 1.0, [W * 0.3, H * 0.5]], [T.cone + 1.5, [W * 0.78, H * 0.52]], [T.cone + 2.0, [W * 0.45, H * 0.18]], [T.coneStop, [GOLD[0].x, GOLD[0].y]]];
-const coneX = () => track(t, coneKeys.map(([k, v]) => [k, v[0]]), 90, 15), coneY = () => track(t, coneKeys.map(([k, v]) => [k, v[1]]), 90, 15);
-const coneR = W * 0.17;
-
+/* ---------- Piktogramm-Figur (wie im Menschen-Motiv der Anzeige) ---------- */
 function figure(x, y, s, col, alpha, filled, lw) {
   const hr = s * 0.26, hx = x, hy = y - s * 0.36, bw = s * 0.88, bh = s * 0.52, bx = x - bw / 2, by = y - s * 0.02;
   ctx.globalAlpha = alpha; ctx.fillStyle = col; ctx.strokeStyle = col;
@@ -165,66 +152,196 @@ function figure(x, y, s, col, alpha, filled, lw) {
   else { ctx.lineWidth = lw || Math.max(1.2, s * 0.09); ctx.beginPath(); ctx.arc(hx, hy, hr, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [bw * 0.5, bw * 0.5, s * 0.10, s * 0.10]); ctx.stroke(); }
 }
 
+/* ---------- Fadenkreuz ---------- */
+function drawCross(x, y, R, lock, rot) {
+  const lw = Math.max(2, W * 0.004);
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.lineWidth = lw; ctx.strokeStyle = CI.navy; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
+  for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2, c = Math.cos(a), s = Math.sin(a); ctx.beginPath(); ctx.moveTo(c * R * 0.42, s * R * 0.42); ctx.lineTo(c * R * 1.32, s * R * 1.32); ctx.stroke(); }
+  if (lock > 0.01) { const d = R * (1.95 - 0.5 * lock), l = R * 0.42; ctx.strokeStyle = CI.gold; ctx.lineWidth = lw * 1.5;
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { ctx.beginPath(); ctx.moveTo(sx * d, sy * (d - l)); ctx.lineTo(sx * d, sy * d); ctx.lineTo(sx * (d - l), sy * d); ctx.stroke(); } }
+  ctx.restore();
+  ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(x, y, Math.max(3, R * 0.08), 0, Math.PI * 2); ctx.fill();
+}
+
+/* ---------- vollflächiges Figurenfeld auf dem Raster des Motivs ---------- */
+const cellP = Math.max(15, Math.round(W / 32));
+const motifAt = new Map(); for (const p of PEOPLE) motifAt.set(p.r + ',' + p.cc, p);
+const FIELD = [];
+{ const rows = Math.ceil(H / cellP) + 1, cols = Math.ceil(W / cellP) + 2;
+  for (let r = 0; r < rows; r++) for (let cc = -1; cc < cols; cc++) { const x = cc * cellP + (r % 2 ? cellP * 0.5 : 0), y = r * cellP + cellP * 0.5; const h = hash(r * 31.7 + cc * 7.3 + 0.5); FIELD.push({ r, cc, x, y, s: cellP * (0.56 + 0.08 * h), motif: motifAt.get(r + ',' + cc) || null, h }); } }
+const nearest = (fx, fy) => { let best = null, bd = 1e9; for (const f of FIELD) { if (f.x < M || f.x > W - M || f.y < H * 0.1 || f.y > H * 0.6) continue; const d = Math.hypot(f.x - fx, f.y - fy); if (d < bd) { bd = d; best = f; } } return best; };
+// „überall“: vier Richtige, verteilt über das Feld
+const GOLD = [nearest(W * 0.2, H * 0.21), nearest(W * 0.44, H * 0.14), nearest(W * 0.66, H * 0.24), nearest(W * 0.86, H * 0.15)];
+const goldT = GOLD.map((_, i) => T.cross + i * B + 0.3);
+const motifGoldEnd = PEOPLE.length ? PEOPLE[Math.floor(PEOPLE.length * 0.55)] : null;
+const crossKeys = GOLD.map((g, i) => [T.cross + i * B, g]);
+function crossState() {
+  if (t < T.cross || t > T.crossOut + 0.6) return { x: -1e4, y: -1e4, R: 1, vis: 0, lock: 0 };
+  const x = track(t, crossKeys.map(([k, g]) => [k, g.x]), 200, 24), y = track(t, crossKeys.map(([k, g]) => [k, g.y - g.s * 0.1]), 200, 24);
+  const vis = clamp(sp(T.cross, 200, 22)) * (1 - clamp(springType(t - T.crossOut, 200)));
+  const lock = Math.max(...goldT.map((gt) => pulse(gt - 0.05, 300, 22)));
+  return { x, y, R: cellP * 1.5, vis, lock };
+}
+
 function drawField() {
   if (t < T.field) return;
-  const cx = coneX(), cy = coneY(); const coneOn = t >= T.cone && t < T.gold1 + 0.4 ? 1 : 0;
-  const shrink = t >= T.shrink;   // Feld zieht sich ins Motiv zurück
+  const shrink = t >= T.shrink, dim = track(t, [[0, 1], [T.s2out, 0.3]], 120, 22), cr = crossState();
   const inZone = (f) => f.x > textZone.x - cellP && f.x < textZone.x + textZone.w + cellP && f.y > textZone.y - cellP * 0.5 && f.y < textZone.y + textZone.h;
-  const zoneOn = clamp(sp(T.eyebrow2 - 0.4, 120, 18)) * (1 - clamp(sp(T.crush2 + 0.3, 200, 24)));
+  const zoneOn = clamp(sp(T.s2a - 0.4, 120, 18)) * (1 - clamp(sp(T.shrink + 0.3, 200, 24)));
   for (const f of FIELD) {
-    // Eintritt: Diagonalwelle von oben links
     const delay = T.field + (f.r / (H / cellP)) * 1.1 + (f.cc / (W / cellP)) * 0.25;
-    let s = sp(delay, 150, 20); if (s <= 0.001) continue;
-    // Rückzug ins Motiv: Nicht-Motiv-Figuren schrumpfen weg (von unten links nach oben rechts), Motiv-Figuren werden zu ihrem Motiv-Stil
+    const s = sp(delay, 150, 20); if (s <= 0.001) continue;
     let out = 0, toMotif = 0;
     if (shrink) { const far = (1 - f.x / W) * 0.5 + (f.y / H) * 0.5; out = clamp(springType(t - (T.shrink + far * 0.9), 120)); toMotif = clamp(springType(t - (T.shrink + 0.4), 90)); }
     if (!f.motif && out >= 0.999) continue;
-    const gi = GOLD.indexOf(f); const isGold = gi >= 0 && t >= goldT[gi];
-    const g = isGold ? sp(goldT[gi], 160, 17) : 0;
-    // Nachbarn weichen der goldenen Figur aus
+    const gi = GOLD.indexOf(f), isGold = gi >= 0 && t >= goldT[gi], g = isGold ? sp(goldT[gi], 160, 17) : 0;
     let dx = 0, dy = 0;
-    for (let k = 0; k < 3; k++) { if (t < goldT[k] || GOLD[k] === f) continue; const d = Math.hypot(f.x - GOLD[k].x, f.y - GOLD[k].y); if (d < cellP * 1.8 && d > 0) { const push = clamp(sp(goldT[k], 160, 17)) * cellP * 0.22 * (1 - d / (cellP * 1.8)); dx += (f.x - GOLD[k].x) / d * push; dy += (f.y - GOLD[k].y) / d * push; } }
-    // Lichtkegel
-    const dc = Math.hypot(f.x - cx, f.y - cy); const lit = coneOn ? 1 - sstep((dc - coneR * 0.55) / (coneR * 0.45)) : 0;
+    for (let k = 0; k < GOLD.length; k++) { if (t < goldT[k] || GOLD[k] === f) continue; const d = Math.hypot(f.x - GOLD[k].x, f.y - GOLD[k].y); if (d < cellP * 1.8 && d > 0) { const push = clamp(sp(goldT[k], 160, 17)) * cellP * 0.22 * (1 - d / (cellP * 1.8)); dx += (f.x - GOLD[k].x) / d * push; dy += (f.y - GOLD[k].y) / d * push; } }
+    const dc = Math.hypot(f.x - cr.x, f.y - cr.y), lit = cr.vis * (1 - sstep((dc - cr.R * 0.5) / (cr.R * 0.6)));
     let col = ciMix('#B9CFE2', CI.navy, 0.2 + 0.6 * lit), alpha = 0.55 + 0.35 * lit, size = f.s * (1 + 0.12 * lit), filled = f.h > 0.35 || lit > 0.5;
     if (isGold) { col = CI.gold; alpha = 1; size = f.s * (1 + 0.85 * Math.min(1.1, g)); filled = true; }
+    alpha *= lerp(dim, 1, toMotif);
     if (inZone(f) && !isGold) alpha *= 1 - 0.78 * zoneOn;
-    let x = f.x + dx, y = f.y + dy, sz = size * Math.min(1.12, s);
+    let sz = size * Math.min(1.12, s);
     if (f.motif) {
-      // zum Motiv-Stil: Größe, Farbe, Alpha des echten Anzeigenmotivs
-      const m = f.motif; const endGold = (m === motifGoldEnd && t >= T.goldEnd) ? clamp(sp(T.goldEnd, 180, 18)) : 0;
-      if (toMotif > 0) { sz = lerp(sz, m.s, toMotif); alpha = lerp(alpha, m.alpha, toMotif); col = toMotif > 0.5 ? m.col : col; filled = toMotif > 0.5 ? (m.richtig || m.core > 0.30) : filled; }
+      const m = f.motif, endGold = (m === motifGoldEnd && t >= T.goldEnd) ? clamp(sp(T.goldEnd, 180, 18)) : 0;
+      if (toMotif > 0) { sz = lerp(sz, m.s, toMotif); alpha = lerp(alpha, m.alpha, toMotif); if (toMotif > 0.5) { col = m.col; filled = m.richtig || m.core > 0.30; } }
       if (endGold > 0) { col = CI.gold; alpha = 1; sz *= 1 + 0.4 * Math.min(1.1, endGold); filled = true; }
     } else { sz *= (1 - out); alpha *= (1 - out); }
     if (sz < 2) continue;
-    figure(x, y, sz, col, clamp(alpha), filled);
+    figure(f.x + dx, f.y + dy, sz, col, clamp(alpha), filled);
   }
-  // Ringe am Telefon: zwei goldene Kreise, die vom Kopf der ersten Figur nach außen laufen
-  for (const r0 of [T.ring1, T.ring2]) { for (const k of [0, 0.2]) { if (t < r0 + k || t > r0 + k + 1.0) continue; const s = clamp((t - r0 - k) / 1.0);  ctx.globalAlpha = (1 - s) * (1 - s) * 0.9; ctx.strokeStyle = CI.gold; ctx.lineWidth = Math.max(2, cellP * 0.08); ctx.beginPath(); ctx.arc(GOLD[0].x, GOLD[0].y - GOLD[0].s * 0.2, cellP * 0.6 + s * cellP * 2.4, 0, Math.PI * 2); ctx.stroke(); } }
   ctx.globalAlpha = 1;
 }
+function drawCross1() { const c = crossState(); if (c.vis <= 0.001) return; ctx.save(); ctx.globalAlpha = c.vis; drawCross(c.x, c.y, c.R * (0.6 + 0.4 * c.vis), c.lock, 0); ctx.restore(); }
 
-/* ---------- Hook: vier kurze Zeilen, Schrift passt sich der Breite an ---------- */
-const hookLines = [...J.hook1.split('|'), ...J.hook2.split('|')].map((s) => s.trim());
-let hookS = Math.round(SB * 0.105);
-{ ctx.font = `800 ${hookS}px ${FF}`; const maxWH = W - 2 * M; while (hookS > 20 && Math.max(...hookLines.map((l) => ctx.measureText(l).width)) > maxWH) { hookS -= 2; ctx.font = `800 ${hookS}px ${FF}`; } }
-const hookT = [T.hook1, T.hook1 + 0.25, T.hook2, T.hook2 + 0.25];
-function drawHook() {
-  if (t > T.crush + 1) return;
-  const size = hookS; ctx.font = `800 ${size}px ${FF}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  const crush = t >= T.crush ? spring(t - T.crush, 250, 32) : 0; const sy = Math.max(0.0001, 1 - crush);
-  const cyH = H * 0.47, lh = size * 1.12; const top = cyH - lh * 1.5;
-  ctx.save(); ctx.translate(0, cyH); ctx.scale(1, sy); ctx.translate(0, -cyH);
-  hookLines.forEach((ln, i) => {
-    const s = springType(t - hookT[i], 90); if (s <= 0) return; const yy = top + i * lh + size * 0.4;
-    ctx.save(); ctx.beginPath(); ctx.rect(0, yy - size * 1.05, W, size * 1.35); ctx.clip(); ctx.translate(0, (1 - s) * size * 1.2);
-    const isQ = i < 2; const txt = ln.replace(/[.?]$/, ''); const mark = ln.slice(-1).match(/[.?]/) ? ln.slice(-1) : '';
-    ctx.fillStyle = isQ ? CI.ink : CI.navy; ctx.fillText(txt, M, yy);
-    if (mark) { const wdt = ctx.measureText(txt).width; const d = sp(hookT[i] + 0.3, 320, 20); if (d > 0) { ctx.save(); ctx.fillStyle = mark === '.' ? CI.gold : CI.navy; ctx.translate(M + wdt + size * 0.04, yy); ctx.scale(Math.max(0.001, d), Math.max(0.001, d)); ctx.fillText(mark, 0, 0); ctx.restore(); } }
+/* ---------- Kunden: Gebäude, verbunden mit dem Logo ---------- */
+const BLD = (() => { const n = 4, base = H * 0.54, bw = Math.min(W * 0.15, H * 0.11), gap = bw * 0.45, x0 = W / 2 - (n * bw + (n - 1) * gap) / 2; return [0.14, 0.2, 0.11, 0.17].map((h, i) => ({ x: x0 + i * (bw + gap), w: bw, h: Math.min(H * h, bw * 3), base })); })();
+function drawBuildings() {
+  if (t < T.bld - 0.1 || t > T.s3out + 0.9) return;
+  const out = t >= T.s3out ? clamp(springType(t - T.s3out, 160)) : 0;
+  const gl = clamp(sp(T.bld - 0.1, 200, 24)) * (1 - out), gx0 = BLD[0].x - BLD[0].w * 0.4, gx1 = BLD[3].x + BLD[3].w * 1.4;
+  ctx.fillStyle = CI.navy; ctx.fillRect(gx0, BLD[0].base, (gx1 - gx0) * gl, Math.max(2, W * 0.003));
+  BLD.forEach((b, i) => {
+    const hh = b.h * Math.min(1.06, sp(T.bld + i * 0.25, 150, 20)) * (1 - out); if (hh <= 1) return;
+    ctx.save(); ctx.beginPath(); ctx.rect(b.x - 2, b.base - b.h * 1.2, b.w + 4, b.h * 1.2); ctx.clip();
+    const top = b.base - hh; rr(b.x, top, b.w, hh + 10, Math.min(10, b.w * 0.08)); ctx.fillStyle = CI.navy; ctx.fill();
+    const cols = 3, wW = b.w * 0.16, wH = wW * 1.1, g = (b.w - cols * wW) / (cols + 1); ctx.fillStyle = 'rgba(244,245,246,0.85)';
+    for (let r = 0; r < 20; r++) { const wy = top + g + r * (wH + g * 0.8); if (wy + wH > b.base - b.w * 0.32) break; for (let c = 0; c < cols; c++) ctx.fillRect(b.x + g + c * (wW + g), wy, wW, wH); }
+    const dw = b.w * 0.2, dh = b.w * 0.26; ctx.fillStyle = CI.gold; ctx.fillRect(b.x + b.w / 2 - dw / 2, b.base - dh, dw, dh);
     ctx.restore();
   });
+  if (L && t >= T.links) BLD.forEach((b, i) => {
+    const p0 = [L.x + L.w * 0.5, L.y + L.h + 10], p1 = [b.x + b.w / 2, b.base - b.h - 10], len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+    const d = clamp(springType(t - (T.links + i * 0.125), 60)); if (d <= 0) return;
+    ctx.save(); ctx.globalAlpha = 1 - out; ctx.strokeStyle = CI.gold; ctx.lineWidth = Math.max(2, W * 0.0035); ctx.setLineDash([len]); ctx.lineDashOffset = len * (1 - d);
+    ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke(); ctx.restore();
+    const ring = pulse(T.links + i * 0.125 + 0.35, 220, 18); if (ring > 0.01) { ctx.save(); ctx.globalAlpha = ring * (1 - out); ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(p1[0], p1[1], Math.max(4, b.w * 0.07) * (1 + ring), 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+  });
+}
+
+/* ---------- Wachstum: Säulen aus Figuren, oben die offene Stelle ---------- */
+const CH = (() => { const n = 5, fs = Math.min(W * 0.085, (H * 0.38) / 8.6), colW = fs * 1.35; return { n, fs, colW, x0: W / 2 - (n - 1) * colW / 2, base: H * 0.56 }; })();
+const h1 = [1, 1, 2, 2, 3], h2 = [2, 3, 3, 4, 5], h3 = [3, 4, 5, 6, 8];
+const colH = (i) => track(t, [[0, 0], [T.p1 + i * 0.08, h1[i]], [T.p2 + i * 0.05, h2[i]], [T.p3 + i * 0.06, h3[i]]], 150, 20);
+const SLOT = { i: 4, j: 7 };
+const figY = (j) => CH.base - CH.fs * 0.55 - j * CH.fs * 1.05;
+const slotXY = () => [CH.x0 + SLOT.i * CH.colW, figY(SLOT.j) - CH.fs * 0.06];
+function drawChart() {
+  if (t < T.p1 - 0.05 || t > T.chartOut + 1.2) return;
+  const out = t >= T.chartOut ? clamp(springType(t - T.chartOut, 140)) : 0, fillG = t >= T.fill ? sp(T.fill, 200, 16) : 0;
+  const bl = clamp(sp(T.p1 - 0.05, 200, 24)) * (1 - out), bw = CH.n * CH.colW; ctx.fillStyle = CI.navy; ctx.fillRect(W / 2 - bw / 2 * bl, CH.base, bw * bl, Math.max(2, W * 0.003));
+  for (let i = 0; i < CH.n; i++) {
+    const h = colH(i), x = CH.x0 + i * CH.colW;
+    for (let j = 0; j < Math.ceil(h); j++) {
+      const sc = clamp(h - j) * (1 - out); if (sc <= 0.01) continue;
+      const y = figY(j);
+      if (i === SLOT.i && j === SLOT.j) {
+        if (fillG > 0) figure(x, y, CH.fs * sc * (1 + 0.25 * Math.min(1.1, fillG)), CI.gold, 1, true);
+        else { ctx.save(); ctx.setLineDash([CH.fs * 0.09, CH.fs * 0.07]); figure(x, y, CH.fs * sc, CI.navy, 0.9, false, Math.max(2, CH.fs * 0.06)); ctx.restore(); }
+      } else figure(x, y, CH.fs * sc, ciMix(CI.navy, CI.steelHi, j / 9), 1, true);
+    }
+  }
+  // Telefon-Ringe an der neuen goldenen Figur
+  const [sx, sy] = slotXY();
+  for (const r0 of [T.ring1, T.ring2]) for (const k of [0, 0.2]) { if (t < r0 + k || t > r0 + k + 1.0) continue; const s = clamp((t - r0 - k) / 1.0); ctx.globalAlpha = (1 - s) * (1 - s) * 0.9 * (1 - out); ctx.strokeStyle = CI.gold; ctx.lineWidth = Math.max(2, CH.fs * 0.06); ctx.beginPath(); ctx.arc(sx, sy, CH.fs * 0.7 + s * CH.fs * 1.6, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+}
+function drawCross2() {
+  if (t < T.lock || t > T.crossOut2 + 0.6) return;
+  const [sx, sy] = slotXY(), inS = clamp(sp(T.lock, 150, 20)), outS = t >= T.crossOut2 ? clamp(springType(t - T.crossOut2, 200)) : 0;
+  const R = CH.fs * 0.95 * (1 + 1.5 * (1 - inS)) * (1 - 0.5 * outS), rot = (1 - inS) * Math.PI / 3, lock = clamp(sp(T.lock + 0.45, 260, 20));
+  ctx.save(); ctx.globalAlpha = clamp(inS * 1.5) * (1 - outS); drawCross(sx, sy, R, lock, rot); ctx.restore();
+}
+
+/* ---------- Typo-Bausteine ---------- */
+function drawMarked(txt, x, y, color, size, t0) {
+  const m = txt.match(/[.?!]$/), body = m ? txt.slice(0, -1) : txt;
+  ctx.fillStyle = color; ctx.fillText(body, x, y);
+  if (m) { const wdt = ctx.measureText(body).width, d = sp(t0 + 0.3, 320, 20); if (d > 0) { ctx.save(); ctx.fillStyle = m[0] === '?' ? color : CI.gold; ctx.translate(x + wdt + size * 0.04, y); ctx.scale(Math.max(0.001, d), Math.max(0.001, d)); ctx.fillText(m[0], 0, 0); ctx.restore(); } }
+}
+// Zeilen steigen maskiert an der Grundlinie hoch; Abgang: alles quetscht sich zur Goldlinie
+function typeBlock(items, outT, y0 = textZone.y) {
+  if (t < items[0].t0 || t > outT + 0.8) return;
+  const crush = t >= outT ? spring(t - outT, 250, 32) : 0, total = items.reduce((a, it) => a + it.size * 1.12, 0), zc = y0 + total / 2;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.save(); ctx.translate(0, zc); ctx.scale(1, Math.max(0.0001, 1 - crush)); ctx.translate(0, -zc);
+  let y = y0;
+  for (const it of items) {
+    y += it.size; const s = springType(t - it.t0, 90);
+    if (s > 0) { ctx.save(); ctx.beginPath(); ctx.rect(0, y - it.size * 1.05, W, it.size * 1.35); ctx.clip(); ctx.translate(0, (1 - s) * it.size * 1.2); ctx.font = `${it.weight || 800} ${it.size}px ${FF}`; drawMarked(it.txt, M, y, it.color, it.size, it.t0); ctx.restore(); }
+    y += it.size * 0.12;
+  }
   ctx.restore();
-  if (t >= T.crush) { const lw = (W - 2 * M) * crush * (1 - sstep((t - T.field) / 0.3)); ctx.fillStyle = CI.gold; ctx.fillRect(W / 2 - lw / 2, cyH - 4, lw, 8); }
+  if (t >= outT) { const lw = (W - 2 * M) * crush * (1 - sstep((t - outT - 0.35) / 0.3)); ctx.fillStyle = CI.gold; ctx.fillRect(W / 2 - lw / 2, zc - 4, lw, 8); }
+}
+
+/* ---------- Hook ---------- */
+const hookLines = [...J.hook1.split('|'), ...J.hook2.split('|')].map((s) => s.trim());
+const hookS = fit(hookLines, SB * 0.105);
+function drawHook() {
+  const ht = [T.hook1, T.hook1 + 0.25, T.hook2, T.hook2 + 0.25];
+  typeBlock(hookLines.map((txt, i) => ({ txt, size: hookS, color: i < 2 ? CI.ink : CI.navy, t0: ht[i] })), T.crush, H * 0.47 - hookS * 2.3);
+}
+
+/* ---------- Story-Texte ---------- */
+const s2S = fit(ST.richtige, SB * 0.085), s3S = fit(ST.kunden, SB * 0.085), s5S = fit(ST.gesucht, SB * 0.16);
+const s4Big = fit([ST.groesser, ST.schneller, ST.wachsen], SB * 0.11), s4Small = Math.round(s4Big * 0.42);
+function drawS2() { typeBlock([{ txt: ST.richtige[0], size: s2S, color: CI.ink, t0: T.s2a }, { txt: ST.richtige[1], size: s2S, color: CI.navy, t0: T.s2b }], T.s2out); }
+function drawS3() { typeBlock([{ txt: ST.kunden[0], size: s3S, color: CI.ink, t0: T.s3a }, { txt: ST.kunden[1], size: s3S, color: CI.navy, t0: T.s3b }], T.s3out); }
+function drawS4() {
+  if (t < T.p1 || t > T.s4out + 0.8) return;
+  const yS = textZone.y + s4Small, yB = yS + s4Big * 1.1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  // „Wir wollen“ – bleibt für größer und schneller stehen
+  const smallOut = t >= T.p3 ? clamp(springType(t - T.p3, 300)) : 0, s0 = springType(t - T.p1, 120);
+  if (s0 > 0 && smallOut < 1) { ctx.save(); ctx.beginPath(); ctx.rect(0, yS - s4Small * 1.05, W, s4Small * 1.35); ctx.clip(); ctx.translate(-smallOut * W * 1.2, (1 - s0) * s4Small * 1.2); ctx.font = `700 ${s4Small}px ${FF}`; ctx.fillStyle = CI.grau; ctx.fillText(ST.wollen, M, yS); ctx.restore(); }
+  ctx.font = `800 ${s4Big}px ${FF}`;
+  // größer: wächst langsam aus kleiner Schrift
+  if (t < T.p2 + 0.6) { const g = springType(t - T.p1, 26), sc = 0.42 + 0.58 * g, ex = t >= T.p2 ? springType(t - T.p2, 300) : 0;
+    ctx.save(); ctx.translate(M - ex * W * 1.2, yB); ctx.scale(sc, sc); drawMarked(ST.groesser, 0, 0, CI.ink, s4Big, T.p1 + 0.5); ctx.restore(); }
+  // schneller: schießt von rechts rein, Schräglage und goldene Speedlines
+  if (t >= T.p2 && t < T.p3 + 0.6) { const s = clamp(spring(t - T.p2, 420, 41)), ex = t >= T.p3 ? springType(t - T.p3, 300) : 0, x = M + (1 - s) * W * 1.2 - ex * W * 1.2, skew = 0.35 * (1 - s) + 0.35 * ex;
+    ctx.save(); ctx.translate(x, yB); ctx.transform(1, 0, skew, 1, 0, 0); drawMarked(ST.schneller, 0, 0, CI.navy, s4Big, T.p2 + 0.2); ctx.restore();
+    const sl = Math.max(1 - s, ex); if (sl > 0.02) { const tw = ctx.measureText(ST.schneller).width; ctx.fillStyle = CI.gold; for (let k = 0; k < 3; k++) ctx.fillRect(x + tw + s4Big * 0.25, yB - s4Big * (0.18 + k * 0.22), W * 0.45 * sl * (1 - k * 0.25), Math.max(3, s4Big * 0.05)); } }
+  // Wir wachsen!
+  if (t >= T.p3) { const crush = t >= T.s4out ? spring(t - T.s4out, 250, 32) : 0, s = springType(t - T.p3, 90), zc = yB - s4Big * 0.35;
+    ctx.save(); ctx.translate(0, zc); ctx.scale(1, Math.max(0.0001, 1 - crush)); ctx.translate(0, -zc); ctx.beginPath(); ctx.rect(0, yB - s4Big * 1.05, W, s4Big * 1.35); ctx.clip(); ctx.translate(0, (1 - s) * s4Big * 1.2); drawMarked(ST.wachsen, M, yB, CI.navy, s4Big, T.p3 + 0.3); ctx.restore();
+    if (t >= T.s4out) { const lw = (W - 2 * M) * crush * (1 - sstep((t - T.s4out - 0.35) / 0.3)); ctx.fillStyle = CI.gold; ctx.fillRect(W / 2 - lw / 2, zc - 4, lw, 8); } }
+}
+function drawS5() { typeBlock([{ txt: ST.gesucht[0], size: s5S, color: CI.ink, t0: T.s5a }, { txt: ST.gesucht[1], size: s5S, color: CI.navy, t0: T.s5b }], T.s5out); }
+function drawS6() {
+  if (t < T.eyebrow2 || t > T.s6out + 0.8) return;
+  const crush = t >= T.s6out ? spring(t - T.s6out, 250, 32) : 0, zc = textZone.y + textZone.h * 0.5;
+  ctx.save(); ctx.translate(0, zc); ctx.scale(1, Math.max(0.0001, 1 - crush)); ctx.translate(0, -zc);
+  const kS = Math.round(SB * 0.024); ctx.font = `700 ${kS}px ${FF}`; const kbH = Math.max(3, kS * 0.26), kbW = kS * 1.7, y0 = textZone.y + kS * 1.2;
+  ctx.fillStyle = CI.gold; rr(M, y0 - kS * 0.36 - kbH / 2, kbW * clamp(sp(T.eyebrow2, 220, 24)), kbH, kbH / 2); ctx.fill();
+  const txt = J.eyebrow2.toUpperCase(), n = typeN(txt, T.eyebrow2 + 0.15, 0.0625); let x = M + kbW + kS * 0.6; ctx.fillStyle = CI.navy;
+  for (let i = 0; i < n; i++) { const pop = sp(T.eyebrow2 + 0.15 + i * 0.0625, 300, 22); ctx.save(); ctx.globalAlpha = clamp(pop * 2); ctx.translate(x, y0 + (1 - clamp(pop)) * kS * 0.4); ctx.fillText(txt[i], 0, 0); ctx.restore(); x += ctx.measureText(txt[i]).width + kS * 0.34; }
+  const wS = fit(J.worte, SB * 0.085); ctx.font = `800 ${wS}px ${FF}`;
+  J.worte.forEach((w, i) => { const s = springType(t - T.wort[i], 90); if (s <= 0) return; const yy = y0 + wS * (1.15 + i * 1.08); ctx.save(); ctx.beginPath(); ctx.rect(0, yy - wS * 1.0, W, wS * 1.3); ctx.clip(); ctx.translate(0, (1 - s) * wS * 1.2); drawMarked(w, M, yy, i === 2 ? CI.navy : CI.ink, wS, T.wort[i]); ctx.restore(); });
+  ctx.restore();
+  if (t >= T.s6out) { const lw = (W - 2 * M) * crush * (1 - sstep((t - T.s6out - 0.35) / 0.3)); ctx.fillStyle = CI.gold; ctx.fillRect(W / 2 - lw / 2, zc - 4, lw, 8); }
 }
 
 /* ---------- Logo ---------- */
@@ -232,31 +349,6 @@ function drawLogo() {
   if (!L) return; const s = sp(T.logo, 110, 17); if (s <= 0) return;
   ctx.save(); ctx.translate(L.x + L.w / 2, L.y + L.h / 2); ctx.translate(-(1 - s) * (L.x + L.w), -(1 - s) * 80); ctx.scale(0.6 + 0.4 * s, 0.6 + 0.4 * s);
   ctx.drawImage(logo, -L.w / 2, -L.h / 2, L.w, L.h); ctx.restore();
-}
-
-/* ---------- Textzone Shots 3–4: Eyebrow „Direktanprache“, Telefonlinie, drei Worte ---------- */
-function drawStoryText() {
-  if (t < T.eyebrow2 || t > T.crush2 + 0.6) return;
-  const crush = t >= T.crush2 ? spring(t - T.crush2, 250, 32) : 0; const sy = Math.max(0.0001, 1 - crush);
-  const zc = textZone.y + textZone.h * 0.5;
-  // Telefonlinie: von der goldenen Figur zum Logo
-  if (t >= T.line && L) {
-    const p0 = [GOLD[0].x, GOLD[0].y - GOLD[0].s * 0.5], p1 = [L.x + L.w * 0.5, L.y + L.h + 10];
-    const d = clamp(springType(t - T.line, 40)); const leave = clamp(springType(t - T.crush2, 120));
-    const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-    ctx.save(); ctx.strokeStyle = CI.navy; ctx.lineWidth = Math.max(2, W * 0.003); ctx.setLineDash([len]); ctx.lineDashOffset = len * (1 - d) ; ctx.globalAlpha = 1 - leave;
-    ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke(); ctx.restore();
-  }
-  ctx.save(); ctx.translate(0, zc); ctx.scale(1, sy); ctx.translate(0, -zc);
-  // Eyebrow mit Goldstrich
-  const kS = Math.round(SB * 0.024); ctx.font = `700 ${kS}px ${FF}`; const kbH = Math.max(3, kS * 0.26), kbW = kS * 1.7; const y0 = textZone.y + kS * 1.2;
-  const sw = sp(T.eyebrow2, 220, 24); ctx.fillStyle = CI.gold; rr(M, y0 - kS * 0.36 - kbH / 2, kbW * clamp(sw), kbH, kbH / 2); ctx.fill();
-  const txt = J.eyebrow2.toUpperCase(); const n = typeN(txt, T.eyebrow2 + 0.15, 0.0625); let x = M + kbW + kS * 0.6; ctx.fillStyle = CI.navy;
-  for (let i = 0; i < n; i++) { const pop = sp(T.eyebrow2 + 0.15 + i * 0.0625, 300, 22); ctx.save(); ctx.globalAlpha = clamp(pop * 2); ctx.translate(x, y0 + (1 - clamp(pop)) * kS * 0.4); ctx.fillText(txt[i], 0, 0); ctx.restore(); x += ctx.measureText(txt[i]).width + kS * 0.34; }
-  // drei Worte, jedes auf einem Beat, maskiert an der Grundlinie hoch
-  const wS = Math.round(SB * 0.085); ctx.font = `800 ${wS}px ${FF}`;
-  J.worte.forEach((w, i) => { const s = springType(t - T.wort[i], 90); if (s <= 0) return; const yy = y0 + wS * (1.15 + i * 1.08); ctx.save(); ctx.beginPath(); ctx.rect(0, yy - wS * 1.0, W, wS * 1.3); ctx.clip(); ctx.translate(0, (1 - s) * wS * 1.2); ctx.fillStyle = i === 2 ? CI.navy : CI.ink; ctx.fillText(w.replace(/\.$/, ''), M, yy); const wdt = ctx.measureText(w.replace(/\.$/, '')).width; ctx.fillStyle = CI.gold; ctx.fillText('.', M + wdt + wS * 0.04, yy); ctx.restore(); });
-  ctx.restore();
 }
 
 /* ---------- Anzeigenblock (Mechanik der Stellenanzeigen-Vorlage) ---------- */
@@ -324,9 +416,10 @@ function drawFoot() {
 }
 
 window.seek = (tt) => {
-  t = tt; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  t = tt; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.setLineDash([]);
   ctx.fillStyle = CI.bg; ctx.fillRect(0, 0, W, H);
-  drawField(); drawLogo(); drawHook(); drawStoryText(); drawAd(); drawFoot();
+  drawField(); drawBuildings(); drawChart(); drawLogo(); drawCross1(); drawCross2();
+  drawHook(); drawS2(); drawS3(); drawS4(); drawS5(); drawS6(); drawAd(); drawFoot();
 };
 window.seek(0);
 </script>
