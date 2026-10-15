@@ -154,3 +154,33 @@ Vorlage: `templates/recruiter-film-v6/` (Version 5 bleibt unverändert).
 | Interessiert? Melden Sie sich! | 50,5 s | 53,45 s | 3,0 s |
 | Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | 55,5 s | 59,45 s | 4,0 s |
 | Schlussbild: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | 61,4 s | Ende 66,5 s | 5,1 s |
+
+---
+
+# Version 7 (15.10.2026) — komplett im Anzeigen-CI, dynamisch, 71 s, 128 BPM
+
+Feedback zu Version 6: „Wir suchen: … in Ahlen“ zu plump → „Recruiter (m/w/d) gesucht!“ (Standort steht am Ende). „Die Richtigen werden überall gesucht“ raus. Alles im CI, weißer Hintergrund zu langweilig, dynamischer und mitreißender, agile und kommunikative Menschen sollen sich widerspiegeln.
+Vorlage: `templates/recruiter-film-v7/`.
+
+Bildsprache:
+- **Marine-Bühnen** (Hook, Aufgaben, Was Sie erwartet): Verlauf aus dem Fußband, darüber eine Dreieck-Struktur, die langsam atmet; ein Lichtschweif zieht diagonal durch; goldene Dreiecke funkeln im Takt (nicht in Textflächen und am Logo).
+- **Helle Bühnen** (gesucht, Profil, Anzeige): das Dreieck-Motiv der Anzeige, das atmet, leicht driftet und im Takt funkelt.
+- **Übergänge**: goldenes Dreieck-Mosaik fegt diagonal über das Bild, deckt zu und gibt die nächste Bühne frei.
+- **Typo**: Zeilen schlagen ein, goldene Satzzeichen pumpen auf der Eins, beim Landen läuft ein goldener Lichtstreif unter jedem Begriff durch. Zeilenabstand 1,2; Unterstreichung unter den Unterlängen.
+- **Musik**: 128 BPM, volles Schlagzeug.
+
+Ablauf (Lesezeiten nach vollständigem Aufbau):
+
+| Aussage | Bühne | Lesezeit |
+|---|---|---|
+| Sie überzeugen am Telefon? | Marine | 3,0 s |
+| In eigener Sache · Recruiter (m/w/d) gesucht! | hell, Motiv | 3,0 s |
+| Ihre Aufgaben: Suchen. Ansprechen. Überzeugen. | Marine | 3,2 s |
+| Ihr Profil: Kommunikativ. Agil. Motiviert. | hell, Motiv | 3,2 s |
+| Was Sie erwartet: Strukturierte Einarbeitung. | Marine, Stufen-Grafik | 3,2 s |
+| Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung. | Marine, Weg-Grafik | 4,3 s |
+| Etablierte Personalberatung seit 1992. | Marine, Zeitstrahl | 3,2 s |
+| Anzeige Recruiter (m/w/d) · Pille Ahlen / Erste Recruiting-Erfahrung / Quereinstieg | Anzeige | 3,0 / 3,0 / 4,0 s |
+| Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
+| Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
+| Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |

@@ -81,3 +81,8 @@ Frames at every hold start and hold end (34 frames, 9:16) and 10 frames in 1:1: 
 1. Typography check on v5 crops: line advance 1.08 made descenders touch the next line (Ansprechen/Überzeugen, Möglichkeiten/persönlichen) and the underline sat on „in Ahlen“. Fix: baseline step 0.24 × previous + 0.96 × current size (1.2), letter spacing 0, underline at +0.11 em, larger masks.
 2. Name clash blockH (ad slice) – renamed to lineBlockH.
 3. 27 frames at every hold start and end: each statement complete for its full window, no empty transitions longer than 0.8 s.
+
+# Review log — Recruiter-Film Version 7 (71 s, 128 BPM)
+27 frames (9:16) at hold starts/ends and wipes, 10 frames in 1:1.
+1. Gold twinkles of the navy stage landed next to text and on the logo. Fix: no twinkles and dimmed texture inside text areas and the logo corner.
+2. Underline under „gesucht!“ cut through the g descender. Fix: underline at +0.3 em for lines with descenders.
