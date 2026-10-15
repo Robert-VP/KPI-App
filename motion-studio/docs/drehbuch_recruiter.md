@@ -123,3 +123,34 @@ Umsetzung des Briefings:
 | Schlussbild: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | 94,9 s | Ende 100 s | 5,1 s |
 
 Keine Aussage wird ausgeblendet, solange sie sich aufbaut. Ein- und Ausblendungen kommen zur Lesezeit hinzu.
+
+---
+
+# Version 6 (15.10.2026) — Stellenanzeigen-Film, 66,5 s
+
+Feedback zu Version 5: Wachstumsszene gefällt nicht, Pausen zu lang, Schrift wirkt teilweise überschnitten.
+Vorlage: `templates/recruiter-film-v6/` (Version 5 bleibt unverändert).
+
+Änderungen:
+- **Entfernt**: „Wir wollen größer werden / schneller werden / Wir wachsen!“ samt Diagramm und die zweite Nennung „Recruiter gesucht!“. Der Film ist jetzt ein Stellenanzeigen-Film: Stelle, Aufgaben, was Sie erwartet, Anforderungen (Pille in der Anzeige), Kontakt.
+- **Pausen**: kein Leerlauf zwischen den Aussagen. Die nächste Aussage startet, während die vorige geht. Übergänge 0,3–0,8 s, Iris doppelt so schnell, Überzeile der Anzeige tippt schneller. Lesezeiten liegen genau auf den Mindestwerten: kurz 3 s, lang 4 s, Schlussbild 5 s.
+- **Satz**: Zeilenabstand 1,2 statt 1,08 (Unterlängen g, p und Umlaute wie Ü stießen aneinander), keine negative Laufweite mehr, Goldlinie unter „Recruiter“ mit Abstand zur Folgezeile, Masken großzügiger, damit beim Aufsteigen nichts angeschnitten wird.
+- Eyebrow der Aufgaben: „Ihre Aufgaben“.
+
+## Ablauf und Lesezeiten
+
+| Aussage | Aufbau fertig | Ausblendung | Lesezeit |
+|---|---|---|---|
+| Sie überzeugen am Telefon? | 1,8 s | 4,8 s | 3,0 s |
+| Wir suchen: Recruiter (m/w/d) in Ahlen. | 6,4 s | 9,4 s | 3,0 s |
+| Die Richtigen werden überall gesucht. (Fadenkreuz) | 10,9 s | 13,9 s | 3,0 s |
+| Ihre Aufgaben: Suchen. Ansprechen. Überzeugen. | 16,5 s | 19,45 s | 3,0 s |
+| Strukturierte Einarbeitung. | 21,2 s | 24,2 s | 3,0 s |
+| Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung. | 26,2 s | 30,15 s | 4,0 s |
+| Etablierte Personalberatung seit 1992. | 31,8 s | 34,75 s | 3,0 s |
+| Anzeige: Recruiter (m/w/d), Ahlen (Westfalen) | 37,7 s | 40,7 s | 3,0 s |
+| Pille: Erste Recruiting-Erfahrung | 41,3 s | 44,3 s | 3,0 s |
+| Pille: Oder Quereinstieg aus Vertrieb und Kundenberatung | 44,9 s | 48,9 s | 4,0 s |
+| Interessiert? Melden Sie sich! | 50,5 s | 53,45 s | 3,0 s |
+| Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | 55,5 s | 59,45 s | 4,0 s |
+| Schlussbild: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | 61,4 s | Ende 66,5 s | 5,1 s |

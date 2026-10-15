@@ -76,3 +76,8 @@ Contact sheet at 1 fps checked end to end: cuts, zoom-through, iris, wipe, growt
 Frames at every hold start and hold end (34 frames, 9:16) and 10 frames in 1:1: every statement fully built at hold start and still complete at hold end.
 1. Variable name clash with the reused end section (ebS) stopped the page. Fix: renamed.
 2. 1:1: first gold figure partly under the logo. Fix: gold targets start below the logo.
+
+# Review log — Recruiter-Film Version 6 (66,5 s)
+1. Typography check on v5 crops: line advance 1.08 made descenders touch the next line (Ansprechen/Überzeugen, Möglichkeiten/persönlichen) and the underline sat on „in Ahlen“. Fix: baseline step 0.24 × previous + 0.96 × current size (1.2), letter spacing 0, underline at +0.11 em, larger masks.
+2. Name clash blockH (ad slice) – renamed to lineBlockH.
+3. 27 frames at every hold start and end: each statement complete for its full window, no empty transitions longer than 0.8 s.
