@@ -249,7 +249,7 @@ Begriffe: „Arbeitnehmerüberlassung“ ist der gesetzliche Begriff (AÜG). „
 
 # Version 11 (15.10.2026) — je drei Punkte in „Was Sie erwartet“ und „Über uns“, 91,7 s
 
-Entscheidungen: „Über uns“ Punkt 3 = „Spezialisiert auf Gebäude- und Versorgungstechnik. Schlüsselbranchen der Energiewende.“ (Oberbegriff der Website: Technische Gebäudeausrüstung & Versorgungstechnik). „Was Sie erwartet“ Punkt 3 = „Modernes Arbeitsumfeld mit digitalen Recruitinglösungen.“ (belegt durch Recruiting-Datenbank, LinkedIn/XING laut Anzeige und die eigenen VP-Tools).
+Entscheidungen: „Über uns“ Punkt 3 = „Spezialisiert auf Gebäude- und Versorgungstechnik. Schlüsselbranchen der Energiewende.“ (Oberbegriff der Website: Technische Gebäudeausrüstung & Versorgungstechnik). „Was Sie erwartet“ Punkt 3 = „Modernes Arbeitsumfeld.“ mit drei Aufzählungspunkten: „Microsoft 365“, „Professionelle Recruiting-Software“ (gemeint ist das Bewerbermanagementsystem, englisch ATS; der Produktname sagt Bewerbern nichts), „KI-gestützte Tools“ (bewusst „Tools“, nicht „KI wählt aus“, siehe EU AI Act).
 Vorlage: `templates/recruiter-film-v11/`.
 
 | Aussage | Grafik | Lesezeit |
@@ -260,7 +260,7 @@ Vorlage: `templates/recruiter-film-v11/`.
 | Ihre Aufgaben: Suchen. Ansprechen. Überzeugen. | Video | 3,1 s |
 | Was Sie erwartet: Strukturierte Einarbeitung. | Stufen | 3,2 s |
 | Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung. | Weg | 4,3 s |
-| Modernes Arbeitsumfeld mit digitalen Recruitinglösungen. | Bildschirm mit Suche und Treffern | 4,1 s |
+| Modernes Arbeitsumfeld. · Microsoft 365 · Professionelle Recruiting-Software · KI-gestützte Tools | Bildschirm mit Suche und Treffern, goldener KI-Funke mit der letzten Zeile | 4,7 s |
 | Über uns: Etablierte Personalberatung seit 1992. | Glas-Karte 33 Jahre · 2 Niederlassungen + SZ-Siegel | 5,0 s |
 | Vermittlung in Festanstellung. Keine Zeitarbeit (Arbeitnehmerüberlassung). | Vertrag | 3,6 s |
 | Spezialisiert auf Gebäude- und Versorgungstechnik. Schlüsselbranchen der Energiewende. | Gebäude + Leitung | 4,1 s |

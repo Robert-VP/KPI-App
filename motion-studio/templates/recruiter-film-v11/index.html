@@ -150,7 +150,7 @@ const S = {
   bEb: bt(11), bIn: [bt(11.5), bt(12)],
   dirEb: bt(21), dirIn: [bt(21.5), bt(22.5), bt(23.5), bt(24.25), bt(25)], dirOut: bt(35), aufEb: bt(35.5), aufIn: [bt(36), bt(37), bt(38)],
   g: bt(47), g1: bt(47), g1In: [bt(47.5), bt(48.5)], g1Out: bt(57), g2: bt(57.5), g2In: [bt(58), bt(58.75), bt(59.5), bt(60.25)], g2Out: bt(71),
-  g2b: bt(71.5), g2bIn: [bt(72), bt(72.75), bt(73.5)], g2bOut: bt(83.5),
+  g2b: bt(71.5), g2bIn: [bt(72), bt(72.5), bt(73), bt(73.5)], g2bOut: bt(83.5),
   g3: bt(84), g3In: [bt(84.5), bt(85.25), bt(86)], g3Out: bt(98), g4: bt(98.5), g4In: [bt(99), bt(100), bt(101), bt(101.5)], g4Out: bt(110),
   g5: bt(110.5), g5In: [bt(111), bt(112), bt(113), bt(113.75)], gOut: bt(124) + 0.4,
 };
@@ -244,6 +244,7 @@ function typeBlock(items, outT, y0 = textZone.y, exit = 'crush', until = Infinit
     y += (i ? items[i - 1].size * 0.24 : 0) + it.size * 0.96; const s = springType(t - it.t0, it.k || 180);
     if (s <= 0) return;
     ctx.save(); ctx.beginPath(); ctx.rect(0, y - it.size * 1.1, W, it.size * 1.5); ctx.clip(); ctx.translate(M, y + (1 - s) * it.size * 1.15);
+    if (it.bullet) { ctx.fillStyle = CI.gold; tri(it.size * 0.32, -it.size * 0.34, it.size * 0.46, false); ctx.translate(it.size * 0.95, 0); }
     ctx.font = `${it.weight || 800} ${it.size}px ${FF}`; drawMarked(it.txt, 0, 0, it.color, it.size, it.t0);
     const mw = ctx.measureText(it.txt).width, uy = /[gjpqyß,;]/.test(it.txt) ? it.size * 0.3 : it.size * 0.11;   // Linie unter die Unterlängen
     if (it.after) { ctx.font = `700 ${it.after.size}px ${FF}`; ctx.fillStyle = it.after.color; ctx.fillText(it.after.txt, mw + it.size * 0.16, 0); }
@@ -292,8 +293,10 @@ function drawDirekt() {
 
 /* ---------- 4 Was Sie erwartet (Marine): drei Aussagen mit eigener Grafik ---------- */
 const gEbY = textZone.y + eyS, gY = textZone.y + eyS * 1.9;
-const gS = Math.min(fit([...VT.einarbeitung, ...VT.entwicklung, ...VT.digital, ...VT.etabliert, ...J.ueberUns.fest], SB * 0.095), Math.floor((textZone.y + textZone.h + H * 0.05 - gY) / 5.0));
+const gSizeRef = ['Modernes Arbeitsumfeld', 'mit digitalen', 'Recruitinglösungen.'];   // Größen-Referenz (unverändert seit Version 11)
+const gS = Math.min(fit([...VT.einarbeitung, ...VT.entwicklung, ...gSizeRef, ...VT.etabliert, ...J.ueberUns.fest], SB * 0.095), Math.floor((textZone.y + textZone.h + H * 0.05 - gY) / 5.0));
 const gS2 = Math.min(fit(J.ueberUns.keine, gS * 0.7, 700), Math.round(gS * 0.7));
+const gSL = Math.min(fit(VT.digital.punkte.map((x) => '    ' + x), gS * 0.72, 700), Math.round(gS * 0.72));
 const gS5 = Math.min(fit(J.ueberUns.branche, gS), gS), gS5b = Math.min(fit(J.ueberUns.brancheSub, gS5 * 0.8, 700), Math.round(gS5 * 0.8));
 const IC = Math.min(W * 0.46, H * 0.24), ICX = W / 2, ICY = H * 0.37;
 const outS = (t0) => (t >= t0 ? clamp(springType(t - t0, 220)) : 0);
@@ -305,7 +308,7 @@ function drawVorteile() {
   const blk = (lines, ins, outT, exit) => typeBlock(lines.map((txt, i) => ({ txt, size: gS, color: WHITE, t0: ins[i] })), outT, gY, exit);
   if (t < S.g2) blk(VT.einarbeitung, S.g1In, S.g1Out, 'left');
   if (t >= S.g2 - 0.3 && t < S.g2b) blk(VT.entwicklung, S.g2In, S.g2Out, 'left');
-  if (t >= S.g2b - 0.3 && t < S.g3) blk(VT.digital, S.g2bIn, S.g2bOut, 'left');
+  if (t >= S.g2b - 0.3 && t < S.g3) typeBlock([{ txt: VT.digital.titel, size: gS, color: WHITE, t0: S.g2bIn[0] }, ...VT.digital.punkte.map((txt, i) => ({ txt, size: gSL, color: LBLUE, weight: 700, t0: S.g2bIn[1 + i], bullet: true }))], S.g2bOut, gY, 'left');
   if (t >= S.g3 - 0.3 && t < S.g4) blk(VT.etabliert, S.g3In, S.g3Out, 'left');
   if (t >= S.g4 - 0.3 && t < S.g5) typeBlock([...J.ueberUns.fest.map((txt, i) => ({ txt, size: gS, color: WHITE, t0: S.g4In[i] })), ...J.ueberUns.keine.map((txt, i) => ({ txt, size: gS2, color: LBLUE, weight: 700, t0: S.g4In[2 + i] }))], S.g4Out, gY, 'left');
   if (t >= S.g5 - 0.3) typeBlock([...J.ueberUns.branche.map((txt, i) => ({ txt, size: gS5, color: WHITE, t0: S.g5In[i] })), ...J.ueberUns.brancheSub.map((txt, i) => ({ txt, size: gS5b, color: LBLUE, weight: 700, t0: S.g5In[2 + i] }))], Infinity, gY, 'none');
@@ -322,6 +325,8 @@ function drawG2bIcon() {
   ctx.strokeStyle = LINE; ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(sx + sh * 0.55, sy + sh * 0.46, sh * 0.2, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx + sh * 0.69, sy + sh * 0.6); ctx.lineTo(sx + sh * 0.82, sy + sh * 0.74); ctx.stroke();
   const ty = clamp((t - S.g2b - 0.3) / 0.8); ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(sx + sh * 1.1, sy + sh * 0.41, sw * 0.5 * ty, sh * 0.18);
   if (ty < 1 || Math.floor(t * 2.5) % 2 === 0) ctx.fillRect(sx + sh * 1.15 + sw * 0.5 * ty, sy + sh * 0.25, lw, sh * 0.5);
+  const kp = clamp(sp(S.g2bIn[3] + 0.15, 240, 14));   // KI: goldener Funke oben rechts, erscheint mit der KI-Zeile
+  if (kp > 0) { const kx = mx + mw * 0.9, ky = my + mh * 0.08, kr = IC * 0.07 * kp * (1 + 0.08 * Math.sin(t * 4)); ctx.save(); ctx.fillStyle = CI.gold; ctx.translate(kx, ky); for (const [sx, sc] of [[0, 1], [-1.15, 0.45]]) { ctx.save(); ctx.translate(sx * kr, sx * kr * -0.6); ctx.scale(sc, sc); ctx.beginPath(); for (let q = 0; q < 8; q++) { const a = q * Math.PI / 4, rad = q % 2 ? kr * 0.28 : kr; ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); } ctx.closePath(); ctx.fill(); ctx.restore(); } ctx.restore(); }
   for (let r = 0; r < 3; r++) {
     const p = clamp(sp(S.g2b + 1.0 + r * 0.18, 220, 20)); if (p <= 0) continue; const ry = sy + sh * 1.55 + r * mh * 0.22, rh = mh * 0.16, ox = (1 - p) * mw * 0.3;
     ctx.save(); ctx.globalAlpha *= p; const hi = r === 1 && t >= S.g2b + 1.8;
