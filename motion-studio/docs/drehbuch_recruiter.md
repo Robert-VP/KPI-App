@@ -213,3 +213,10 @@ Ablauf:
 | Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
 | Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
 | Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |
+
+---
+
+# Version 9 (15.10.2026) — ohne Profil-Szene, Kennzahl nur „33 Jahre Marktkenntnis“, 71,6 s
+
+Feedback zu Version 8: „Anzahl Stellen und Besetzungsquote weg. Kommunikativ, agil und motiviert auch weg.“
+Vorlage: `templates/recruiter-film-v9/`. Ablauf wie Version 8 ohne die Profil-Szene; die Glas-Karte zeigt nur noch 33 Jahre Marktkenntnis, darüber das Siegel „Beste Personalberater 2026 — SZ-Institut“. Auf „Ihre Aufgaben“ folgt direkt „Was Sie erwartet“.
