@@ -244,3 +244,27 @@ Begriffe: „Arbeitnehmerüberlassung“ ist der gesetzliche Begriff (AÜG). „
 | Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
 | Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
 | Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |
+
+---
+
+# Version 11 (15.10.2026) — je drei Punkte in „Was Sie erwartet“ und „Über uns“, 91,7 s
+
+Entscheidungen: „Über uns“ Punkt 3 = „Spezialisiert auf Gebäude- und Versorgungstechnik. Schlüsselbranchen der Energiewende.“ (Oberbegriff der Website: Technische Gebäudeausrüstung & Versorgungstechnik). „Was Sie erwartet“ Punkt 3 = „Modernes Arbeitsumfeld mit digitalen Recruitinglösungen.“ (belegt durch Recruiting-Datenbank, LinkedIn/XING laut Anzeige und die eigenen VP-Tools).
+Vorlage: `templates/recruiter-film-v11/`.
+
+| Aussage | Grafik | Lesezeit |
+|---|---|---|
+| Sie überzeugen am Telefon? | Video | 3,0 s |
+| In eigener Sache · Recruiter (m/w/d) gesucht! | hell, Motiv | 3,0 s |
+| Echte Direktansprache · Wir warten nicht auf Bewerbungen. Wir identifizieren und gewinnen gezielt Kandidaten. | Video | 4,1 s |
+| Ihre Aufgaben: Suchen. Ansprechen. Überzeugen. | Video | 3,1 s |
+| Was Sie erwartet: Strukturierte Einarbeitung. | Stufen | 3,2 s |
+| Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung. | Weg | 4,3 s |
+| Modernes Arbeitsumfeld mit digitalen Recruitinglösungen. | Bildschirm mit Suche und Treffern | 4,1 s |
+| Über uns: Etablierte Personalberatung seit 1992. | Glas-Karte 33 Jahre · 2 Niederlassungen + SZ-Siegel | 5,0 s |
+| Vermittlung in Festanstellung. Keine Zeitarbeit (Arbeitnehmerüberlassung). | Vertrag | 3,6 s |
+| Spezialisiert auf Gebäude- und Versorgungstechnik. Schlüsselbranchen der Energiewende. | Gebäude + Leitung | 4,1 s |
+| Anzeige · Pille Ahlen / Erste Recruiting-Erfahrung / Quereinstieg | Anzeige | 3,0 / 3,0 / 4,0 s |
+| Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
+| Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
+| Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |

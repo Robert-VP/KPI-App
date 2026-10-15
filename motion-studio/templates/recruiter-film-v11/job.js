@@ -1,4 +1,5 @@
-// Recruiter (m/w/d) in eigener Sache – Version 11 (in Arbeit): wie Version 10 plus „Über uns“ Punkt 3 Branchen. Version 10: wie Version 9, dazu 2 Niederlassungen (Ahlen, Stuttgart),
+// Recruiter (m/w/d) in eigener Sache – Version 11: wie Version 10 plus „Was Sie erwartet“ Punkt 3 (digitales Arbeitsumfeld)
+// und „Über uns“ Punkt 3 (Gebäude- und Versorgungstechnik). Version 10: wie Version 9, dazu 2 Niederlassungen (Ahlen, Stuttgart),
 // Vermittlung in Festanstellung (keine Arbeitnehmerüberlassung) und der vollständige Direktansprache-Satz der Website.
 // Elemente von voss-partner.de:
 // Hero-Video (Drohnenflug über TGA-Dachzentrale) als Marine-Bühne, „Echte Direktansprache“, Glas-Karte mit Kennzahlen + SZ-Siegel.
@@ -9,7 +10,7 @@ window.JOB = {
   untertitel: 'Inhabergeführt in zweiter Generation · Ahlen (Westfalen)', region: 'Ahlen (Westfalen)', projektnr: '',
   qrUrl: '', web: 'voss-partner.de', telefon: 'Telefon 02528 950177',
   fusszusatz: 'Vertrauliche Kontaktaufnahme garantiert.', claim: true, alarm: false, motiv: 'dreiecke', seed: 20260714, dichte: 110,
-  kickerScale: 100, regionSize: 100, titleScale: 100, textY: 0, duration: 85.9, bpm: 128,
+  kickerScale: 100, regionSize: 100, titleScale: 100, textY: 0, duration: 91.7, bpm: 128,
   // Film-Texte (durchgehend Sie)
   hook1: 'Sie überzeugen|am Telefon?',                                   // | = Zeilenumbruch
   intro: { eyebrow: 'In eigener Sache', job: 'Recruiter', mwd: '(m/w/d)', gesucht: 'gesucht!' },
@@ -19,6 +20,7 @@ window.JOB = {
     eyebrow: 'Was Sie erwartet',
     einarbeitung: ['Strukturierte', 'Einarbeitung.'],
     entwicklung: ['Möglichkeiten zur', 'persönlichen und', 'fachlichen', 'Weiterentwicklung.'],
+    digital: ['Modernes Arbeitsumfeld', 'mit digitalen', 'Recruitinglösungen.'],
     etabliert: ['Etablierte', 'Personalberatung', 'seit 1992.'],
   },
   // Kennzahlen und Auszeichnung wie auf voss-partner.de (Startseite)

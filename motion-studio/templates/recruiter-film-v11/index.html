@@ -121,8 +121,9 @@ let QR = null;
 if (qrAn) { try { const q = qrcode(0, 'M'); q.addData(qrUrl); q.make(); const n = q.getModuleCount(); const cell = Math.max(2, Math.floor(qrQs / (n + 8))); const pad = Math.round((qrQs - cell * n) / 2); const mods = []; const finder = (r, cc) => (r < 7 && cc < 7) || (r < 7 && cc >= n - 7) || (r >= n - 7 && cc < 7); for (let r = 0; r < n; r++) for (let cc = 0; cc < n; cc++) if (q.isDark(r, cc)) mods.push({ r, cc, f: finder(r, cc) }); QR = { n, cell, pad, mods, bx: Math.round(W - M - qrQs), by: Math.round(footTop - qrChh * 0.5) }; } catch (e) { QR = null; } }
 
 /* ============================================================
-   FILM „Recruiter (m/w/d) gesucht!“ – Version 11 (in Arbeit), 128 BPM
-   Neu: „Über uns“ Punkt 3 – Spezialisiert auf Gebäude- und Versorgungstechnik. Schlüsselbranchen der Energiewende.
+   FILM „Recruiter (m/w/d) gesucht!“ – Version 11, 128 BPM, 91,7 s
+   Neu: „Was Sie erwartet“ Punkt 3 – Modernes Arbeitsumfeld mit digitalen Recruitinglösungen.
+        „Über uns“ Punkt 3 – Spezialisiert auf Gebäude- und Versorgungstechnik. Schlüsselbranchen der Energiewende.
    Basis Version 10, 79,5 s
    Neu gegenüber Version 9: voller Direktansprache-Satz der Website, Glas-Karte mit 33 Jahren und 2 Niederlassungen (Ahlen · Stuttgart),
    „Über uns: Vermittlung in Festanstellung. Keine Zeitarbeit (Arbeitnehmerüberlassung).“
@@ -144,20 +145,21 @@ await new Promise((r) => { logoW.onload = r; logoW.onerror = r; });
 
 /* ---------- Ablauf (auf dem Beat-Raster, 1 Beat = 60/128 s) ---------- */
 const S = {
-  w: [bt(10), bt(20), bt(46), bt(111.5)],                 // Mosaik-Übergänge
+  w: [bt(10), bt(20), bt(46), bt(124)],                 // Mosaik-Übergänge
   aIn: [bt(0.5), bt(1.5)],
   bEb: bt(11), bIn: [bt(11.5), bt(12)],
   dirEb: bt(21), dirIn: [bt(21.5), bt(22.5), bt(23.5), bt(24.25), bt(25)], dirOut: bt(35), aufEb: bt(35.5), aufIn: [bt(36), bt(37), bt(38)],
   g: bt(47), g1: bt(47), g1In: [bt(47.5), bt(48.5)], g1Out: bt(57), g2: bt(57.5), g2In: [bt(58), bt(58.75), bt(59.5), bt(60.25)], g2Out: bt(71),
-  g3: bt(71.5), g3In: [bt(72), bt(72.75), bt(73.5)], g3Out: bt(85.5), g4: bt(86), g4In: [bt(86.5), bt(87.5), bt(88.5), bt(89)], g4Out: bt(97.5),
-  g5: bt(98), g5In: [bt(98.5), bt(99.5), bt(100.5), bt(101.25)], gOut: bt(111.5) + 0.4,
+  g2b: bt(71.5), g2bIn: [bt(72), bt(72.75), bt(73.5)], g2bOut: bt(83.5),
+  g3: bt(84), g3In: [bt(84.5), bt(85.25), bt(86)], g3Out: bt(98), g4: bt(98.5), g4In: [bt(99), bt(100), bt(101), bt(101.5)], g4Out: bt(110),
+  g5: bt(110.5), g5In: [bt(111), bt(112), bt(113), bt(113.75)], gOut: bt(124) + 0.4,
 };
 const SW = 0.37;                                                 // ab hier ist das Bild vom Mosaik bedeckt → Szenenwechsel
 S.ad = S.w[3] + SW;
 const T = {   // Anzeige und Ende (Namen wie in der Anzeigen-Vorlage)
-  kick: bt(113), title: bt(113.5), mwd: bt(114.5), sub: bt(114.5), pill: bt(115.5), pillA: bt(124.5), pillB: bt(132.5), pillBack: 1e9,
-  foot: bt(115.5), claim: bt(116.5), dot: bt(120.5), goldEnd: 1e9,
-  adOut: bt(142.5), eb: bt(143.5), q1a: bt(144), q1b: bt(145), q1out: bt(153.5), q2a: bt(154.5), q2b: bt(155.5), q2c: bt(156.5), telHi: bt(157), q2out: bt(166.5), q3a: bt(167.5), q3b: bt(168.5), pix: bt(171),
+  kick: bt(125.5), title: bt(126), mwd: bt(127), sub: bt(127), pill: bt(128), pillA: bt(137), pillB: bt(145), pillBack: 1e9,
+  foot: bt(128), claim: bt(129), dot: bt(133), goldEnd: 1e9,
+  adOut: bt(155), eb: bt(156), q1a: bt(156.5), q1b: bt(157.5), q1out: bt(166), q2a: bt(167), q2b: bt(168), q2c: bt(169), telHi: bt(169.5), q2out: bt(179), q3a: bt(180), q3b: bt(181), pix: bt(183.5),
 };
 const scene = () => { let i = 0; while (i < S.w.length && t >= S.w[i] + SW) i++; return [0, 1, 2, 4, 5][i]; };   // 3 (Profil) entfällt   // 0 Hook, 1 gesucht, 2 Aufgaben, 3 Profil, 4 Vorteile, 5 Anzeige
 const dark = () => [0, 2, 4].includes(scene());
@@ -290,22 +292,46 @@ function drawDirekt() {
 
 /* ---------- 4 Was Sie erwartet (Marine): drei Aussagen mit eigener Grafik ---------- */
 const gEbY = textZone.y + eyS, gY = textZone.y + eyS * 1.9;
-const gS = Math.min(fit([...VT.einarbeitung, ...VT.entwicklung, ...VT.etabliert, ...J.ueberUns.fest], SB * 0.095), Math.floor((textZone.y + textZone.h + H * 0.05 - gY) / 5.0));
+const gS = Math.min(fit([...VT.einarbeitung, ...VT.entwicklung, ...VT.digital, ...VT.etabliert, ...J.ueberUns.fest], SB * 0.095), Math.floor((textZone.y + textZone.h + H * 0.05 - gY) / 5.0));
 const gS2 = Math.min(fit(J.ueberUns.keine, gS * 0.7, 700), Math.round(gS * 0.7));
 const gS5 = Math.min(fit(J.ueberUns.branche, gS), gS), gS5b = Math.min(fit(J.ueberUns.brancheSub, gS5 * 0.8, 700), Math.round(gS5 * 0.8));
 const IC = Math.min(W * 0.46, H * 0.24), ICX = W / 2, ICY = H * 0.37;
 const outS = (t0) => (t >= t0 ? clamp(springType(t - t0, 220)) : 0);
 function drawVorteile() {
   if (scene() !== 4) return;
-  drawG1Icon(); drawG2Icon(); drawStats(); drawG4Icon(); drawG5Icon();
+  drawG1Icon(); drawG2Icon(); drawG2bIcon(); drawStats(); drawG4Icon(); drawG5Icon();
   eyebrow(VT.eyebrow, gEbY, eyS, S.g, LBLUE, S.g3);
   eyebrow(J.ueberUns.eyebrow, gEbY, eyS, S.g3, LBLUE);
   const blk = (lines, ins, outT, exit) => typeBlock(lines.map((txt, i) => ({ txt, size: gS, color: WHITE, t0: ins[i] })), outT, gY, exit);
   if (t < S.g2) blk(VT.einarbeitung, S.g1In, S.g1Out, 'left');
-  if (t >= S.g2 - 0.3 && t < S.g3) blk(VT.entwicklung, S.g2In, S.g2Out, 'left');
+  if (t >= S.g2 - 0.3 && t < S.g2b) blk(VT.entwicklung, S.g2In, S.g2Out, 'left');
+  if (t >= S.g2b - 0.3 && t < S.g3) blk(VT.digital, S.g2bIn, S.g2bOut, 'left');
   if (t >= S.g3 - 0.3 && t < S.g4) blk(VT.etabliert, S.g3In, S.g3Out, 'left');
   if (t >= S.g4 - 0.3 && t < S.g5) typeBlock([...J.ueberUns.fest.map((txt, i) => ({ txt, size: gS, color: WHITE, t0: S.g4In[i] })), ...J.ueberUns.keine.map((txt, i) => ({ txt, size: gS2, color: LBLUE, weight: 700, t0: S.g4In[2 + i] }))], S.g4Out, gY, 'left');
   if (t >= S.g5 - 0.3) typeBlock([...J.ueberUns.branche.map((txt, i) => ({ txt, size: gS5, color: WHITE, t0: S.g5In[i] })), ...J.ueberUns.brancheSub.map((txt, i) => ({ txt, size: gS5b, color: LBLUE, weight: 700, t0: S.g5In[2 + i] }))], Infinity, gY, 'none');
+}
+// G2b Digitales Arbeitsumfeld: Bildschirm mit Suchfeld, Treffer fliegen ein, einer wird gold markiert
+function drawG2bIcon() {
+  if (t < S.g2b || t > S.g2bOut + 0.6) return; const o = outS(S.g2bOut), s = clamp(sp(S.g2b, 170, 20)) * (1 - o); if (s <= 0.01) return;
+  ctx.save(); ctx.translate(ICX, ICY); const k = 0.85 + 0.15 * s; ctx.scale(k, k); ctx.globalAlpha = clamp(s * 1.4);
+  const lw = Math.max(2, IC * 0.014), mw = IC * 1.0, mh = IC * 0.66, mx = -mw / 2, my = -IC * 0.42, NAV = '#1D4B78', LINE = 'rgba(255,255,255,0.85)';
+  rr(mx, my, mw, mh, IC * 0.04); ctx.fillStyle = NAV; ctx.fill(); ctx.lineWidth = lw; ctx.strokeStyle = LINE; ctx.stroke();
+  ctx.fillStyle = LINE; ctx.fillRect(-IC * 0.04, my + mh, IC * 0.08, IC * 0.09); rr(-IC * 0.2, my + mh + IC * 0.09, IC * 0.4, lw * 2, lw); ctx.fill();
+  const sx = mx + mw * 0.07, sy = my + mh * 0.1, sw = mw * 0.86, sh = mh * 0.16;
+  rr(sx, sy, sw, sh, sh / 2); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fill();
+  ctx.strokeStyle = LINE; ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(sx + sh * 0.55, sy + sh * 0.46, sh * 0.2, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx + sh * 0.69, sy + sh * 0.6); ctx.lineTo(sx + sh * 0.82, sy + sh * 0.74); ctx.stroke();
+  const ty = clamp((t - S.g2b - 0.3) / 0.8); ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(sx + sh * 1.1, sy + sh * 0.41, sw * 0.5 * ty, sh * 0.18);
+  if (ty < 1 || Math.floor(t * 2.5) % 2 === 0) ctx.fillRect(sx + sh * 1.15 + sw * 0.5 * ty, sy + sh * 0.25, lw, sh * 0.5);
+  for (let r = 0; r < 3; r++) {
+    const p = clamp(sp(S.g2b + 1.0 + r * 0.18, 220, 20)); if (p <= 0) continue; const ry = sy + sh * 1.55 + r * mh * 0.22, rh = mh * 0.16, ox = (1 - p) * mw * 0.3;
+    ctx.save(); ctx.globalAlpha *= p; const hi = r === 1 && t >= S.g2b + 1.8;
+    rr(sx + ox, ry, sw, rh, rh * 0.25); ctx.fillStyle = hi ? 'rgba(232,195,60,0.18)' : 'rgba(255,255,255,0.07)'; ctx.fill(); if (hi) { ctx.strokeStyle = CI.gold; ctx.lineWidth = lw; ctx.stroke(); }
+    ctx.fillStyle = hi ? CI.gold : 'rgba(255,255,255,0.6)'; ctx.beginPath(); ctx.arc(sx + ox + rh * 0.55, ry + rh / 2, rh * 0.28, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fillRect(sx + ox + rh * 1.1, ry + rh * 0.28, sw * 0.42, rh * 0.16); ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(sx + ox + rh * 1.1, ry + rh * 0.58, sw * 0.28, rh * 0.14);
+    if (hi) { const c = clamp(sp(S.g2b + 1.8, 260, 16)), cx = sx + sw - rh * 0.6, cy = ry + rh / 2, rr2 = rh * 0.3 * c; ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(cx, cy, rr2, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = CI.navy; ctx.lineWidth = rr2 * 0.25; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx - rr2 * 0.45, cy); ctx.lineTo(cx - rr2 * 0.1, cy + rr2 * 0.35); ctx.lineTo(cx + rr2 * 0.5, cy - rr2 * 0.35); ctx.stroke(); }
+    ctx.restore();
+  }
+  ctx.restore();
 }
 // G5 Branchen: Gebäude links, Versorgungsleitung mit Schieber rechts, goldene Verbindung mit wanderndem Impuls
 function drawG5Icon() {
