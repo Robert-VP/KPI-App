@@ -1,4 +1,5 @@
 // node render.mjs --fps 60 --dur 15 --sub 4 [--w 1080 --h 1920] [--page index.html] [--out out/silent.mp4] [--start 0]
+// --png captures lossless PNG (slow on video backgrounds); default is JPEG q95 (much faster, invisible after H.264)
 // --start S renders the segment S..S+dur (for splitting long films into parallel segments; join with ffmpeg concat)
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
@@ -12,6 +13,7 @@ const FPS = arg('fps', 60), DUR = arg('dur', 15), SUB = arg('sub', 4), START = a
 const W = arg('w', 1080), H = arg('h', 1920);
 const PAGE = resolve(sarg('page', 'index.html'));
 const OUT = sarg('out', 'out/silent.mp4');
+const PNG = argv.includes('--png'), SHOT = PNG ? { type: 'png' } : { type: 'jpeg', quality: arg('q', 95) };
 mkdirSync(dirname(OUT), { recursive: true });
 
 const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] }); // lets index.html import lib/motion.js as an ES module from file://
@@ -26,15 +28,15 @@ const vf = SUB > 1
   ? `tmix=frames=${SUB},select='eq(mod(n\\,${SUB})\\,${SUB - 1})',setpts=N/${FPS}/TB`
   : `setpts=N/${FPS}/TB`;
 const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS * SUB), '-i', '-',
-  '-vf', vf, '-r', String(FPS), '-c:v', 'libx264', '-crf', '16', '-pix_fmt', 'yuv420p', OUT],
+  '-vf', 'format=rgb24,' + vf, '-r', String(FPS), '-c:v', 'libx264', '-crf', '16', '-pix_fmt', 'yuv420p', OUT],
   { stdio: ['pipe', 'inherit', 'inherit'] });
 
 const total = Math.round(DUR * FPS * SUB);
 const t0 = Date.now();
 for (let i = 0; i < total; i++) {
   await page.evaluate((t) => window.seek(t), START + i / (FPS * SUB));
-  const png = await page.locator('#c').screenshot({ type: 'png' });
-  if (!ff.stdin.write(png)) await new Promise((r) => ff.stdin.once('drain', r));
+  const img = await page.locator('#c').screenshot(SHOT);
+  if (!ff.stdin.write(img)) await new Promise((r) => ff.stdin.once('drain', r));
   if (i % (FPS * SUB) === 0) console.log(`rendered ${i / (FPS * SUB)}s / ${DUR}s  (${((Date.now() - t0) / 1000).toFixed(0)}s elapsed)`);
 }
 ff.stdin.end();

@@ -36,4 +36,6 @@
 ## Repo notes
 - Headless Chromium is pre-installed for Playwright (PLAYWRIGHT_BROWSERS_PATH). Never run `playwright install`.
 - Quick preview: `node render.mjs --fps 30 --sub 1 --dur 15` (fast). Final: `node render.mjs --fps 60 --sub 4`.
+- Frames are captured as JPEG q95 by default (PNG encoding of video backgrounds is ~15x slower). `--png` forces lossless.
+- Long films: render in chunks with `--start` (e.g. 23 s each, frame-aligned) and join with the ffmpeg concat demuxer; a background task is stopped after 2 hours.
 - Keep real product assets in ./assets, references in ./refs, music in ./audio, docs in ./docs.
