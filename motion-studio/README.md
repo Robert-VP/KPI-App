@@ -48,6 +48,20 @@ bash scripts/mix.sh                                               # → out/fina
 bash scripts/formats.sh 15                                        # optional: 1:1 und 16:9
 ```
 
+## Stellenanzeige als Video (CI der VP-Tools-Anzeigen)
+
+`templates/stellenanzeige/` animiert das Anzeigen-Layout des Stellenanzeigengenerators 1:1
+(Maße, Schriftgrößen, Dreieck- oder Menschen-Motiv mit demselben Seed, Fußband, QR-Karte, Job-Alarm).
+
+1. `templates/stellenanzeige/job.js` ausfüllen (dieselben Felder wie im Generator: Jobtitel, Branche, Untertitel, Region, Projektnummer, QR-URL, Motiv, Seed).
+2. `bash scripts/anzeige.sh templates/stellenanzeige 12` → `out/anzeige_1080x1920.mp4`, `_1080x1350.mp4`, `_1080x1080.mp4` mit Musik und SFX.
+   Schnelle Vorschau: `bash scripts/anzeige.sh templates/stellenanzeige 12 fast`.
+3. Kritik-Loop wie gewohnt: `bash scripts/review.sh out/anzeige_1080x1920.mp4`.
+
+Timeline (12 s, 120 BPM): Motiv-Welle + Logo → Goldstrich + getippte Überzeile → Headline schiebt sich an der
+Grundlinie hoch → Untertitel, Region-Pille morpht → Fußband steigt → QR-Karte springt rein, Module füllen sich →
+Job-Alarm-Streifen → Halten mit Leben auf dem Beat (Pille, QR, Glocke). Letzter Frame = exakt der PNG-Export des Tools.
+
 ## Nächstes Video
 
 Für ein echtes Produkt die Vorlage `docs/prompts/04_product_launch.md` ausfüllen, oder kurz:

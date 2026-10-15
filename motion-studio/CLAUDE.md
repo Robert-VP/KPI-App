@@ -10,6 +10,11 @@
   Tiny overshoot on UI, none on type.
 
 ## Look
+- Default CI for every video in this studio is the Voß & Partner job-ad CI (docs/style_guide.md):
+  canvas #F4F5F6, ink #111418, marine #0F3556, steel #2E6FB2, gold #E8C33C as the only accent, Inter 400/600/700/800
+  from assets/vp-tools/font. Logo: assets/vp-tools/logo/logo-hell.png. Layout, motif and footer band follow
+  templates/stellenanzeige/index.html, which is a 1:1 port of the generator's renderCIHell().
+- A job-ad video: `bash scripts/anzeige.sh templates/stellenanzeige 12` (edit templates/stellenanzeige/job.js first).
 - Banned: centered title on a gradient, everything fading in,
   corner labels and frame borders, glow on UI, generic particle bursts.
 - One display font, one UI font. One accent color unless the brief says otherwise.

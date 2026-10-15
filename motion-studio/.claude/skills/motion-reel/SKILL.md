@@ -19,6 +19,10 @@ a reference (frame, video, or image folder), music (file or "synthesize").
 7. `node render.mjs` → sound → `bash scripts/mix.sh` (-14 LUFS) → out/final.mp4, all formats (`bash scripts/formats.sh`).
 8. Deliver final.mp4, contact.png, poster.png. Say what you'd improve next.
 
+## Job-ad videos (Voß & Partner)
+For a Stellenanzeige as video, do not design from scratch: fill templates/stellenanzeige/job.js and run
+`bash scripts/anzeige.sh templates/stellenanzeige 12`. The template is the generator's layout, animated. Default CI is docs/style_guide.md.
+
 ## Hard rules
 - Real product UI only. Never invent screens.
 - No Math.random, no timers, no CSS transitions in render mode.

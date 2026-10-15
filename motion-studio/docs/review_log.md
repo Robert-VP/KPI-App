@@ -21,3 +21,14 @@ Scores: hook 8 · phone readability 8 · motion 8 · variety 9 · brand n/a · s
 - Strip at 2.5–2.9 s: tile split shows clean blended motion blur, no tearing.
 - Phone sheet: every line readable at 360 px wide, including the mono captions.
 - Loudness: -14.1 LUFS integrated, true peak -0.7 dBTP (two-pass loudnorm with bus compressor + limiter).
+
+# Review log — Stellenanzeige als Video (templates/stellenanzeige, 12 s, 9:16)
+
+## Round 1 (preview 30 fps)
+Scores: hook 7 · phone readability 9 · motion 8 · variety 6 · brand accuracy 10 · sound sync 8
+- Last frame vs. the generator's real PNG export (same seed, same texts): identical layout, motif, band, QR.
+- Problem: 7.5–12 s dead (4.5 s without a new event). Fix: pill pulse at 8.5 s, QR bob at 10 s, bell rings at 11 s, cues added.
+
+## Round 2 (preview 30 fps)
+Scores: hook 7 · phone readability 9 · motion 8 · variety 8 · brand accuracy 10 · sound sync 8
+Hold phase now has a beat-timed event every 1.5 s. Go for the full render in 9:16, 4:5, 1:1.

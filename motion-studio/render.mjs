@@ -18,6 +18,7 @@ const page = await browser.newPage({ viewport: { width: W, height: H }, deviceSc
 page.on('pageerror', (e) => { console.error('page error:', e.message); });
 await page.goto('file://' + PAGE);
 await page.evaluate(() => document.fonts.ready);
+await page.waitForFunction(() => typeof window.seek === 'function', null, { timeout: 60000 });
 
 // --sub N renders N sub-steps per frame and blends them (tmix) = real motion blur.
 const vf = SUB > 1
