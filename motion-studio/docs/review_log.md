@@ -15,3 +15,9 @@ All four fixed. Seam frames 14.9 s and 0.0 s are both blank paper + dot grid. Go
 ## Would improve next
 - Loader bar step timing could hit the 16ths harder (tick SFX are on them, motion is slightly behind).
 - A real product would replace the "RENDER STATS" card with real UI crops (see docs/prompts/04_product_launch.md).
+
+## Round 3 (final 60 fps, 4 subframes, mixed)
+Scores: hook 8 · phone readability 8 · motion 8 · variety 9 · brand n/a · sound sync 8
+- Strip at 2.5–2.9 s: tile split shows clean blended motion blur, no tearing.
+- Phone sheet: every line readable at 360 px wide, including the mono captions.
+- Loudness: -14.1 LUFS integrated, true peak -0.7 dBTP (two-pass loudnorm with bus compressor + limiter).
