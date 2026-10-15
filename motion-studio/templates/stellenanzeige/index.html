@@ -125,7 +125,13 @@ if (qrAn) { try { const q = qrcode(0, 'M'); q.addData(qrUrl); q.make(); const n 
    · Takt 3–4 Untertitel+Pille · Takt 4–5 Fußband · Takt 5–6 QR · Takt 6 Job-Alarm · Rest: Halten mit Leben
    ============================================================ */
 let t = 0;
-const T = { motiv: bt(0), logo: bt(0.5), kick: bt(2), title: bt(3.5), mwd: bt(5.5), sub: bt(6), pill: bt(7), foot: bt(9), claim: bt(10), qr: bt(11), alarm: bt(13.5), hold: bt(15), pillPulse: bt(17), qrBob: bt(20), bell: bt(22) };
+const SWAP = !!(J.punkte && J.punkte.length) || !!J.hinweis;   // zweite Textebene vorhanden?
+const punkte = (J.punkte || []).join(' · '), hinweis = (J.hinweis || '').trim();
+const T = SWAP
+  ? { motiv: bt(0), logo: bt(0.5), kick: bt(2), title: bt(3.5), mwd: bt(5.5), sub: bt(6), pill: bt(7), foot: bt(9), claim: bt(10), qr: bt(11), alarm: bt(13.5), hold: bt(15), swapIn: bt(16), swapOut: bt(20), pillPulse: -99, qrBob: bt(22.5), bell: bt(18.5) }
+  : { motiv: bt(0), logo: bt(0.5), kick: bt(2), title: bt(3.5), mwd: bt(5.5), sub: bt(6), pill: bt(7), foot: bt(9), claim: bt(10), qr: bt(11), alarm: bt(13.5), hold: bt(15), pillPulse: bt(17), qrBob: bt(20), bell: bt(22) };
+// Textwechsel: 0 = erster Text, 1 = zweiter Text (Löschen und Tippen laufen über die Zeichenzahl)
+const swapPhase = () => (!SWAP || t < T.swapIn) ? 0 : (t < T.swapOut ? 1 : 2);
 // kurzer Impuls: Spring hoch und wieder zurück (für „Leben“ im Halten)
 const pulse = (t0, k = 260, d = 18) => clamp(spring(t - t0, k, d) - spring(t - t0 - 0.16, k, d));
 const sp = (t0, k = 170, d = 26) => spring(t - t0, k, d);
@@ -185,7 +191,15 @@ function drawText() {
   if (unter) {
     y += subS * 2.9; let subS2 = subS; ctx.font = `400 ${subS2}px ${FF}`;
     while (subS2 > 10 && ctx.measureText(unter).width > qrGrenze - M) { subS2 -= 1; ctx.font = `400 ${subS2}px ${FF}`; }
-    const n = typeN(unter, T.sub, 0.018); ctx.fillStyle = CI.grau; ctx.fillText(unter.slice(0, n), M, y);
+    let shown = unter.slice(0, typeN(unter, T.sub, 0.018));
+    if (SWAP && punkte) {
+      const ph = swapPhase(); const erase = (str, t0) => str.slice(0, Math.max(0, str.length - Math.floor(Math.max(0, t - t0) / 0.007)));
+      const eraseDur = (str) => str.length * 0.007;
+      if (ph === 1) { const e = erase(unter, T.swapIn); shown = e.length ? e : punkte.slice(0, typeN(punkte, T.swapIn + eraseDur(unter), 0.013)); }
+      if (ph === 2) { const e = erase(punkte, T.swapOut); shown = e.length ? e : unter.slice(0, typeN(unter, T.swapOut + eraseDur(punkte), 0.012)); }
+      let subS3 = subS; ctx.font = `400 ${subS3}px ${FF}`; while (subS3 > 10 && ctx.measureText(punkte).width > qrGrenze - M) { subS3 -= 1; ctx.font = `400 ${subS3}px ${FF}`; }
+    }
+    ctx.fillStyle = CI.grau; ctx.fillText(shown, M, y);
   }
   let pillX = M;
   if (projNr) {
@@ -199,8 +213,19 @@ function drawText() {
     const tw = ctx.measureText(region).width, capH = capHeight(pillS2), padX = pillS2 * 1.15, padY = pillS2 * 0.62, ph = capH + padY * 2, pw = tw + padX * 2, pt = y - ph;
     const grow = sp(T.pill, 160, 20); if (grow > 0) {
       // Container morpht aus einem Punkt zur Pille, Text kommt nach dem Start des Morphs; später ein kurzer Puls
-      const w = lerp(ph, pw, clamp(grow)); const pp = 1 + 0.07 * pulse(T.pillPulse); ctx.save(); ctx.translate(pillX + w / 2, pt + ph / 2); ctx.scale(pp, pp); ctx.translate(-(pillX + w / 2), -(pt + ph / 2)); rr(pillX, pt, w, ph, ph / 2); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.lineWidth = Math.max(1.5, W * 0.0016); ctx.strokeStyle = '#D6DCE4'; ctx.stroke();
-      const txt = clamp(sp(T.pill + 0.18, 200, 24)); if (txt > 0) { ctx.save(); ctx.beginPath(); rr(pillX, pt, w, ph, ph / 2); ctx.clip(); ctx.fillStyle = CI.navy; ctx.globalAlpha = Math.min(1, txt * 1.5); ctx.fillText(region, pillX + padX, pt + ph / 2 + capH / 2 + (1 - txt) * capH * 0.6); ctx.restore(); }
+      let w = lerp(ph, pw, clamp(grow)); let label = region, mixG = 0;
+      if (SWAP && hinweis) {
+        let hS = pillS2; ctx.font = `700 ${hS}px ${FF}`; while (hS > 10 && ctx.measureText(hinweis).width + hS * 2.3 > qrGrenze - pillX) { hS -= 1; ctx.font = `700 ${hS}px ${FF}`; }
+        ctx.font = `700 ${pillS2}px ${FF}`; const hw = ctx.measureText(hinweis).width + padX * 2;
+        mixG = track(t, [[0, 0], [T.swapIn, 1], [T.swapOut, 0]], 140, 19);
+        w = lerp(ph, lerp(pw, hw, clamp(mixG)), clamp(grow));
+        const phs = swapPhase(); const since = phs === 1 ? t - T.swapIn : (phs === 2 ? t - T.swapOut : 99);
+        if (phs === 1 && since > 0.22) label = hinweis; if (phs === 2 && since <= 0.22) label = hinweis;
+      } const pp = 1 + 0.07 * pulse(T.pillPulse); ctx.save(); ctx.translate(pillX + w / 2, pt + ph / 2); ctx.scale(pp, pp); ctx.translate(-(pillX + w / 2), -(pt + ph / 2)); rr(pillX, pt, w, ph, ph / 2); ctx.fillStyle = mixG > 0.5 ? CI.goldL : '#FFFFFF'; ctx.fill(); ctx.lineWidth = Math.max(1.5, W * 0.0016); ctx.strokeStyle = mixG > 0.5 ? CI.goldL : '#D6DCE4'; ctx.stroke();
+      // Text: beim Wechsel rutscht der alte nach unten raus, der neue von oben rein (geclippt)
+      let txt = clamp(sp(T.pill + 0.18, 200, 24)), slide = 0;
+      if (SWAP && hinweis) { const phs = swapPhase(); const since = phs === 1 ? t - T.swapIn : (phs === 2 ? t - T.swapOut : 99); if (since < 0.22) slide = clamp(since / 0.22); else if (since < 0.6) { txt = Math.min(txt, clamp(springType(since - 0.22, 160))); slide = 0; } }
+      if (txt > 0) { ctx.save(); ctx.beginPath(); rr(pillX, pt, w, ph, ph / 2); ctx.clip(); ctx.fillStyle = CI.navy; ctx.globalAlpha = Math.min(1, txt * 1.5); ctx.fillText(label, pillX + padX, pt + ph / 2 + capH / 2 + (1 - txt) * -capH * 0.9 + slide * capH * 1.6); ctx.restore(); }
       ctx.restore();
     }
   }
