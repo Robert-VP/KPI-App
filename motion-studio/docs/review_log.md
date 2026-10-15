@@ -32,3 +32,7 @@ Scores: hook 7 · phone readability 9 · motion 8 · variety 6 · brand accuracy
 ## Round 2 (preview 30 fps)
 Scores: hook 7 · phone readability 9 · motion 8 · variety 8 · brand accuracy 10 · sound sync 8
 Hold phase now has a beat-timed event every 1.5 s. Go for the full render in 9:16, 4:5, 1:1.
+
+## Delivered (final 60 fps, 4 subframes, -14.1 LUFS)
+- Leiter Supply Chain Management (CI reference), Außendienstmitarbeiter, Leiter Controlling: 9:16, 4:5, 1:1 each.
+- Recruiter (m/w/d) in eigener Sache: second text layer (bullets + highlight pill) 8.0–10.5 s, people motif. Contact sheet checked: swap completes, last frame = plain ad.
