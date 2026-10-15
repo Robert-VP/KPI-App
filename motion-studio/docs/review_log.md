@@ -48,3 +48,6 @@ Scores: hook 4 · phone readability 7 · motion 8 · variety 9 · brand accuracy
 ## Round 2 (frames at 0.6, 1.7, 4, 6.8, 8.6, 10.2, 17, 19.5 s)
 Scores: hook 8 · phone readability 8 · motion 8 · variety 9 · brand accuracy 9 · sound sync 8
 Hook fits, cone search and call read as scripted, ad block and footer identical to the template. Go for the full render.
+
+## Final (60 fps, 4 subframes, calm music, -14.1 LUFS, TP -3.3 dBTP)
+Delivered as out/film_recruiter_1080x1920.mp4, _1080x1350.mp4, _1080x1080.mp4. Contact sheet matches the script: hook fits, cone search, gold figures, call line and three words, ad builds, pill states, footer, gold figure in the motif at 19 s. No QR, no job alarm.
