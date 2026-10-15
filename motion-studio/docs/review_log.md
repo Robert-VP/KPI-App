@@ -71,3 +71,8 @@ Contrast cuts land on the beat, zoom-through reads as one move, flash cards read
 ## Version 4 final (60 fps, 4 subframes, 128 BPM, 33.0 s)
 First mix hit +1.9 dBTP (dense 128-BPM drums). Fix in scripts/mix.sh: safety limiter after loudnorm (limit -2 dBFS). Remixed from the silent renders: -14.1 LUFS, -0.4 dBTP.
 Contact sheet at 1 fps checked end to end: cuts, zoom-through, iris, wipe, growth, lock-on, flash cards, ad, Q&A, pixelated number all as scripted.
+
+# Review log — Recruiter-Film Version 5 (100 s, 120 BPM ruhig)
+Frames at every hold start and hold end (34 frames, 9:16) and 10 frames in 1:1: every statement fully built at hold start and still complete at hold end.
+1. Variable name clash with the reused end section (ebS) stopped the page. Fix: renamed.
+2. 1:1: first gold figure partly under the logo. Fix: gold targets start below the logo.

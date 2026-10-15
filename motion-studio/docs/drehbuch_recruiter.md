@@ -86,3 +86,40 @@ Was sich gegenüber Version 3 ändert:
 - **Recruiter gesucht!**: Schnitt auf Nahaufnahme der offenen Stelle, Fadenkreuz in Weiß rastet ein, Figur wird gold mit zwei Ringen.
 - **Direktansprache**: drei Flash-Karten, ein Wort pro Beat.
 - **Anzeige und Ende** wie Version 3 (Rufnummer wird ausgepixelt), nur schneller getaktet.
+
+---
+
+# Version 5 (15.10.2026) — Stelle früh, Bewerberperspektive, Sie-Anrede, ruhiges Lesetempo, 100 s
+
+Vorlage: `templates/recruiter-film-v5/` (Version 3 und 4 bleiben unverändert).
+Umsetzung des Briefings:
+1. **Stelle früh**: direkt nach „Sie überzeugen am Telefon?“ folgt ab Sekunde 5 „Wir suchen: Recruiter (m/w/d) in Ahlen.“
+2. **Bewerberperspektive**: drei eigene Aussagen unter „Was Sie erwartet“, jede mit eigener Grafik: Strukturierte Einarbeitung (drei Stufen mit Haken) · Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung (aufsteigender Weg mit zwei Stationen) · Etablierte Personalberatung seit 1992 (Zeitstrahl 1992 bis heute). Keine weiteren Leistungen ergänzt.
+3. **Sie-Anrede** durchgehend: „Melden Sie sich!“, „Wie Sie uns erreichen?“, „Finden Sie es heraus!“
+4. **Kunden-Szene entfernt**. Übergang jetzt: Feld mit Fadenkreuz → Zoom durch die goldene Figur → Iris öffnet direkt das Wachstumsdiagramm.
+5. **Wachstum neu**: ein Diagramm in der CI (Marine-Stahlblau-Balken, goldene Ziel-Linie, Marine-Kurve, Gold als Akzent), drei klar zugeordnete Zustände: *größer* = Balken wachsen deutlich mit goldener Zuwachs-Kappe · *schneller* = Kurve zeichnet sich beschleunigt mit goldener Tempo-Spur · *wachsen* = Kurve durchbricht die Ziel-Linie, Ring-Impuls, Fläche füllt sich, goldener Pfeil. Keine Personenfiguren.
+6. **Tempo**: 120 BPM, ruhige Musik, Zeilen steigen in ≈ 0,6 s auf, jede Aussage steht nach vollständigem Aufbau mindestens 3 s, lange Aussagen 4–6 s, Schlussbild 5,1 s.
+
+## Lesezeiten (Aufbau fertig → Ausblendung beginnt)
+
+| Aussage | Aufbau fertig | Ausblendung | Lesezeit |
+|---|---|---|---|
+| Sie überzeugen am Telefon? | 1,9 s | 5,0 s | 3,1 s |
+| Wir suchen: Recruiter (m/w/d) in Ahlen. | 6,9 s | 11,0 s | 4,1 s |
+| Die Richtigen werden überall gesucht. | 13,2 s | 17,4 s | 4,2 s |
+| Wir wollen größer werden. | 20,3 s | 24,0 s | 3,7 s |
+| Wir wollen schneller werden. | 25,0 s | 28,5 s | 3,5 s |
+| Wir wachsen! | 29,8 s | 33,0 s | 3,2 s |
+| Recruiter gesucht! | 35,1 s | 38,5 s | 3,4 s |
+| Direktansprache: Suchen. Ansprechen. Überzeugen. | 41,2 s | 44,5 s | 3,3 s |
+| Strukturierte Einarbeitung. | 46,7 s | 50,0 s | 3,3 s |
+| Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung. | 52,5 s | 57,5 s | 5,0 s |
+| Etablierte Personalberatung seit 1992. | 59,6 s | 63,0 s | 3,4 s |
+| Anzeige: Recruiter (m/w/d), Ahlen (Westfalen) | 67,6 s | 71,0 s | 3,4 s |
+| Pille: Erste Recruiting-Erfahrung | 71,6 s | 75,0 s | 3,4 s |
+| Pille: Oder Quereinstieg aus Vertrieb und Kundenberatung | 75,6 s | 80,0 s | 4,4 s |
+| Interessiert? Melden Sie sich! | 82,1 s | 85,5 s | 3,4 s |
+| Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | 87,9 s | 92,5 s | 4,6 s |
+| Schlussbild: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | 94,9 s | Ende 100 s | 5,1 s |
+
+Keine Aussage wird ausgeblendet, solange sie sich aufbaut. Ein- und Ausblendungen kommen zur Lesezeit hinzu.
