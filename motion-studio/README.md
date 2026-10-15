@@ -50,6 +50,8 @@ bash scripts/formats.sh 15                                        # optional: 1:
 
 ## Stellenanzeige als Video (CI der VP-Tools-Anzeigen)
 
+Referenz für den aktuellen Stand der CI ist die Anzeige „Leiter Supply Chain Management“ (`templates/stellenanzeige/jobs/supply-chain.js`, identisch mit `job.js`): Goldstrich vor der Überzeile, Job-Alarm-Streifen, Fußband mit QR-Karte. Weitere Anzeigen liegen als Job-Dateien in `templates/stellenanzeige/jobs/`.
+
 `templates/stellenanzeige/` animiert das Anzeigen-Layout des Stellenanzeigengenerators 1:1
 (Maße, Schriftgrößen, Dreieck- oder Menschen-Motiv mit demselben Seed, Fußband, QR-Karte, Job-Alarm).
 
