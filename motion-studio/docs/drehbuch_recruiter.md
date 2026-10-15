@@ -30,7 +30,9 @@ Alles bleibt im Anzeigen-CI: heller Canvas, Marine, Gold als einziger Akzent, In
 2. „30 Jahre die Richtigen gefunden.“ / „Jetzt fehlt noch einer.“
 3. „Sie überzeugen am Telefon?“ / „Dann sollten wir reden.“
 
-## Offene Punkte
-1. Hook 1, 2 oder 3?
-2. QR-Code behalten (Link zur Recruiter-Seite) oder weglassen?
-3. Länge 20 s in Ordnung, oder lieber 15 s (dann fällt Shot 4 „Der Anruf“ auf einen Takt zusammen)?
+## Entschieden (15.10.2026)
+1. Hook 3: „Sie überzeugen am Telefon?“ / „Dann sollten wir reden.“ – als vier kurze Zeilen, Schrift passt sich der Breite an.
+2. Kein QR-Code. Kein Job-Alarm. Kein Verweis auf andere Stellen.
+3. 20 Sekunden.
+
+Umsetzung: `templates/recruiter-film/` (job.js, index.html, cues.json). Render: `MUSIC_ARGS=--calm bash scripts/anzeige.sh templates/recruiter-film 20`.

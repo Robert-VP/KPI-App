@@ -36,3 +36,15 @@ Hold phase now has a beat-timed event every 1.5 s. Go for the full render in 9:1
 ## Delivered (final 60 fps, 4 subframes, -14.1 LUFS)
 - Leiter Supply Chain Management (CI reference), Außendienstmitarbeiter, Leiter Controlling: 9:16, 4:5, 1:1 each.
 - Recruiter (m/w/d) in eigener Sache: second text layer (bullets + highlight pill) 8.0–10.5 s, people motif. Contact sheet checked: swap completes, last frame = plain ad.
+
+# Review log — Recruiter-Film (templates/recruiter-film, 20 s, 9:16)
+
+## Round 1 (preview 30 fps)
+Scores: hook 4 · phone readability 7 · motion 8 · variety 9 · brand accuracy 9 · sound sync 8
+1. Hook clipped at the right edge (font too large). Fix: four short lines, auto-fit to width.
+2. Phone rings linger as faint circles until the end. Fix: rings live for 1 s only.
+3. Gold figures too small at phone size. Fix: 1.85× instead of 1.45×.
+
+## Round 2 (frames at 0.6, 1.7, 4, 6.8, 8.6, 10.2, 17, 19.5 s)
+Scores: hook 8 · phone readability 8 · motion 8 · variety 9 · brand accuracy 9 · sound sync 8
+Hook fits, cone search and call read as scripted, ad block and footer identical to the template. Go for the full render.
