@@ -220,3 +220,27 @@ Ablauf:
 
 Feedback zu Version 8: „Anzahl Stellen und Besetzungsquote weg. Kommunikativ, agil und motiviert auch weg.“
 Vorlage: `templates/recruiter-film-v9/`. Ablauf wie Version 8 ohne die Profil-Szene; die Glas-Karte zeigt nur noch 33 Jahre Marktkenntnis, darüber das Siegel „Beste Personalberater 2026 — SZ-Institut“. Auf „Ihre Aufgaben“ folgt direkt „Was Sie erwartet“.
+
+---
+
+# Version 10 (15.10.2026) — Niederlassungen, Festanstellung, voller Direktansprache-Satz, 79,5 s
+
+Feedback zu Version 9: 2 Niederlassungen (Ahlen, Stuttgart) in die Glas-Karte; „Vermittlung in Festanstellung“ ergänzen, keine Zeitarbeit; der Website-Satz „Wir warten nicht auf Bewerbungen. Wir identifizieren und gewinnen gezielt Kandidaten.“
+Vorlage: `templates/recruiter-film-v10/`.
+
+Begriffe: „Arbeitnehmerüberlassung“ ist der gesetzliche Begriff (AÜG). „Zeitarbeit“ und „Leiharbeit“ sagen umgangssprachlich dasselbe, „Mitarbeiter-/Personalleasing“ sind informelle Werbebegriffe. Das Gegenstück ist die Personalvermittlung in Festanstellung. Im Film: „Vermittlung in Festanstellung. Keine Zeitarbeit (Arbeitnehmerüberlassung).“
+
+| Aussage | Bühne | Lesezeit |
+|---|---|---|
+| Sie überzeugen am Telefon? | Video | 3,0 s |
+| In eigener Sache · Recruiter (m/w/d) gesucht! | hell, Motiv | 3,0 s |
+| Echte Direktansprache · Wir warten nicht auf Bewerbungen. Wir identifizieren und gewinnen gezielt Kandidaten. | Video | 4,1 s |
+| Ihre Aufgaben: Suchen. Ansprechen. Überzeugen. | Video | 3,1 s |
+| Was Sie erwartet: Strukturierte Einarbeitung. | Video, Stufen | 3,2 s |
+| Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung. | Video, Weg | 4,3 s |
+| Über uns: Etablierte Personalberatung seit 1992. + Glas-Karte (33 Jahre Marktkenntnis · 2 Niederlassungen Ahlen · Stuttgart) + SZ-Siegel | Video | 5,0 s |
+| Über uns: Vermittlung in Festanstellung. Keine Zeitarbeit (Arbeitnehmerüberlassung). | Video, Vertrag | 3,6 s |
+| Anzeige · Pille Ahlen / Erste Recruiting-Erfahrung / Quereinstieg | Anzeige | 3,0 / 3,0 / 4,0 s |
+| Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
+| Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
+| Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |
