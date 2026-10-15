@@ -1,0 +1,14 @@
+[
+ {"t":0.0,"sfx":"thump"},{"t":1.0,"sfx":"thump"},{"t":1.45,"sfx":"pop","pan":0.3},{"t":2.0,"sfx":"thump"},{"t":2.25,"sfx":"whoosh"},
+ {"t":2.5,"sfx":"tick","pan":-0.6},{"t":2.625,"sfx":"tick","pan":-0.4},{"t":2.75,"sfx":"tick","pan":-0.2},{"t":2.875,"sfx":"tick"},{"t":3.0,"sfx":"tick","pan":0.2},{"t":3.125,"sfx":"tick","pan":0.4},{"t":3.25,"sfx":"tick","pan":0.6},
+ {"t":2.5,"sfx":"pop","pan":-0.6},{"t":2.75,"sfx":"whoosh","pan":-0.3},{"t":3.25,"sfx":"whoosh","pan":0.3},{"t":3.75,"sfx":"whoosh","pan":-0.3},{"t":4.25,"sfx":"whoosh","pan":0.3},{"t":4.75,"sfx":"whoosh"},
+ {"t":5.25,"sfx":"ding"},{"t":5.75,"sfx":"ding","pan":-0.4},{"t":6.25,"sfx":"ding","pan":0.4},
+ {"t":6.0,"sfx":"tick"},{"t":6.0625,"sfx":"tick"},{"t":6.125,"sfx":"tick"},{"t":6.1875,"sfx":"tick"},{"t":6.25,"sfx":"tick"},{"t":6.3125,"sfx":"tick"},{"t":6.375,"sfx":"tick"},{"t":6.4375,"sfx":"tick"},{"t":6.5,"sfx":"tick"},{"t":6.5625,"sfx":"tick"},{"t":6.625,"sfx":"tick"},{"t":6.6875,"sfx":"tick"},{"t":6.75,"sfx":"tick"},{"t":6.8125,"sfx":"tick"},{"t":6.875,"sfx":"tick"},
+ {"t":8.0,"sfx":"whoosh","pan":-0.2},{"t":8.5,"sfx":"pop"},{"t":8.7,"sfx":"pop"},{"t":9.5,"sfx":"pop"},{"t":9.7,"sfx":"pop"},
+ {"t":9.0,"sfx":"thump"},{"t":9.5,"sfx":"thump"},{"t":10.0,"sfx":"thump"},
+ {"t":11.0,"sfx":"thump"},{"t":11.25,"sfx":"whoosh","pan":0.4},
+ {"t":11.5,"sfx":"tick"},{"t":11.55,"sfx":"tick"},{"t":11.6,"sfx":"tick"},{"t":11.65,"sfx":"tick"},{"t":11.7,"sfx":"tick"},{"t":11.75,"sfx":"tick"},{"t":11.8,"sfx":"tick"},{"t":11.85,"sfx":"tick"},{"t":11.9,"sfx":"tick"},{"t":11.95,"sfx":"tick"},{"t":12.0,"sfx":"tick"},{"t":12.05,"sfx":"tick"},{"t":12.1,"sfx":"tick"},{"t":12.15,"sfx":"tick"},{"t":12.2,"sfx":"tick"},
+ {"t":12.25,"sfx":"thump"},{"t":13.0,"sfx":"pop","pan":0.3},{"t":13.25,"sfx":"tick"},{"t":13.5,"sfx":"tick"},{"t":13.75,"sfx":"tick"},
+ {"t":14.0,"sfx":"pop","pan":-0.3},{"t":14.5,"sfx":"click","pan":-0.3},{"t":15.0,"sfx":"thump"},{"t":15.5,"sfx":"click","pan":-0.3},{"t":15.5,"sfx":"pop","pan":0.3},{"t":15.675,"sfx":"ding","pan":0.3},{"t":16.5,"sfx":"click","pan":-0.3},
+ {"t":18.0,"sfx":"pop","pan":0.3},{"t":19.0,"sfx":"ding","pan":0.4}
+]

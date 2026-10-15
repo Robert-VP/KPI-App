@@ -7,6 +7,7 @@ const arg = (k, d) => { const i = argv.indexOf('--' + k); return i > 0 ? Number(
 const sarg = (k, d) => { const i = argv.indexOf('--' + k); return i > 0 ? argv[i + 1] : d; };
 const BPM = arg('bpm', 120), DUR = arg('dur', 15), SR = 48000, SEED = arg('seed', 7);
 const OUT = sarg('out', 'out/music.wav');
+const CALM = argv.includes('--calm');
 const CUES = sarg('cues', 'cues.json');
 mkdirSync('out', { recursive: true });
 
@@ -60,9 +61,9 @@ const totalBeats = Math.ceil(DUR / beat);
 for (let b = 0; b < totalBeats; b++) {
   const t = b * beat, bar = Math.floor(b / 4), inBar = b % 4;
   kick(t);
-  if (inBar === 1 || inBar === 3) clap(t);
-  hat(t); hat(t + beat / 2, inBar === 3);
-  if (b >= 4) { bass(t, bassLine[b % 16], 0.2); bass(t + beat / 2, bassLine[b % 16] * (inBar === 2 ? 1.5 : 1), 0.12); }
+  if (!CALM && (inBar === 1 || inBar === 3)) clap(t);
+  if (CALM) { if (inBar % 2 === 0) hat(t); } else { hat(t); hat(t + beat / 2, inBar === 3); }
+  if (b >= 4) { if (CALM) { if (inBar === 0 || inBar === 2) bass(t, bassLine[b % 16], 0.3); } else { bass(t, bassLine[b % 16], 0.2); bass(t + beat / 2, bassLine[b % 16] * (inBar === 2 ? 1.5 : 1), 0.12); } }
   if (inBar === 0) pad(t, prog[bar % 4].map((f) => f * 2), beat * 3.6);
   if (b >= 8 && b % 2 === 1) pluck(t + beat / 4, prog[bar % 4][(b >> 1) % 3] * 4, (b % 4) - 1.5);
 }

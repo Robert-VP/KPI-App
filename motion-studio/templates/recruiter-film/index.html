@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Recruiter — Film</title>
+<style>
+  @font-face { font-family: 'Inter'; font-weight: 400; src: url('../../assets/vp-tools/font/inter-400.ttf'); }
+  @font-face { font-family: 'Inter'; font-weight: 600; src: url('../../assets/vp-tools/font/inter-600.ttf'); }
+  @font-face { font-family: 'Inter'; font-weight: 700; src: url('../../assets/vp-tools/font/inter-700.ttf'); }
+  @font-face { font-family: 'Inter'; font-weight: 800; src: url('../../assets/vp-tools/font/inter-800.ttf'); }
+  html, body { margin: 0; background: #F4F5F6; }
+  canvas { display: block; }
+</style>
+<script src="../../lib/qrcode.js"></script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { clamp, lerp, spring, track, springType, hash } from '../../lib/motion.js';
+
+/* ============================================================
+   Stellenanzeige als Film. Layout, Maße und Farben sind 1:1 aus
+   renderCIHell() des VP-Tools-Generators übernommen; jedes Element
+   bekommt nur noch eine Zeit. window.seek(t) ist eine reine Funktion.
+   ============================================================ */
+// Job-Datei: ?job=jobs/name.js (relativ zu diesem Ordner), sonst ./job.js
+await new Promise((res, rej) => { const q = new URLSearchParams(location.search).get('job'); const el = document.createElement('script'); el.src = q || './job.js'; el.onload = res; el.onerror = () => rej(new Error('job file not found: ' + el.src)); document.head.appendChild(el); });
+const J = window.JOB;
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+const W = window.innerWidth, H = window.innerHeight; c.width = W; c.height = H;
+const FF = "'Inter', 'Segoe UI', Arial, sans-serif";
+const CI = { bg: '#F4F5F6', ink: '#111418', steel: '#2E6FB2', navy: '#0F3556', steelHi: '#5E9DCD', grau: '#8A8F98',
+  fussNavy: '#0B1D33', gruen: '#2E7D32', crimson: '#8B1A3C', gold: '#E8C33C', goldL: '#FBF3D6' };
+const B = 0.5, bt = (n) => n * B;                  // 120 BPM
+
+await Promise.all(['400', '600', '700', '800'].map((w) => document.fonts.load(`${w} 40px Inter`)));
+const logo = new Image(); logo.src = '../../assets/vp-tools/logo/logo-hell.png';
+await new Promise((r) => { logo.onload = r; logo.onerror = r; });
+
+/* ---------- Helfer aus dem Tool ---------- */
+function ciRng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function ciMix(h1, h2, f) { const p = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; const a = p(h1), b = p(h2); return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(',')})`; }
+function measureLines(text, maxWidth) { const words = text.split(/\s+/); const lines = []; let line = ''; for (const word of words) { const test = line ? line + ' ' + word : word; if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; } else line = test; } if (line) lines.push(line); return lines; }
+function capHeight(fs) { const m = ctx.measureText('H'); return (m && m.actualBoundingBoxAscent) ? m.actualBoundingBoxAscent : fs * 0.72; }
+const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, Math.max(0, w), Math.max(0, h), Math.min(r, Math.max(0, w) / 2, Math.max(0, h) / 2)); };
+
+/* ---------- Layout (einmal, zeitunabhängig) ---------- */
+const M = Math.round(W * 0.09), footH = Math.round(H * 0.122), footTop = H - footH;
+const isLand = W > H * 1.15, SB = isLand ? Math.round(H * 1.35) : W;
+let logoBottom = Math.round(W * 0.045), L = null;
+if (logo.naturalWidth) { const ar = logo.naturalHeight / logo.naturalWidth; let lw = Math.round(SB * 0.145), lh = Math.round(lw * ar); const maxLh = Math.round(H * 0.19); if (lh > maxLh) { lh = maxLh; lw = Math.round(lh / ar); } L = { x: Math.round(W * 0.055), y: Math.round(Math.min(W, H) * 0.045), w: lw, h: lh }; logoBottom = L.y + lh; }
+const branche = (J.branche || '').split('\n').map((s) => s.trim()).filter(Boolean).join(' ');
+const jobRaw = (J.jobtitel || '').trim() || 'Jobtitel', unter = (J.untertitel || '').trim(), region = (J.region || '').trim();
+const projNr = (() => { const d = String(J.projektnr || '').replace(/\D/g, ''); return d ? 'VP-' + d : ''; })();
+let job = jobRaw, mwd = '(m/w/d)'; const mm = jobRaw.match(/\(\s*m\s*\/\s*w\s*\/\s*[dx](?:\s*\/\s*d)?\s*\)\s*$/i); if (mm) job = jobRaw.slice(0, mm.index).trim() || 'Jobtitel';
+const qrUrl = (J.qrUrl || '').trim(), qrAn = !!qrUrl;
+const qrQs = Math.round(Math.max(footH * 1.15, W * 0.11, isLand ? H * 0.30 : 0)), qrCapS = Math.max(11, Math.round(qrQs * 0.11)), qrCapH = Math.round(qrCapS * 1.5), qrChh = qrQs + qrCapH;
+const qrGrenze = qrAn ? (W - M - qrQs - Math.round(M * 0.4)) : (W - M);
+const kickS = Math.max(11, Math.round(SB * 0.022 * ((J.kickerScale || 100) / 100))), subS = Math.max(11, Math.round(SB * 0.024));
+const pillS = Math.max(11, Math.round(SB * 0.026 * (Math.min(170, Math.max(60, J.regionSize || 100)) / 100)));
+const maxW = (isLand && qrAn) ? (qrGrenze - M) : (W - M * 2), lhF = 1.08;
+const nonTitleH = (branche ? kickS * 2.3 : 0) + (unter ? subS * 3.1 : 0) + ((region || projNr) ? pillS * 5.1 : 0);
+const minTop = Math.max(Math.round(H * 0.28), logoBottom + Math.round(H * 0.03));
+const alarmAn = !!J.alarm, alarmH = alarmAn ? Math.round(H * 0.042) : 0, randUnten = Math.round(H * 0.075) + alarmH;
+const availH = footTop - randUnten - minTop;
+let titleS = Math.round(SB * 0.155); const minS = Math.max(18, Math.round(SB * 0.06)); let lines = [job];
+const splitTwo = (ls) => { if (!isLand && ls.length === 1 && /\s/.test(job)) { const w = job.split(/\s+/), k = Math.ceil(w.length / 2); return [w.slice(0, k).join(' '), w.slice(k).join(' ')]; } return ls; };
+while (true) {
+  ctx.font = `800 ${titleS}px ${FF}`; lines = splitTwo(measureLines(job, maxW));
+  ctx.font = `700 ${Math.round(titleS * 0.42)}px ${FF}`; const mwdW = ctx.measureText(mwd).width; ctx.font = `800 ${titleS}px ${FF}`;
+  const fitsW = lines.length <= 3 && lines.every((l) => ctx.measureText(l).width <= maxW) && ctx.measureText(lines[lines.length - 1]).width + titleS * 0.20 + mwdW <= maxW;
+  const fitsH = nonTitleH + lines.length * titleS * lhF <= availH;
+  if ((fitsW && fitsH) || titleS <= minS) break; titleS -= 4;
+}
+const ciScale = Math.min(140, Math.max(60, J.titleScale || 100)) / 100;
+if (ciScale !== 1) { titleS = Math.max(minS, Math.round(titleS * ciScale)); ctx.font = `800 ${titleS}px ${FF}`; lines = splitTwo(measureLines(job, maxW)); }
+const blockH = nonTitleH + lines.length * titleS * lhF;
+const yUnten = Math.max(footTop - randUnten - blockH, minTop);
+const ciPos = Math.min(100, Math.max(0, J.textY || 0));
+const yStart = Math.round(yUnten - (yUnten - minTop) * (ciPos / 100));
+const protectTop = yStart - Math.round(H * 0.03);
+
+/* ---------- Motiv vorberechnen (identischer Zufallsverbrauch wie im Tool) ---------- */
+const dichte = Math.min(140, Math.max(40, J.dichte || 100)) / 100, fadeBand = H * 0.10;
+const TRI = [], PEOPLE = [];
+{
+  const rnd = ciRng(J.seed || 20260714);
+  const fieldAt = (x, y) => { const cx = W * 1.02, cy = -H * 0.06, rx = W * 0.74, ry = H * 0.36; const d = Math.sqrt(((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2) / dichte; const wob = (Math.sin(x * 0.011 + y * 0.017) + Math.sin(y * 0.009 - x * 0.006)) * 0.09; return 1 - (d + wob) + (rnd() - 0.5) * 0.16; };
+  const fadeAt = (y, r, cc) => { if (y <= protectTop - fadeBand) return 1; const fade = Math.min(1, Math.max(0, (protectTop - y) / fadeBand)); const zh = ((Math.imul(r + 1, 73856093) ^ Math.imul(cc + 7, 19349663)) >>> 0) % 1000 / 1000; return (fade <= 0 || zh > fade) ? -1 : fade; };
+  if ((J.motiv || 'dreiecke') === 'menschen') {
+    const cell = Math.max(15, Math.round(W / 32)); const rows = Math.ceil((H * 0.42) / cell), cols = Math.ceil(W / cell) + 2;
+    for (let r = 0; r < rows; r++) for (let cc = -1; cc < cols; cc++) {
+      const x = cc * cell + (r % 2 ? cell * 0.5 : 0), y = r * cell + cell * 0.5; const t = fieldAt(x, y);
+      if (t <= 0.05) { rnd(); rnd(); continue; } if (t < 0.30 && rnd() > t / 0.30) { rnd(); continue; }
+      const fade = fadeAt(y, r, cc); if (fade < 0) { rnd(); rnd(); continue; }
+      const core = Math.min(1, Math.max(0, (t - 0.35) / 0.55)); const s = cell * (0.52 + 0.34 * core) * (0.92 + rnd() * 0.08); if (s < 5) continue;
+      const acc = rnd(); let col, richtig = false;
+      if (acc < 0.045) { col = CI.gold; richtig = true; } else if (acc < 0.065) { col = CI.crimson; richtig = true; } else if (acc < 0.085) { col = CI.gruen; richtig = true; }
+      else { const f = Math.min(1, Math.max(0, 1 - t)) * 0.75 + rnd() * 0.15; col = (acc < 0.5) ? ciMix(CI.steel, '#B9CFE2', f) : ciMix(CI.navy, '#93ABC1', f * 0.9); }
+      PEOPLE.push({ r, cc, x, y, s, t, col, richtig, core, alpha: Math.min(0.95, 0.38 + t * 0.55) * (0.45 + 0.55 * fade) * (richtig ? 1.08 : 1) });
+    }
+  } else {
+    const cell = Math.max(12, Math.round(W / 42)); const colStep = cell * 0.5, rowStep = cell * 0.866;
+    const rows = Math.ceil((H * 0.42) / rowStep), cols = Math.ceil(W / colStep) + 2;
+    for (let r = 0; r < rows; r++) for (let cc = -1; cc < cols; cc++) {
+      const x = cc * colStep, y = r * rowStep + rowStep * 0.5; const t = fieldAt(x, y);
+      if (t <= 0.05) { rnd(); rnd(); continue; } if (t < 0.30 && rnd() > t / 0.30) { rnd(); continue; }
+      const s = 0.94 + rnd() * 0.06; const core = Math.min(1, Math.max(0, (t - 0.35) / 0.55));
+      let size = Math.min(cell * (0.50 + 0.42 * core) * s, cell * 0.86);
+      const fade = fadeAt(y, r, cc); if (fade < 0) { rnd(); rnd(); continue; }
+      const acc = rnd(); let col;
+      if (acc < 0.02) col = CI.gruen; else if (acc < 0.04) col = CI.crimson; else if (acc < 0.06) col = CI.gold;
+      else { const f = Math.min(1, Math.max(0, 1 - t)) * 0.85 + rnd() * 0.15; col = (acc < 0.40) ? ciMix(CI.steelHi, '#EAF1F7', f) : ciMix(CI.navy, '#DCE7F1', f * 0.9); }
+      if (size < 1.6) continue;
+      TRI.push({ x, y, size, t, col, up: (r + cc) % 2 === 0, alpha: Math.min(0.80, 0.30 + t * 0.60) * (0.4 + 0.6 * fade) });
+    }
+  }
+}
+/* ---------- QR vorberechnen ---------- */
+let QR = null;
+if (qrAn) { try { const q = qrcode(0, 'M'); q.addData(qrUrl); q.make(); const n = q.getModuleCount(); const cell = Math.max(2, Math.floor(qrQs / (n + 8))); const pad = Math.round((qrQs - cell * n) / 2); const mods = []; const finder = (r, cc) => (r < 7 && cc < 7) || (r < 7 && cc >= n - 7) || (r >= n - 7 && cc < 7); for (let r = 0; r < n; r++) for (let cc = 0; cc < n; cc++) if (q.isDark(r, cc)) mods.push({ r, cc, f: finder(r, cc) }); QR = { n, cell, pad, mods, bx: Math.round(W - M - qrQs), by: Math.round(footTop - qrChh * 0.5) }; } catch (e) { QR = null; } }
+
+/* ============================================================
+   FILM „Recruiter in eigener Sache“ – 20 s, 120 BPM (docs/drehbuch_recruiter.md)
+   ============================================================ */
+let t = 0;
+const sp = (t0, k = 170, d = 26) => spring(t - t0, k, d);
+const pulse = (t0, k = 260, d = 18) => clamp(spring(t - t0, k, d) - spring(t - t0 - 0.16, k, d));
+const typeN = (str, t0, step) => t < t0 ? 0 : Math.min(str.length, Math.floor((t - t0) / step) + 1);
+const sstep = (x) => { x = clamp(x); return x * x * (3 - 2 * x); };
+const T = {
+  hook1: bt(0), hook2: bt(2), crush: bt(4), field: bt(4.5), logo: bt(5), cone: bt(5.5), coneStop: bt(10),
+  gold1: bt(10.5), gold2: bt(11.5), gold3: bt(12.5), eyebrow2: bt(12), line: bt(16), ring1: bt(17), ring2: bt(19),
+  wort: [bt(18), bt(19), bt(20)], crush2: bt(22), shrink: bt(22), kick: bt(23), title: bt(24.5), mwd: bt(26), sub: bt(26.5),
+  pill: bt(28), pillA: bt(29), pillB: bt(31), pillBack: bt(33), foot: bt(30), claim: bt(31), dot: bt(36), goldEnd: bt(38),
+};
+
+/* ---------- vollflächiges Figurenfeld auf demselben Raster wie das Motiv ---------- */
+const cellP = Math.max(15, Math.round(W / 32));
+const motifAt = new Map(); for (const p of PEOPLE) motifAt.set(p.r + ',' + p.cc, p);
+const FIELD = [];
+{
+  const rows = Math.ceil(H / cellP) + 1, cols = Math.ceil(W / cellP) + 2;
+  for (let r = 0; r < rows; r++) for (let cc = -1; cc < cols; cc++) {
+    const x = cc * cellP + (r % 2 ? cellP * 0.5 : 0), y = r * cellP + cellP * 0.5;
+    const h = hash(r * 31.7 + cc * 7.3 + 0.5);
+    FIELD.push({ r, cc, x, y, s: cellP * (0.56 + 0.08 * h), motif: motifAt.get(r + ',' + cc) || null, h });
+  }
+}
+const nearest = (fx, fy) => { let best = null, bd = 1e9; for (const f of FIELD) { if (f.x < M || f.x > W - M || f.y < H * 0.12 || f.y > H * 0.6) continue; const d = Math.hypot(f.x - fx, f.y - fy); if (d < bd) { bd = d; best = f; } } return best; };
+const GOLD = [nearest(W * 0.5, H * 0.45), nearest(W * 0.28, H * 0.3), nearest(W * 0.74, H * 0.56)];
+const goldT = [T.gold1, T.gold2, T.gold3];
+const motifGoldEnd = PEOPLE.length ? PEOPLE[Math.floor(PEOPLE.length * 0.55)] : null;
+const textZone = { x: M, y: H * 0.62, w: W - 2 * M, h: H * 0.28 };
+
+/* Lichtkegel: wandert auf 8teln, bleibt auf der ersten goldenen Figur stehen */
+const coneKeys = [[T.cone, [W * 0.22, H * 0.28]], [T.cone + 0.5, [W * 0.7, H * 0.22]], [T.cone + 1.0, [W * 0.3, H * 0.5]], [T.cone + 1.5, [W * 0.78, H * 0.52]], [T.cone + 2.0, [W * 0.45, H * 0.18]], [T.coneStop, [GOLD[0].x, GOLD[0].y]]];
+const coneX = () => track(t, coneKeys.map(([k, v]) => [k, v[0]]), 90, 15), coneY = () => track(t, coneKeys.map(([k, v]) => [k, v[1]]), 90, 15);
+const coneR = W * 0.17;
+
+function figure(x, y, s, col, alpha, filled, lw) {
+  const hr = s * 0.26, hx = x, hy = y - s * 0.36, bw = s * 0.88, bh = s * 0.52, bx = x - bw / 2, by = y - s * 0.02;
+  ctx.globalAlpha = alpha; ctx.fillStyle = col; ctx.strokeStyle = col;
+  if (filled) { ctx.beginPath(); ctx.arc(hx, hy, hr, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [bw * 0.5, bw * 0.5, s * 0.10, s * 0.10]); ctx.fill(); }
+  else { ctx.lineWidth = lw || Math.max(1.2, s * 0.09); ctx.beginPath(); ctx.arc(hx, hy, hr, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [bw * 0.5, bw * 0.5, s * 0.10, s * 0.10]); ctx.stroke(); }
+}
+
+function drawField() {
+  if (t < T.field) return;
+  const cx = coneX(), cy = coneY(); const coneOn = t >= T.cone && t < T.gold1 + 0.4 ? 1 : 0;
+  const shrink = t >= T.shrink;   // Feld zieht sich ins Motiv zurück
+  const inZone = (f) => f.x > textZone.x - cellP && f.x < textZone.x + textZone.w + cellP && f.y > textZone.y - cellP * 0.5 && f.y < textZone.y + textZone.h;
+  const zoneOn = clamp(sp(T.eyebrow2 - 0.4, 120, 18)) * (1 - clamp(sp(T.crush2 + 0.3, 200, 24)));
+  for (const f of FIELD) {
+    // Eintritt: Diagonalwelle von oben links
+    const delay = T.field + (f.r / (H / cellP)) * 1.1 + (f.cc / (W / cellP)) * 0.25;
+    let s = sp(delay, 150, 20); if (s <= 0.001) continue;
+    // Rückzug ins Motiv: Nicht-Motiv-Figuren schrumpfen weg (von unten links nach oben rechts), Motiv-Figuren werden zu ihrem Motiv-Stil
+    let out = 0, toMotif = 0;
+    if (shrink) { const far = (1 - f.x / W) * 0.5 + (f.y / H) * 0.5; out = clamp(springType(t - (T.shrink + far * 0.9), 120)); toMotif = clamp(springType(t - (T.shrink + 0.4), 90)); }
+    if (!f.motif && out >= 0.999) continue;
+    const gi = GOLD.indexOf(f); const isGold = gi >= 0 && t >= goldT[gi];
+    const g = isGold ? sp(goldT[gi], 160, 17) : 0;
+    // Nachbarn weichen der goldenen Figur aus
+    let dx = 0, dy = 0;
+    for (let k = 0; k < 3; k++) { if (t < goldT[k] || GOLD[k] === f) continue; const d = Math.hypot(f.x - GOLD[k].x, f.y - GOLD[k].y); if (d < cellP * 1.8 && d > 0) { const push = clamp(sp(goldT[k], 160, 17)) * cellP * 0.22 * (1 - d / (cellP * 1.8)); dx += (f.x - GOLD[k].x) / d * push; dy += (f.y - GOLD[k].y) / d * push; } }
+    // Lichtkegel
+    const dc = Math.hypot(f.x - cx, f.y - cy); const lit = coneOn ? 1 - sstep((dc - coneR * 0.55) / (coneR * 0.45)) : 0;
+    let col = ciMix('#B9CFE2', CI.navy, 0.2 + 0.6 * lit), alpha = 0.55 + 0.35 * lit, size = f.s * (1 + 0.12 * lit), filled = f.h > 0.35 || lit > 0.5;
+    if (isGold) { col = CI.gold; alpha = 1; size = f.s * (1 + 0.85 * Math.min(1.1, g)); filled = true; }
+    if (inZone(f) && !isGold) alpha *= 1 - 0.78 * zoneOn;
+    let x = f.x + dx, y = f.y + dy, sz = size * Math.min(1.12, s);
+    if (f.motif) {
+      // zum Motiv-Stil: Größe, Farbe, Alpha des echten Anzeigenmotivs
+      const m = f.motif; const endGold = (m === motifGoldEnd && t >= T.goldEnd) ? clamp(sp(T.goldEnd, 180, 18)) : 0;
+      if (toMotif > 0) { sz = lerp(sz, m.s, toMotif); alpha = lerp(alpha, m.alpha, toMotif); col = toMotif > 0.5 ? m.col : col; filled = toMotif > 0.5 ? (m.richtig || m.core > 0.30) : filled; }
+      if (endGold > 0) { col = CI.gold; alpha = 1; sz *= 1 + 0.4 * Math.min(1.1, endGold); filled = true; }
+    } else { sz *= (1 - out); alpha *= (1 - out); }
+    if (sz < 2) continue;
+    figure(x, y, sz, col, clamp(alpha), filled);
+  }
+  // Ringe am Telefon: zwei goldene Kreise, die vom Kopf der ersten Figur nach außen laufen
+  for (const r0 of [T.ring1, T.ring2]) { for (const k of [0, 0.2]) { if (t < r0 + k || t > r0 + k + 1.0) continue; const s = clamp((t - r0 - k) / 1.0);  ctx.globalAlpha = (1 - s) * (1 - s) * 0.9; ctx.strokeStyle = CI.gold; ctx.lineWidth = Math.max(2, cellP * 0.08); ctx.beginPath(); ctx.arc(GOLD[0].x, GOLD[0].y - GOLD[0].s * 0.2, cellP * 0.6 + s * cellP * 2.4, 0, Math.PI * 2); ctx.stroke(); } }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- Hook: vier kurze Zeilen, Schrift passt sich der Breite an ---------- */
+const hookLines = [...J.hook1.split('|'), ...J.hook2.split('|')].map((s) => s.trim());
+let hookS = Math.round(SB * 0.105);
+{ ctx.font = `800 ${hookS}px ${FF}`; const maxWH = W - 2 * M; while (hookS > 20 && Math.max(...hookLines.map((l) => ctx.measureText(l).width)) > maxWH) { hookS -= 2; ctx.font = `800 ${hookS}px ${FF}`; } }
+const hookT = [T.hook1, T.hook1 + 0.25, T.hook2, T.hook2 + 0.25];
+function drawHook() {
+  if (t > T.crush + 1) return;
+  const size = hookS; ctx.font = `800 ${size}px ${FF}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  const crush = t >= T.crush ? spring(t - T.crush, 250, 32) : 0; const sy = Math.max(0.0001, 1 - crush);
+  const cyH = H * 0.47, lh = size * 1.12; const top = cyH - lh * 1.5;
+  ctx.save(); ctx.translate(0, cyH); ctx.scale(1, sy); ctx.translate(0, -cyH);
+  hookLines.forEach((ln, i) => {
+    const s = springType(t - hookT[i], 90); if (s <= 0) return; const yy = top + i * lh + size * 0.4;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, yy - size * 1.05, W, size * 1.35); ctx.clip(); ctx.translate(0, (1 - s) * size * 1.2);
+    const isQ = i < 2; const txt = ln.replace(/[.?]$/, ''); const mark = ln.slice(-1).match(/[.?]/) ? ln.slice(-1) : '';
+    ctx.fillStyle = isQ ? CI.ink : CI.navy; ctx.fillText(txt, M, yy);
+    if (mark) { const wdt = ctx.measureText(txt).width; const d = sp(hookT[i] + 0.3, 320, 20); if (d > 0) { ctx.save(); ctx.fillStyle = mark === '.' ? CI.gold : CI.navy; ctx.translate(M + wdt + size * 0.04, yy); ctx.scale(Math.max(0.001, d), Math.max(0.001, d)); ctx.fillText(mark, 0, 0); ctx.restore(); } }
+    ctx.restore();
+  });
+  ctx.restore();
+  if (t >= T.crush) { const lw = (W - 2 * M) * crush * (1 - sstep((t - T.field) / 0.3)); ctx.fillStyle = CI.gold; ctx.fillRect(W / 2 - lw / 2, cyH - 4, lw, 8); }
+}
+
+/* ---------- Logo ---------- */
+function drawLogo() {
+  if (!L) return; const s = sp(T.logo, 110, 17); if (s <= 0) return;
+  ctx.save(); ctx.translate(L.x + L.w / 2, L.y + L.h / 2); ctx.translate(-(1 - s) * (L.x + L.w), -(1 - s) * 80); ctx.scale(0.6 + 0.4 * s, 0.6 + 0.4 * s);
+  ctx.drawImage(logo, -L.w / 2, -L.h / 2, L.w, L.h); ctx.restore();
+}
+
+/* ---------- Textzone Shots 3–4: Eyebrow „Direktanprache“, Telefonlinie, drei Worte ---------- */
+function drawStoryText() {
+  if (t < T.eyebrow2 || t > T.crush2 + 0.6) return;
+  const crush = t >= T.crush2 ? spring(t - T.crush2, 250, 32) : 0; const sy = Math.max(0.0001, 1 - crush);
+  const zc = textZone.y + textZone.h * 0.5;
+  // Telefonlinie: von der goldenen Figur zum Logo
+  if (t >= T.line && L) {
+    const p0 = [GOLD[0].x, GOLD[0].y - GOLD[0].s * 0.5], p1 = [L.x + L.w * 0.5, L.y + L.h + 10];
+    const d = clamp(springType(t - T.line, 40)); const leave = clamp(springType(t - T.crush2, 120));
+    const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+    ctx.save(); ctx.strokeStyle = CI.navy; ctx.lineWidth = Math.max(2, W * 0.003); ctx.setLineDash([len]); ctx.lineDashOffset = len * (1 - d) ; ctx.globalAlpha = 1 - leave;
+    ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke(); ctx.restore();
+  }
+  ctx.save(); ctx.translate(0, zc); ctx.scale(1, sy); ctx.translate(0, -zc);
+  // Eyebrow mit Goldstrich
+  const kS = Math.round(SB * 0.024); ctx.font = `700 ${kS}px ${FF}`; const kbH = Math.max(3, kS * 0.26), kbW = kS * 1.7; const y0 = textZone.y + kS * 1.2;
+  const sw = sp(T.eyebrow2, 220, 24); ctx.fillStyle = CI.gold; rr(M, y0 - kS * 0.36 - kbH / 2, kbW * clamp(sw), kbH, kbH / 2); ctx.fill();
+  const txt = J.eyebrow2.toUpperCase(); const n = typeN(txt, T.eyebrow2 + 0.15, 0.0625); let x = M + kbW + kS * 0.6; ctx.fillStyle = CI.navy;
+  for (let i = 0; i < n; i++) { const pop = sp(T.eyebrow2 + 0.15 + i * 0.0625, 300, 22); ctx.save(); ctx.globalAlpha = clamp(pop * 2); ctx.translate(x, y0 + (1 - clamp(pop)) * kS * 0.4); ctx.fillText(txt[i], 0, 0); ctx.restore(); x += ctx.measureText(txt[i]).width + kS * 0.34; }
+  // drei Worte, jedes auf einem Beat, maskiert an der Grundlinie hoch
+  const wS = Math.round(SB * 0.085); ctx.font = `800 ${wS}px ${FF}`;
+  J.worte.forEach((w, i) => { const s = springType(t - T.wort[i], 90); if (s <= 0) return; const yy = y0 + wS * (1.15 + i * 1.08); ctx.save(); ctx.beginPath(); ctx.rect(0, yy - wS * 1.0, W, wS * 1.3); ctx.clip(); ctx.translate(0, (1 - s) * wS * 1.2); ctx.fillStyle = i === 2 ? CI.navy : CI.ink; ctx.fillText(w.replace(/\.$/, ''), M, yy); const wdt = ctx.measureText(w.replace(/\.$/, '')).width; ctx.fillStyle = CI.gold; ctx.fillText('.', M + wdt + wS * 0.04, yy); ctx.restore(); });
+  ctx.restore();
+}
+
+/* ---------- Anzeigenblock (Mechanik der Stellenanzeigen-Vorlage) ---------- */
+function drawAd() {
+  if (t < T.kick) return;
+  let y = yStart;
+  if (branche) {
+    y += kickS; ctx.font = `700 ${kickS}px ${FF}`; const kbH = Math.max(3, kickS * 0.26), kbW = kickS * 1.7; const sw = sp(T.kick, 220, 24);
+    ctx.fillStyle = CI.gold; rr(M, y - kickS * 0.36 - kbH / 2, kbW * clamp(sw), kbH, kbH / 2); ctx.fill();
+    ctx.fillStyle = CI.navy; let x = M + kbW + kickS * 0.6; const txt = branche.toUpperCase(); const n = typeN(txt, T.kick + 0.15, 0.05);
+    for (let i = 0; i < n; i++) { const ch = txt[i]; const pop = sp(T.kick + 0.15 + i * 0.05, 300, 22); ctx.save(); ctx.globalAlpha = clamp(pop * 2); ctx.translate(x, y + (1 - clamp(pop)) * kickS * 0.4); ctx.fillText(ch, 0, 0); ctx.restore(); x += ctx.measureText(ch).width + kickS * 0.34; }
+    y += kickS * 1.3;
+  }
+  ctx.font = `800 ${titleS}px ${FF}`; ctx.textBaseline = 'alphabetic'; y += titleS * 0.82;
+  const grad = (x0, w) => { const g = ctx.createLinearGradient(x0, 0, x0 + Math.max(w, 1), 0); g.addColorStop(0, CI.navy); g.addColorStop(1, CI.steel); return g; };
+  const drawMwd = (x, yy) => { const s = sp(T.mwd, 260, 22); if (s <= 0) return; ctx.save(); ctx.font = `700 ${Math.round(titleS * 0.42)}px ${FF}`; ctx.fillStyle = '#8A93A0'; ctx.translate(x, yy); ctx.scale(Math.max(0.001, s), Math.max(0.001, s)); ctx.fillText(mwd, 0, 0); ctx.restore(); };
+  const lineIn = (i, draw) => { const s = springType(t - (T.title + i * 0.3), 90); if (s <= 0) return; const yy = y + i * titleS * lhF; ctx.save(); ctx.beginPath(); ctx.rect(0, yy - titleS * 1.05, W, titleS * 1.35); ctx.clip(); ctx.translate(0, (1 - s) * titleS * 1.2); draw(yy); ctx.restore(); };
+  if (lines.length === 1) {
+    const words = lines[0].split(/\s+/);
+    lineIn(0, (yy) => { if (words.length > 1) { const first = words[0] + ' ', rest = words.slice(1).join(' '); const fw = ctx.measureText(first).width, rw = ctx.measureText(rest).width; ctx.fillStyle = CI.ink; ctx.fillText(first, M, yy); ctx.fillStyle = grad(M + fw, rw); ctx.fillText(rest, M + fw, yy); } else { const lw = ctx.measureText(lines[0]).width; ctx.fillStyle = grad(M, lw); ctx.fillText(lines[0], M, yy); } });
+    drawMwd(M + ctx.measureText(lines[0]).width + titleS * 0.20, y);
+  } else {
+    lines.forEach((ln, i) => lineIn(i, (yy) => { const lw = ctx.measureText(ln).width; ctx.fillStyle = (i === 0) ? CI.ink : grad(M, lw); ctx.fillText(ln, M, yy); }));
+    const last = lines.length - 1; drawMwd(M + ctx.measureText(lines[last]).width + titleS * 0.20, y + last * titleS * lhF);
+  }
+  y += (lines.length - 1) * titleS * lhF;
+  if (unter) { y += subS * 2.9; let subS2 = subS; ctx.font = `400 ${subS2}px ${FF}`; while (subS2 > 10 && ctx.measureText(unter).width > qrGrenze - M) { subS2 -= 1; ctx.font = `400 ${subS2}px ${FF}`; } ctx.fillStyle = CI.grau; ctx.fillText(unter.slice(0, typeN(unter, T.sub, 0.016)), M, y); }
+  // Region-Pille: ein Container, vier Zustände
+  if (region) {
+    y += pillS * 4.4; let pillS2 = pillS; ctx.font = `700 ${pillS2}px ${FF}`;
+    const states = [region, J.pille[0], J.pille[1], region]; const times = [T.pill, T.pillA, T.pillB, T.pillBack];
+    const widths = states.map((s) => ctx.measureText(s).width + pillS2 * 1.15 * 2);
+    const capH = capHeight(pillS2), padX = pillS2 * 1.15, padY = pillS2 * 0.62, ph = capH + padY * 2, pt = y - ph;
+    const grow = sp(T.pill, 160, 20); if (grow > 0) {
+      const w = lerp(ph, track(t, times.map((tt, i) => [tt, widths[i]]), 140, 19), clamp(grow));
+      let idx = 0; for (let i = 1; i < times.length; i++) if (t >= times[i] + 0.22) idx = i;
+      const goldness = track(t, [[0, 0], [T.pillA, 1], [T.pillBack, 0]], 140, 19) > 0.5;
+      rr(M, pt, w, ph, ph / 2); ctx.fillStyle = goldness ? CI.goldL : '#FFFFFF'; ctx.fill(); ctx.lineWidth = Math.max(1.5, W * 0.0016); ctx.strokeStyle = goldness ? CI.goldL : '#D6DCE4'; ctx.stroke();
+      let txt = clamp(sp(T.pill + 0.18, 200, 24)), slide = 0;
+      for (let i = 1; i < times.length; i++) { const since = t - times[i]; if (since >= 0 && since < 0.22) slide = clamp(since / 0.22); else if (since >= 0.22 && since < 0.6) txt = Math.min(txt, clamp(springType(since - 0.22, 160))); }
+      if (txt > 0) { ctx.save(); ctx.beginPath(); rr(M, pt, w, ph, ph / 2); ctx.clip(); ctx.fillStyle = CI.navy; ctx.globalAlpha = Math.min(1, txt * 1.5); ctx.fillText(states[idx], M + padX, pt + ph / 2 + capH / 2 + (1 - txt) * -capH * 0.9 + slide * capH * 1.6); ctx.restore(); }
+    }
+  }
+}
+function drawFoot() {
+  const rise = sp(T.foot, 120, 18); if (rise <= 0) return;
+  const top = footTop + (1 - rise) * footH; ctx.save(); ctx.beginPath(); ctx.rect(0, top, W, footH); ctx.clip();
+  const g = ctx.createLinearGradient(0, footTop, W, footTop + footH); g.addColorStop(0, '#0A1626'); g.addColorStop(0.55, '#0E2A45'); g.addColorStop(1, '#0F3D63'); ctx.fillStyle = g; ctx.fillRect(0, footTop, W, footH);
+  const fuss1 = Math.max(13, Math.round(SB * 0.021)), fuss2 = Math.max(11, Math.round(SB * 0.017)); const web = (J.web || 'voss-partner.de').trim(), tel = (J.telefon || '').trim(), zusatz = (J.fusszusatz || '').trim();
+  const row = (txt, x, yy, font, color, t0) => { const s = springType(t - t0, 120); if (s <= 0) return; ctx.font = font; ctx.fillStyle = color; ctx.save(); ctx.globalAlpha = Math.min(1, s * 1.4); ctx.fillText(txt, x, yy + (1 - s) * fuss2 * 0.8); ctx.restore(); };
+  row(web, M, footTop + footH * 0.38, `700 ${fuss1}px ${FF}`, '#FFFFFF', T.foot + 0.2);
+  row('Ahlen · Stuttgart', M, footTop + footH * 0.60, `400 ${fuss2}px ${FF}`, 'rgba(255,255,255,.55)', T.foot + 0.3);
+  if (tel) row(tel, M, footTop + footH * 0.82, `400 ${fuss2}px ${FF}`, 'rgba(255,255,255,.55)', T.foot + 0.4);
+  if (J.claim) {
+    ctx.font = `700 ${fuss1}px ${FF}`; const wClaim1 = ctx.measureText('Wir finden die Richtigen.').width; ctx.font = `400 ${fuss2}px ${FF}`;
+    const wClaim = Math.max(wClaim1, ctx.measureText('Personalberatung seit 1992.').width, zusatz ? ctx.measureText(zusatz).width : 0);
+    const claimLinks = W - M - wClaim;
+    row('Wir finden die Richtigen', claimLinks, footTop + footH * 0.38, `700 ${fuss1}px ${FF}`, '#FFFFFF', T.claim);
+    ctx.font = `700 ${fuss1}px ${FF}`; const dotX = claimLinks + ctx.measureText('Wir finden die Richtigen').width;
+    const dot = sp(T.claim + 0.35, 320, 20); if (dot > 0) { const pp = 1 + 0.35 * pulse(T.dot, 240, 16); ctx.save(); ctx.fillStyle = CI.gold; ctx.translate(dotX + fuss1 * 0.12, footTop + footH * 0.38 - fuss1 * 0.08); ctx.scale(Math.max(0.001, dot) * pp, Math.max(0.001, dot) * pp); ctx.fillText('.', -fuss1 * 0.12, fuss1 * 0.08); ctx.restore(); }
+    row('Personalberatung seit 1992.', claimLinks, footTop + footH * 0.60, `400 ${fuss2}px ${FF}`, 'rgba(255,255,255,.55)', T.claim + 0.1);
+    if (zusatz) row(zusatz, claimLinks, footTop + footH * 0.82, `400 ${fuss2}px ${FF}`, 'rgba(255,255,255,.55)', T.claim + 0.2);
+  }
+  ctx.restore();
+}
+
+window.seek = (tt) => {
+  t = tt; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = CI.bg; ctx.fillRect(0, 0, W, H);
+  drawField(); drawLogo(); drawHook(); drawStoryText(); drawAd(); drawFoot();
+};
+window.seek(0);
+</script>
+</body>
+</html>
