@@ -12,7 +12,6 @@
   canvas { display: block; }
 </style>
 <script src="../../lib/qrcode.js"></script>
-<script src="./job.js"></script>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -24,6 +23,8 @@ import { clamp, lerp, spring, track, springType, hash } from '../../lib/motion.j
    renderCIHell() des VP-Tools-Generators übernommen; jedes Element
    bekommt nur noch eine Zeit. window.seek(t) ist eine reine Funktion.
    ============================================================ */
+// Job-Datei: ?job=jobs/name.js (relativ zu diesem Ordner), sonst ./job.js
+await new Promise((res, rej) => { const q = new URLSearchParams(location.search).get('job'); const el = document.createElement('script'); el.src = q || './job.js'; el.onload = res; el.onerror = () => rej(new Error('job file not found: ' + el.src)); document.head.appendChild(el); });
 const J = window.JOB;
 const c = document.getElementById('c'), ctx = c.getContext('2d');
 const W = window.innerWidth, H = window.innerHeight; c.width = W; c.height = H;

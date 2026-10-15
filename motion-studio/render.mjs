@@ -16,7 +16,7 @@ mkdirSync(dirname(OUT), { recursive: true });
 const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] }); // lets index.html import lib/motion.js as an ES module from file://
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 page.on('pageerror', (e) => { console.error('page error:', e.message); });
-await page.goto('file://' + PAGE);
+await page.goto('file://' + PAGE + sarg('query', ''));  // --query '?job=jobs/x.js'
 await page.evaluate(() => document.fonts.ready);
 await page.waitForFunction(() => typeof window.seek === 'function', null, { timeout: 60000 });
 
