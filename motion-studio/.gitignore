@@ -3,3 +3,4 @@ out/*.mp4
 out/*.wav
 out/*.png
 .env
+assets/web/

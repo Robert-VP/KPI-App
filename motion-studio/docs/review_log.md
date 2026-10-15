@@ -86,3 +86,9 @@ Frames at every hold start and hold end (34 frames, 9:16) and 10 frames in 1:1: 
 27 frames (9:16) at hold starts/ends and wipes, 10 frames in 1:1.
 1. Gold twinkles of the navy stage landed next to text and on the logo. Fix: no twinkles and dimmed texture inside text areas and the logo corner.
 2. Underline under „gesucht!“ cut through the g descender. Fix: underline at +0.3 em for lines with descenders.
+
+# Review log — Recruiter-Film Version 8 (77 s)
+1. Award pill text ran past the pill. Fix: font fitted to width.
+2. Stats too small in portrait, labels unreadable. Fix: portrait stacks the three stats in rows (value left, label right), labels 0.4 × value.
+3. 1:1: award pill slid under the logo. Fix: card placed below logo + pill height.
+Version 7 renders stopped in favour of version 8 (same film plus website elements).

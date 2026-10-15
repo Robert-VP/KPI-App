@@ -184,3 +184,32 @@ Ablauf (Lesezeiten nach vollständigem Aufbau):
 | Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
 | Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
 | Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |
+
+---
+
+# Version 8 (15.10.2026) — Version 7 plus Elemente von voss-partner.de, 77 s, 128 BPM
+
+Quelle: Website-Repository (Startseite `index.html`, Hero-Video `assets/video/hero-factory.mp4`). Live-Seite ist aus dieser Umgebung nicht erreichbar.
+Vorlage: `templates/recruiter-film-v8/`. Video-Einzelbilder vorher mit `bash scripts/prep_web_video.sh` erzeugen (nicht versioniert).
+
+Übernommen von der Website:
+- **Hero-Video** (Drohnenflug über eine TGA-Dachzentrale) als Hintergrund der Marine-Szenen, mit Marine-Tönung und Verlauf wie das Website-Overlay, darüber die Dreieck-Struktur.
+- **„Echte Direktansprache – Wir warten nicht auf Bewerbungen.“** (Startseite, Abschnitt „Unser Versprechen“) als Einstieg in „Ihre Aufgaben“.
+- **Glas-Karte** im Stil der Hero-Kennzahlen mit hochzählenden Werten: 33 Jahre Marktkenntnis · +2.500 Stellen besetzt · 95 % Besetzungsquote. Darüber die Glas-Pille **„Beste Personalberater 2026 — SZ-Institut“** (Hero-Eyebrow). Ersetzt den Zeitstrahl bei „Etablierte Personalberatung seit 1992.“
+
+Ablauf:
+
+| Aussage | Bühne | Lesezeit |
+|---|---|---|
+| Sie überzeugen am Telefon? | Video | 3,0 s |
+| In eigener Sache · Recruiter (m/w/d) gesucht! | hell, Motiv | 3,0 s |
+| Echte Direktansprache · Wir warten nicht auf Bewerbungen. | Video | 3,0 s |
+| Ihre Aufgaben: Suchen. Ansprechen. Überzeugen. | Video | 3,0 s |
+| Ihr Profil: Kommunikativ. Agil. Motiviert. | hell, Motiv | 3,2 s |
+| Was Sie erwartet: Strukturierte Einarbeitung. | Video, Stufen | 3,2 s |
+| Möglichkeiten zur persönlichen und fachlichen Weiterentwicklung. | Video, Weg | 4,3 s |
+| Etablierte Personalberatung seit 1992. + Kennzahlen + SZ-Siegel | Video, Glas-Karte | 4,6 s |
+| Anzeige · Pille Ahlen / Erste Recruiting-Erfahrung / Quereinstieg | Anzeige | 3,0 / 3,0 / 4,0 s |
+| Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
+| Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
+| Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |
