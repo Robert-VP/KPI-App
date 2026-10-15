@@ -10,7 +10,7 @@ PRE="acompressor=threshold=-14dB:ratio=3:attack=4:release=90:makeup=2,alimiter=l
 # pass 1: measure
 M=$(ffmpeg -i "$A" -af "$PRE,loudnorm=I=-14:TP=-2.5:LRA=11:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
 g() { echo "$M" | python3 -c "import sys,json; print(json.load(sys.stdin)['$1'])"; }
-LN="$PRE,loudnorm=I=-14:TP=-2.5:LRA=11:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true"
+LN="$PRE,loudnorm=I=-14:TP=-2.5:LRA=11:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true,alimiter=limit=0.79:attack=1:release=50:level=false"   # Sicherheits-Limiter: Spitzen unter -2 dBFS
 # pass 2: apply
 ffmpeg -y -loglevel error -i "$V" -i "$A" -map 0:v -map 1:a -af "$LN" \
   -c:v copy -c:a aac -b:a 192k -ar 48000 -shortest "$O"

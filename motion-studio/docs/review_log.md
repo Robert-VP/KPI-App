@@ -67,3 +67,7 @@ Delivered as out/film_recruiter_v3_1080x1920.mp4, _1080x1350.mp4, _1080x1080.mp4
 Frames checked: 28 across the film in 9:16, 12 in 1:1.
 Scores: hook 9 · phone readability 8 · motion 9 · variety 10 · brand accuracy 9 · sound sync 8
 Contrast cuts land on the beat, zoom-through reads as one move, flash cards readable at one beat each, ad end and pixelated number unchanged. 1:1 type scales correctly. Go for the full render.
+
+## Version 4 final (60 fps, 4 subframes, 128 BPM, 33.0 s)
+First mix hit +1.9 dBTP (dense 128-BPM drums). Fix in scripts/mix.sh: safety limiter after loudnorm (limit -2 dBFS). Remixed from the silent renders: -14.1 LUFS, -0.4 dBTP.
+Contact sheet at 1 fps checked end to end: cuts, zoom-through, iris, wipe, growth, lock-on, flash cards, ad, Q&A, pixelated number all as scripted.
