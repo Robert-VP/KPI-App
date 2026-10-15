@@ -1,4 +1,4 @@
-// Recruiter (m/w/d) in eigener Sache – Version 6: Stellenanzeigen-Film ohne Wachstumsszene, kurze Übergänge,
+// Recruiter (m/w/d) in eigener Sache – Version 6: Stellenanzeigen-Film ohne Wachstums- und Feld-Szene, kurze Übergänge,
 // Lesezeiten 3 s (kurz) / 4 s (lang) / 5 s (Schluss), Zeilenabstand 1,2 (siehe docs/drehbuch_recruiter.md)
 window.JOB = {
   // Anzeige (Schlussteil) – identisch mit dem Stellenanzeigen-Generator
@@ -6,12 +6,11 @@ window.JOB = {
   untertitel: 'Inhabergeführt in zweiter Generation · Ahlen (Westfalen)', region: 'Ahlen (Westfalen)', projektnr: '',
   qrUrl: '', web: 'voss-partner.de', telefon: 'Telefon 02528 950177',
   fusszusatz: 'Vertrauliche Kontaktaufnahme garantiert.', claim: true, alarm: false, motiv: 'menschen', seed: 20261015, dichte: 100,
-  kickerScale: 100, regionSize: 100, titleScale: 100, textY: 0, duration: 66.5, bpm: 120,
+  kickerScale: 100, regionSize: 100, titleScale: 100, textY: 0, duration: 61.2, bpm: 120,
   // Film-Texte (durchgehend Sie-Anrede)
   hook1: 'Sie überzeugen|am Telefon?',                                     // | = Zeilenumbruch
   intro: { a: 'Wir suchen:', job: 'Recruiter', mwd: '(m/w/d)', ort: 'in Ahlen.' },
   story: {
-    richtige: ['Die Richtigen werden', 'überall gesucht.'],
   },
   eyebrow2: 'Ihre Aufgaben', worte: ['Suchen.', 'Ansprechen.', 'Überzeugen.'],
   vorteile: {

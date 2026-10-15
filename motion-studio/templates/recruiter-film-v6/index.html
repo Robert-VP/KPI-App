@@ -122,8 +122,7 @@ if (qrAn) { try { const q = qrcode(0, 'M'); q.addData(qrUrl); q.make(); const n 
 
 /* ============================================================
    FILM „Recruiter in eigener Sache“ – Version 6 (Zeiten in Sekunden)
-   Hook → Wir suchen: Recruiter (m/w/d) in Ahlen → Die Richtigen werden überall gesucht (Fadenkreuz)
-   → Ihre Aufgaben → Was Sie erwartet (Einarbeitung, Weiterentwicklung, seit 1992) → Anzeige → Kontakt-Rätsel
+   Hook → Wir suchen: Recruiter (m/w/d) in Ahlen → Ihre Aufgaben → Was Sie erwartet (Einarbeitung, Weiterentwicklung, seit 1992) → Anzeige → Kontakt-Rätsel
    Lesezeiten nach vollständigem Aufbau: kurz 3 s, lang 4 s, Schlussbild 5 s. Übergänge kurz, kein Leerlauf.
    Satz: Zeilenabstand 1,2 (Unterlänge 0,24 + Oberlänge mit Umlaut 0,96), keine negative Laufweite.
    ============================================================ */
@@ -140,15 +139,14 @@ await new Promise((r) => { logoW.onload = r; logoW.onerror = r; });
 const S = {
   aIn: [0.2, 0.7], aOut: 4.8,
   bIn: [4.9, 5.25, 5.6], bOut: 9.4,
-  fieldIn: 9.2, cIn: [9.7, 10.1], cross: [10.3, 11.1, 11.9, 12.7], cOut: 13.9, zoom: 13.9, iris: 14.7,
-  f: 14.8, fIn: [15.0, 15.35, 15.7], fOut: 19.45,
-  g: 19.9, g1: 19.95, g1In: [20.1, 20.45], g1Out: 24.2, g2: 24.4, g2In: [24.5, 24.8, 25.1, 25.4], g2Out: 30.15, g3: 30.3, g3In: [30.4, 30.7, 31.0], gOut: 34.75,
-  ad: 35.2,
+  f: 9.5, fIn: [9.7, 10.05, 10.4], fOut: 14.15,
+  g: 14.6, g1: 14.65, g1In: [14.8, 15.15], g1Out: 18.9, g2: 19.1, g2In: [19.2, 19.5, 19.8, 20.1], g2Out: 24.85, g3: 25, g3In: [25.1, 25.4, 25.7], gOut: 29.45,
+  ad: 29.9,
 };
 const T = {   // Anzeige und Ende (Namen wie in der Anzeigen-Vorlage)
-  kick: 35.4, title: 35.6, mwd: 36.2, sub: 36.3, pill: 36.6, pillA: 40.7, pillB: 44.3, pillBack: 1e9,
-  foot: 36.8, claim: 37.1, dot: 39.0, goldEnd: 44.0,
-  adOut: 48.9, eb: 49.2, q1a: 49.3, q1b: 49.7, q1out: 53.45, q2a: 53.8, q2b: 54.3, q2c: 54.7, telHi: 55.2, q2out: 59.45, q3a: 59.8, q3b: 60.3, pix: 61.0,
+  kick: 30.1, title: 30.3, mwd: 30.9, sub: 31, pill: 31.3, pillA: 35.4, pillB: 39, pillBack: 1e9,
+  foot: 31.5, claim: 31.8, dot: 33.7, goldEnd: 38.7,
+  adOut: 43.6, eb: 43.9, q1a: 44, q1b: 44.4, q1out: 48.15, q2a: 48.5, q2b: 49, q2c: 49.4, telHi: 49.9, q2out: 54.15, q3a: 54.5, q3b: 55, pix: 55.7,
 };
 const textZone = { x: M, y: H * 0.63, w: W - 2 * M, h: H * 0.27 };
 const fit = (txts, start, weight = 800) => { let s = Math.round(start); ctx.font = `${weight} ${s}px ${FF}`; while (s > 16 && Math.max(...txts.map((x) => ctx.measureText(x).width)) > W - 2 * M) { s -= 2; ctx.font = `${weight} ${s}px ${FF}`; } return s; };
@@ -232,38 +230,6 @@ function drawB() {
     { txt: IN.job, size: bigB, color: CI.navy, t0: S.bIn[1], after: { txt: IN.mwd, size: Math.round(bigB * 0.34), color: '#8A93A0' }, underline: true },
     { txt: IN.ort, size: bO, color: CI.ink, t0: S.bIn[2] }], S.bOut, bY, 'up');
 }
-
-/* ---------- C Die Richtigen werden überall gesucht (Hell): Feld, Fadenkreuz, Zoom durch die goldene Figur ---------- */
-const cellP = Math.max(15, Math.round(W / 30)), FIELD = [];
-{ const rows = Math.ceil(H / cellP) + 1, cols = Math.ceil(W / cellP) + 2; for (let r = 0; r < rows; r++) for (let cc = -1; cc < cols; cc++) { const x = cc * cellP + (r % 2 ? cellP * 0.5 : 0), y = r * cellP + cellP * 0.5, h = hash(r * 31.7 + cc * 7.3 + 0.5); FIELD.push({ x, y, s: cellP * (0.56 + 0.08 * h), h }); } }
-const nearest = (fx, fy) => { let best = null, bd = 1e9; for (const f of FIELD) { if (f.x < M || f.x > W - M || f.y < Math.max(H * 0.18, (L ? L.y + L.h : 0) + cellP * 1.5) || f.y > H * 0.56) continue; const d = Math.hypot(f.x - fx, f.y - fy); if (d < bd) { bd = d; best = f; } } return best; };
-const GOLD = [nearest(W * 0.26, H * 0.26), nearest(W * 0.72, H * 0.22), nearest(W * 0.34, H * 0.47), nearest(W * 0.63, H * 0.38)];
-const goldT = S.cross.map((c) => c + 0.3);
-const crossPos = () => ({ x: track(t, GOLD.map((g, i) => [S.cross[i], g.x]), 200, 26), y: track(t, GOLD.map((g, i) => [S.cross[i], g.y - g.s * 0.1]), 200, 26) });
-function camC() {
-  const c = crossPos(), z0 = track(t, [[0, 1], [S.cIn[0] - 0.4, 1.12]], 60, 15); let ox = (c.x - W / 2) * 0.28, oy = (c.y - H / 2) * 0.28, z = z0;
-  if (t >= S.zoom) { const e = clamp((t - S.zoom) / (S.iris - S.zoom)), ez = e * e * e, g = GOLD[3], m = sstep(Math.min(1, e * 1.6)); z = z0 * Math.pow(34 / z0, ez); ox = lerp(ox, g.x - W / 2, m); oy = lerp(oy, g.y - g.s * 0.15 - H / 2, m); }
-  return { z, ox, oy };
-}
-function drawField() {
-  const zoneOn = clamp(sp(S.cIn[0] - 0.4, 120, 20)) * (t < S.zoom ? 1 : 1 - clamp(t - S.zoom)), c = crossPos(), cv = clamp(sp(S.cross[0] - 0.4, 180, 20)), R = cellP * 1.6;
-  for (const f of FIELD) {
-    const s = sp(S.fieldIn + (1 - f.y / H) * 0.45 + f.h * 0.05, 200, 20); if (s <= 0.001) continue;
-    const gi = GOLD.indexOf(f), isGold = gi >= 0 && t >= goldT[gi], g = isGold ? sp(goldT[gi], 180, 16) : 0;
-    let dx = 0, dy = 0; for (let k = 0; k < GOLD.length; k++) { if (t < goldT[k] || GOLD[k] === f) continue; const d = Math.hypot(f.x - GOLD[k].x, f.y - GOLD[k].y); if (d < cellP * 1.9 && d > 0) { const push = clamp(sp(goldT[k], 180, 16)) * cellP * 0.26 * (1 - d / (cellP * 1.9)); dx += (f.x - GOLD[k].x) / d * push; dy += (f.y - GOLD[k].y) / d * push; } }
-    const lit = cv * (1 - sstep((Math.hypot(f.x - c.x, f.y - c.y) - R * 0.5) / (R * 0.6)));
-    let col = ciMix('#B9CFE2', CI.navy, 0.2 + 0.65 * lit), alpha = 0.6 + 0.35 * lit, size = f.s * (1 + 0.15 * lit), filled = f.h > 0.35 || lit > 0.5;
-    if (isGold) { col = CI.gold; alpha = 1; size = f.s * (1 + 0.95 * Math.min(1.12, g)); filled = true; }
-    if (!isGold && f.y > textZone.y - cellP && f.y < textZone.y + textZone.h + cellP) alpha *= 1 - 0.85 * zoneOn;
-    figure(f.x + dx, f.y + dy, size * Math.min(1.12, s), col, clamp(alpha), filled);
-  }
-  ctx.globalAlpha = 1;
-  if (cv > 0.001 && t < S.zoom + 0.5) { ctx.save(); ctx.globalAlpha = cv * (1 - clamp((t - S.zoom) / 0.4)); drawCross(c.x, c.y, R * (0.5 + 0.5 * cv), Math.max(...goldT.map((gt) => pulse(gt - 0.05, 260, 22))), (1 - cv) * Math.PI / 2); ctx.restore(); }
-}
-const cS = Math.min(fit(ST.richtige, SB * 0.11), Math.floor(textZone.h / 2.6));
-function drawCText() { typeBlock([{ txt: ST.richtige[0], size: cS, color: CI.ink, t0: S.cIn[0] }, { txt: ST.richtige[1], size: cS, color: CI.navy, t0: S.cIn[1] }], S.cOut); }
-function drawGoldFlash() { if (t < S.iris - 0.3 || t >= S.iris) return; ctx.globalAlpha = sstep((t - (S.iris - 0.3)) / 0.3); ctx.fillStyle = CI.gold; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
-function drawIris() { if (t < S.iris || t > S.iris + 0.9) return; const r = Math.hypot(W, H) * 0.6 * (1 - clamp(springType(t - S.iris, 150))); if (r < 1) return; ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(W / 2, H * 0.45, r, 0, Math.PI * 2); ctx.fill(); }
 
 /* ---------- F Ihre Aufgaben (Hell): drei Begriffe untereinander ---------- */
 const fS = Math.min(fit(J.worte, SB * 0.15), Math.floor(H * 0.4 / 3.7)), fY = H * 0.5 - lineBlockH([fS, fS, fS]) / 2 + fS * 0.2, eyS = Math.round(SB * 0.028);
@@ -455,11 +421,10 @@ window.seek = (tt) => {
   fillBg(bgColor());
   if (t < S.ad) {
     const bz = bounce(); ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(bz, bz); ctx.translate(-W / 2, -H / 2);
-    if (t >= S.fieldIn && t < S.iris) { const c = camC(); ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(c.z, c.z); ctx.translate(-W / 2 - c.ox, -H / 2 - c.oy); drawField(); ctx.restore(); }
     drawG1Icon(); drawG2Icon(); drawG3Icon();
-    drawA(); drawB(); drawCText(); drawF(); drawGText();
+    drawA(); drawB(); drawF(); drawGText();
     ctx.restore();
-    drawLogoStory(); drawGoldFlash(); drawIris();
+    drawLogoStory();
   } else { drawMotivAd(); drawLogoAd(); drawAdWrapped(); drawEnd(); drawFoot(); drawPixel(); }
 };
 window.seek(0);
