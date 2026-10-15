@@ -70,3 +70,19 @@ Texte stehen in `templates/recruiter-film/job.js` unter `story` und sind dort ä
 | 31,5–36 s | Die Rufnummer zerfällt in sechs Stufen zu goldenen Pixelblöcken, nur voss-partner.de bleibt lesbar | „Unter welcher Rufnummer? / Finds heraus!“ |
 
 Hinweis: Hook und Mitte siezen („Sie überzeugen am Telefon?“), das Ende duzt („Melde Dich!“). Alle Texte stehen in `job.js` und lassen sich vereinheitlichen.
+
+# Version 4 (15.10.2026) — „moderner, dynamischer“, 33 s, 128 BPM
+
+Vorlage: `templates/recruiter-film-dynamic/` (Version 3 bleibt unverändert in `templates/recruiter-film/`).
+Render: `BPM=128 bash scripts/anzeige.sh templates/recruiter-film-dynamic 33`
+
+Was sich gegenüber Version 3 ändert:
+- **Tempo**: 128 statt 120 BPM, volles Schlagzeug statt ruhiger Variante, fast jeder Beat trägt ein Ereignis.
+- **Kontrastschnitte**: harte Wechsel Marine / Hell / Gold auf dem Beat (Hook-Frage auf Marine, Antwort auf Hell, Kunden auf Marine, „Recruiter gesucht!“ auf Marine, Flash-Karten Hell → Marine → Gold).
+- **Kamera**: fährt dem Fadenkreuz nach (Zoom 1,14), pumpt auf jedem Beat, auf der Eins stärker. Übergang zu den Kunden als Zoom durch die vierte goldene Figur bis die Fläche gold ist, dann Iris auf Marine.
+- **Übergänge**: Whip nach oben, Zoom-through + Iris, Diagonal-Wipe mit goldener Kante, Quetschen zur Goldlinie.
+- **Typo**: größer, engere Laufweite, Zeilen schlagen mit Scale 1,1 → 1 ein, alle Satzzeichen poppen gold. „größer“ wächst explosiv aus 25 %, „schneller“ schießt mit Schräglage und Speedlines rein, Säulen wachsen staccato auf dem Beat.
+- **Kunden-Szene**: Gebäude in Stahlblau auf Marine, die Fenster gehen in Gold an, weißes Logo.
+- **Recruiter gesucht!**: Schnitt auf Nahaufnahme der offenen Stelle, Fadenkreuz in Weiß rastet ein, Figur wird gold mit zwei Ringen.
+- **Direktansprache**: drei Flash-Karten, ein Wort pro Beat.
+- **Anzeige und Ende** wie Version 3 (Rufnummer wird ausgepixelt), nur schneller getaktet.

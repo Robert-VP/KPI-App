@@ -62,3 +62,8 @@ Scores: hook 8 · phone readability 8 · motion 9 · variety 10 · brand accurac
 
 ## Version 3 final (60 fps, 4 subframes, calm music, -14.0 LUFS, TP -1.8 dBTP, 36.0 s)
 Delivered as out/film_recruiter_v3_1080x1920.mp4, _1080x1350.mp4, _1080x1080.mp4. Contact sheet at 1 fps checked end to end: every shot as scripted, phone number covered from 33 s to the last frame.
+
+# Review log — Recruiter-Film Version 4 (dynamisch, 33 s, 128 BPM)
+Frames checked: 28 across the film in 9:16, 12 in 1:1.
+Scores: hook 9 · phone readability 8 · motion 9 · variety 10 · brand accuracy 9 · sound sync 8
+Contrast cuts land on the beat, zoom-through reads as one move, flash cards readable at one beat each, ad end and pixelated number unchanged. 1:1 type scales correctly. Go for the full render.
