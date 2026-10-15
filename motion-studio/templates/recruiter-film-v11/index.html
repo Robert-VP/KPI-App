@@ -325,7 +325,7 @@ function drawG2bIcon() {
   ctx.strokeStyle = LINE; ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(sx + sh * 0.55, sy + sh * 0.46, sh * 0.2, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx + sh * 0.69, sy + sh * 0.6); ctx.lineTo(sx + sh * 0.82, sy + sh * 0.74); ctx.stroke();
   const ty = clamp((t - S.g2b - 0.3) / 0.8); ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(sx + sh * 1.1, sy + sh * 0.41, sw * 0.5 * ty, sh * 0.18);
   if (ty < 1 || Math.floor(t * 2.5) % 2 === 0) ctx.fillRect(sx + sh * 1.15 + sw * 0.5 * ty, sy + sh * 0.25, lw, sh * 0.5);
-  const kp = clamp(sp(S.g2bIn[3] + 0.15, 240, 14));   // KI: goldener Funke oben rechts, erscheint mit der KI-Zeile
+  const kp = clamp(sp(S.g2bIn[VT.digital.punkte.length] + 0.15, 240, 14));   // KI: goldener Funke oben rechts, erscheint mit der KI-Zeile
   if (kp > 0) { const kx = mx + mw * 0.9, ky = my + mh * 0.08, kr = IC * 0.07 * kp * (1 + 0.08 * Math.sin(t * 4)); ctx.save(); ctx.fillStyle = CI.gold; ctx.translate(kx, ky); for (const [sx, sc] of [[0, 1], [-1.15, 0.45]]) { ctx.save(); ctx.translate(sx * kr, sx * kr * -0.6); ctx.scale(sc, sc); ctx.beginPath(); for (let q = 0; q < 8; q++) { const a = q * Math.PI / 4, rad = q % 2 ? kr * 0.28 : kr; ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); } ctx.closePath(); ctx.fill(); ctx.restore(); } ctx.restore(); }
   for (let r = 0; r < 3; r++) {
     const p = clamp(sp(S.g2b + 1.0 + r * 0.18, 220, 20)); if (p <= 0) continue; const ry = sy + sh * 1.55 + r * mh * 0.22, rh = mh * 0.16, ox = (1 - p) * mw * 0.3;

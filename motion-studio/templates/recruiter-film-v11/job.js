@@ -20,7 +20,7 @@ window.JOB = {
     eyebrow: 'Was Sie erwartet',
     einarbeitung: ['Strukturierte', 'Einarbeitung.'],
     entwicklung: ['Möglichkeiten zur', 'persönlichen und', 'fachlichen', 'Weiterentwicklung.'],
-    digital: { titel: 'Modernes Arbeitsumfeld.', punkte: ['Microsoft 365', 'Professionelle Recruiting-Software', 'KI-gestützte Tools'] },   // Recruiting-Software = ATS / Recruiting-CRM
+    digital: { titel: 'Modernes Arbeitsumfeld.', punkte: ['Professionelle Recruiting-Software', 'KI-gestützte Tools'] },   // Recruiting-Software = ATS / Recruiting-CRM
     etabliert: ['Etablierte', 'Personalberatung', 'seit 1992.'],
   },
   // Kennzahlen und Auszeichnung wie auf voss-partner.de (Startseite)
