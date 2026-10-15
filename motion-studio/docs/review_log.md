@@ -59,3 +59,6 @@ Every 1.5–3 s a new idea. Crosshair scan, customers, three growth lines with d
 ## Version 3 (36 s, end sequence) — frames at 25.5, 26.7, 28.4, 30.9, 32.2, 32.85, 33.4, 35.9 s
 1. Pixel box measured with regular weight, but the number is bold once highlighted: digits 025 and 77 stayed readable. Fix: measure bold, coverage threshold 0.04. Re-check at 33.0 and 35.9 s: number fully covered.
 Scores: hook 8 · phone readability 8 · motion 9 · variety 10 · brand accuracy 9 · sound sync 8. Go for the full render.
+
+## Version 3 final (60 fps, 4 subframes, calm music, -14.0 LUFS, TP -1.8 dBTP, 36.0 s)
+Delivered as out/film_recruiter_v3_1080x1920.mp4, _1080x1350.mp4, _1080x1080.mp4. Contact sheet at 1 fps checked end to end: every shot as scripted, phone number covered from 33 s to the last frame.
