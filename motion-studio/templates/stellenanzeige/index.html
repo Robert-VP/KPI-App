@@ -128,7 +128,7 @@ let t = 0;
 const SWAP = !!(J.punkte && J.punkte.length) || !!J.hinweis;   // zweite Textebene vorhanden?
 const punkte = (J.punkte || []).join(' · '), hinweis = (J.hinweis || '').trim();
 const T = SWAP
-  ? { motiv: bt(0), logo: bt(0.5), kick: bt(2), title: bt(3.5), mwd: bt(5.5), sub: bt(6), pill: bt(7), foot: bt(9), claim: bt(10), qr: bt(11), alarm: bt(13.5), hold: bt(15), swapIn: bt(16), swapOut: bt(20), pillPulse: -99, qrBob: bt(22.5), bell: bt(18.5) }
+  ? { motiv: bt(0), logo: bt(0.5), kick: bt(2), title: bt(3.5), mwd: bt(5.5), sub: bt(6), pill: bt(7), foot: bt(9), claim: bt(10), qr: bt(11), alarm: bt(13.5), hold: bt(15), swapIn: bt(16), swapOut: bt(21), pillPulse: -99, qrBob: bt(23), bell: bt(18.5) }
   : { motiv: bt(0), logo: bt(0.5), kick: bt(2), title: bt(3.5), mwd: bt(5.5), sub: bt(6), pill: bt(7), foot: bt(9), claim: bt(10), qr: bt(11), alarm: bt(13.5), hold: bt(15), pillPulse: bt(17), qrBob: bt(20), bell: bt(22) };
 // Textwechsel: 0 = erster Text, 1 = zweiter Text (Löschen und Tippen laufen über die Zeichenzahl)
 const swapPhase = () => (!SWAP || t < T.swapIn) ? 0 : (t < T.swapOut ? 1 : 2);
