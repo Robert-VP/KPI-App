@@ -255,21 +255,149 @@ function drawNotif() {
   const g = sp(T.badge, 300, 16); if (g > 0) { ctx.save(); ctx.translate(931, 730); ctx.rotate((1 - g) * -0.12); ctx.scale(Math.max(0.001, g), Math.max(0.001, g));
     ctx.fillStyle = CI.gold; rr(-89, -17, 178, 34, 17); ctx.fill(); text('Diskret & kostenfrei', 0, 6, 700, 16, CI.ink, 'center'); ctx.restore(); }
 }
-function drawTap() {   // Finger-Tipp: Punkt mit weißem Ring, Druck + Welle
-  const cp = CHIP_POS[SEL];
-  const SEQS = [[[T.tap1, cp.x + cp.w * 0.55, cp.y + 22 + OFF.B]],
-    [[T.tapMail, 300, 990 + OFF.C], [T.tapCheck, 130, 1035 + OFF.C], [T.tapBtn, 338, 1112 + OFF.C]],
-    [[T.tapRow, 800, INB.y + INB.head + 44 + OFF.C]]];
-  const seq = SEQS.find((q) => t > q[0][0] - 0.6 && t < q[q.length - 1][0] + 0.7); if (!seq) return;
+function cursor(seq, world, m = 1) {   // Finger-Tipp: Punkt mit weißem Ring, Druck + Welle; seq = [[t, x, y], …]
   const kx = [[0, seq[0][1]], ...seq.slice(1).map((s2, i) => [seq[i][0] + 0.15, s2[1]])], ky = [[0, seq[0][2]], ...seq.slice(1).map((s2, i) => [seq[i][0] + 0.15, s2[2]])];
-  const x = track(t, kx, 90, 2 * Math.sqrt(90)), y = track(t, ky, 90, 2 * Math.sqrt(90)) + 26;
-  const tin = seq[0][0] - 0.6, tout = seq[seq.length - 1][0] + 0.35;
-  const a = st(tin, 200) * (1 - st(tout, 200)); if (a <= 0.01) return;
-  ctx.setTransform(camZ, 0, 0, camZ, W / 2 - camX * camZ, H / 2 - camY * camZ); ctx.translate(ox, oy); ctx.scale(s, s);
-  for (const [tt] of seq) { const q = clamp((t - tt) / 0.5); if (q > 0 && q < 1) { ctx.strokeStyle = `rgba(15,53,86,${0.35 * (1 - q)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y - 26, 20 + 40 * q, 0, Math.PI * 2); ctx.stroke(); } }
+  const x = track(t, kx, 90, 2 * Math.sqrt(90)), y = track(t, ky, 90, 2 * Math.sqrt(90));
+  const a = st(seq[0][0] - 0.6, 200) * (1 - st(seq[seq.length - 1][0] + 0.35, 200)); if (a <= 0.01) return;
+  if (world) { ctx.setTransform(camZ, 0, 0, camZ, W / 2 - camX * camZ, H / 2 - camY * camZ); ctx.translate(ox, oy); ctx.scale(s, s); } else panelBase(m);
+  for (const [tt] of seq) { const q = clamp((t - tt) / 0.5); if (q > 0 && q < 1) { ctx.strokeStyle = `rgba(15,53,86,${0.35 * (1 - q)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 20 + 40 * q, 0, Math.PI * 2); ctx.stroke(); } }
   const pr = seq.reduce((m, [tt]) => Math.max(m, pulse(tt - 0.05, 0.12)), 0), k = 1 - 0.18 * pr;
-  ctx.save(); ctx.translate(x, y - 26); ctx.scale(k, k); ctx.globalAlpha = a; shadow(true); ctx.fillStyle = 'rgba(17,20,24,0.28)'; ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI * 2); ctx.fill(); shadow(false);
-  ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.translate(x, y); ctx.scale(k, k); ctx.globalAlpha = a; ctx.shadowColor = 'rgba(15,53,86,0.25)'; ctx.shadowBlur = 16 * PS; ctx.shadowOffsetY = 5 * PS;
+  ctx.fillStyle = 'rgba(17,20,24,0.28)'; ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI * 2); ctx.fill(); ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
+}
+function drawTap() {
+  const SEQS = [[[T.tapMail, 300, 990 + OFF.C], [T.tapCheck, 130, 1035 + OFF.C], [T.tapBtn, 338, 1112 + OFF.C]], [[T.tapRow, 800, INB.y + INB.head + 44 + OFF.C]]];
+  const seq = SEQS.find((q) => t > q[0][0] - 0.6 && t < q[q.length - 1][0] + 0.7); if (seq) cursor(seq, true);
+}
+
+/* ---------- Eingeblendete Ebenen in Bildschirmkoordinaten: Stellenseite, „Fast geschafft!“, Postfach, Vorteile ---------- */
+const PS = Math.min(W, H) / 1080, CXo = W / 2 / PS, CYo = H * 0.47 / PS;   // Ebenen-Koordinaten: Mitte des Bildes, Einheit = 1080er-Pixel
+function wrapLines(str, maxW, w, px) { const out = []; let line = ''; for (const wd of str.split(' ')) { const tt = line ? line + ' ' + wd : wd; if (measure(tt, w, px) > maxW && line) { out.push(line); line = wd; } else line = tt; } if (line) out.push(line); return out; }
+function fitPx(str, w, px, maxW) { while (px > 10 && measure(str, w, px) > maxW) px -= 0.5; return px; }
+function ov(tIn, tOut) { const a = sp(tIn, 150, 21), b = st(tOut, 220); return { a, b, v: clamp(a * 1.6) * (1 - b), on: t >= tIn && b < 0.999 }; }
+const pscale = (pw, ph) => Math.min(W * 0.94 / (pw * PS), H * 0.72 / (ph * PS), 1.45);   // jedes Fenster so groß, wie das Format erlaubt
+function panelBase(m) { ctx.setTransform(PS * m, 0, 0, PS * m, W / 2, H * 0.47); }
+function panelAt(o, pw, ph) { panelBase(pscale(pw, ph)); ctx.translate(0, (1 - o.a) * 90 + o.b * 50); const k = 0.94 + 0.06 * clamp(o.a); ctx.scale(k, k); ctx.globalAlpha = o.v; }
+function sheet(x, y, w, h, r, fill = '#FFFFFF') { ctx.save(); ctx.shadowColor = 'rgba(5,14,26,0.30)'; ctx.shadowBlur = 60 * PS; ctx.shadowOffsetY = 22 * PS; ctx.fillStyle = fill; rr(x, y, w, h, r); ctx.fill(); ctx.restore(); }
+function okIcon(cx, cy, p) { ctx.fillStyle = '#e8f5ec'; ctx.beginPath(); ctx.arc(cx, cy, 30 * (0.6 + 0.4 * clamp(p * 3)), 0, Math.PI * 2); ctx.fill(); check(cx, cy, 30, clamp((p - 0.25) / 0.6), '#1f8a4c', 3.4); }
+const SUCHE_T = 'Kälte- & Klimatechnik · Süd';
+// 1) Stellenseite: Suchfeld, Branche, Region, Aufgabenbereich, „Job-Alarm für diese Suche“
+const WEB = { br: [-40, -128, 270, 48], rg: [242, -128, 210, 48] };
+const SEG = (() => { let x = -448; return ['Alle', 'Vertrieb & Außendienst', 'Technik & Projekte', 'Führung'].map((l) => { const w = measure(l, 500, 14.5) + 28; const o = { l, x, w }; x += w + 2; return o; }); })();
+const ALARM_W = measure('Job-Alarm für diese Suche', 600, 15) + 28, ALARM_X = 452 - ALARM_W;
+function drawWeb() {
+  const o = ov(T.web, T.webOut); if (!o.on) return; panelAt(o, 960, 430);
+  sheet(-480, -215, 960, 430, 22); ctx.save(); rr(-480, -215, 960, 430, 22); ctx.clip();
+  ctx.fillStyle = '#EEF1F4'; ctx.fillRect(-480, -215, 960, 54); [-450, -428, -406].forEach((x) => { ctx.fillStyle = '#D3D9E0'; ctx.beginPath(); ctx.arc(x, -188, 6, 0, Math.PI * 2); ctx.fill(); });
+  ctx.fillStyle = '#FFFFFF'; rr(-250, -204, 500, 32, 16); ctx.fill(); text('voss-partner.de/stellenangebote', 0, -182.5, 500, 15, '#6e6e73', 'center');
+  // Suchfeld
+  ctx.fillStyle = '#FFFFFF'; rr(-452, -128, 400, 48, 24); ctx.fill(); ctx.strokeStyle = '#d2d2d7'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = '#86868b'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(-428, -106, 6.5, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-423, -101); ctx.lineTo(-418, -96); ctx.stroke();
+  text('Position, Ort oder Projektnummer suchen', -408, -99, 400, 15, '#86868b');
+  // Auswahlfelder
+  const sel = ([x, y, w, h], t0, a, b) => { const on = st(t0 + 0.15, 260), pr = pulse(t0, 0.12);
+    ctx.save(); ctx.translate(x + w / 2, y + h / 2); ctx.scale(1 - 0.03 * pr, 1 - 0.03 * pr); ctx.translate(-(x + w / 2), -(y + h / 2));
+    ctx.fillStyle = mix('#FFFFFF', '#EDF1F6', on); rr(x, y, w, h, 24); ctx.fill(); ctx.strokeStyle = mix('#d2d2d7', CI.navy, on); ctx.lineWidth = 1 + 0.5 * on; ctx.stroke();
+    const lab = on > 0.5 ? b : a; ctx.save(); ctx.globalAlpha *= on > 0.5 ? clamp((on - 0.5) * 2) : clamp((0.5 - on) * 2 + (on === 0 ? 1 : 0)); text(lab, x + 16, y + 30, on > 0.5 ? 600 : 400, 15, on > 0.5 ? CI.navy : '#1d1d1f'); ctx.restore();
+    ctx.strokeStyle = '#6e6e73'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x + w - 28, y + 20); ctx.lineTo(x + w - 22, y + 27); ctx.lineTo(x + w - 16, y + 20); ctx.stroke(); ctx.restore(); };
+  sel(WEB.br, T.tapBr, 'Alle Branchen', 'Kälte- & Klimatechnik'); sel(WEB.rg, T.tapRg, 'Alle Regionen', 'Süd');
+  // Aufgabenbereich (Segment) und Job-Alarm-Knopf
+  const sw = SEG[SEG.length - 1].x + SEG[SEG.length - 1].w + 4 + 448; ctx.fillStyle = '#F0F2F5'; rr(-452, -68, sw, 46, 23); ctx.fill();
+  SEG.forEach((g, i) => { if (i === 0) { ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.08)'; ctx.shadowBlur = 4 * PS; ctx.shadowOffsetY = 1 * PS; ctx.fillStyle = '#FFFFFF'; rr(g.x, -64, g.w, 38, 19); ctx.fill(); ctx.restore(); }
+    text(g.l, g.x + g.w / 2, -40, i === 0 ? 500 : 400, 14.5, i === 0 ? '#1d1d1f' : '#6e6e73', 'center'); });
+  const ap = pulse(T.tapAlarm, 0.12), hot = st(T.tapAlarm - 0.4, 200);
+  ctx.fillStyle = '#d2d2d7'; ctx.fillRect(ALARM_X, -60, 1, 30);
+  ctx.save(); ctx.translate(ALARM_X + ALARM_W / 2, -45); ctx.scale(1 + 0.06 * ap, 1 + 0.06 * ap); ctx.translate(-(ALARM_X + ALARM_W / 2), 45);
+  if (hot > 0) { ctx.fillStyle = `rgba(232,195,60,${0.28 * hot})`; rr(ALARM_X + 6, -64, ALARM_W - 4, 38, 19); ctx.fill(); }
+  ctx.strokeStyle = CI.navy; ctx.lineWidth = 1.7; ctx.lineJoin = 'round'; ctx.beginPath(); const bx = ALARM_X + 22, by = -46;
+  ctx.moveTo(bx - 7, by + 5); ctx.quadraticCurveTo(bx - 5.5, by + 2, bx - 5.5, by - 2); ctx.bezierCurveTo(bx - 5.5, by - 9, bx + 5.5, by - 9, bx + 5.5, by - 2); ctx.quadraticCurveTo(bx + 5.5, by + 2, bx + 7, by + 5); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(bx, by + 7.5, 1.8, 0, Math.PI); ctx.stroke();
+  text('Job-Alarm für diese Suche', ALARM_X + 36, -40, 600, 15, CI.navy); ctx.restore();
+  // Stellenliste (neutrale Platzhalter), ordnet sich bei jeder Filteränderung neu
+  for (let i = 0; i < 3; i++) { const re = Math.min(st(T.tapBr + 0.25 + i * 0.05, 240), 1) * Math.min(st(T.tapRg + 0.25 + i * 0.05, 240), 1), jig = t > T.tapBr ? (1 - re) * 14 : 0;
+    const y = 2 + i * 66 + jig; ctx.fillStyle = '#F6F7F9'; rr(-452, y, 904, 56, 14); ctx.fill(); ctx.fillStyle = '#E1E6EC'; rr(-428, y + 14, [300, 250, 280][i], 11, 5.5); ctx.fill(); ctx.fillStyle = '#EAEDF1'; rr(-428, y + 33, [200, 230, 170][i], 9, 4.5); ctx.fill(); rr(372, y + 22, 56, 12, 6); ctx.fill(); }
+  ctx.restore();
+}
+// 2) „Fast geschafft!“
+function drawDone() {
+  const o = ov(T.done, T.doneOut); if (!o.on) return; panelAt(o, 600, 410);
+  sheet(-300, -205, 600, 410, 22);
+  ctx.fillStyle = '#f5f5f7'; ctx.beginPath(); ctx.arc(256, -161, 17, 0, Math.PI * 2); ctx.fill(); text('×', 256, -154, 400, 22, '#6e6e73', 'center');
+  okIcon(0, -118, clamp((t - T.done - 0.2) / 0.7));
+  text('Fast geschafft!', 0, -42, 800, 34, CI.ink, 'center', -0.6);
+  wrapLines('Wir haben Ihnen eine E-Mail geschickt. Bitte klicken Sie auf den Link darin – erst dann ist Ihr Job-Alarm aktiv.', 500, 400, 19).forEach((l, i) => text(l, 0, 2 + i * 29, 400, 19, '#6e6e73', 'center'));
+  const pr = pulse(T.tapClose, 0.12); ctx.save(); ctx.translate(0, 132); ctx.scale(1 - 0.04 * pr, 1 - 0.04 * pr); ctx.fillStyle = '#EDF1F6'; rr(-82, -23, 164, 46, 23); ctx.fill(); text('Schließen', 0, 6, 600, 16, CI.navy, 'center'); ctx.restore();
+}
+// 3) Postfach: Bestätigungs-Mail ploppt auf → Mail → „Job-Alarm ist aktiv“
+const MB = { x: -380, y: -330, w: 760, h: 660, head: 70, row: 80 };
+const CSUBJ = 'Bitte bestätigen: Ihr Job-Alarm bei Voß & Partner';
+function drawMailbox() {
+  const o = ov(T.mbox, T.mboxOut); if (!o.on) return; panelAt(o, 760, 660);
+  const { x, y, w, h, head, row } = MB; sheet(x, y, w, h, 24); ctx.save(); rr(x, y, w, h, 24); ctx.clip();
+  const op = st(T.cOpen, 140), ac = st(T.active, 140);
+  // a) Posteingang
+  ctx.save(); ctx.translate(-op * 160, 0); ctx.globalAlpha *= 1 - clamp(op * 1.3);
+  ctx.strokeStyle = CI.ink; ctx.lineWidth = 2; rr(x + 30, y + 24, 32, 23, 4); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x + 31, y + 26); ctx.lineTo(x + 46, y + 37); ctx.lineTo(x + 61, y + 26); ctx.stroke();
+  text('Posteingang', x + 78, y + 44, 700, 22, CI.ink);
+  const cnt = sp(T.cMail + 0.2, 320, 14); if (cnt > 0) { ctx.save(); ctx.translate(x + 64, y + 22); ctx.scale(cnt, cnt); ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill(); text('1', 0, 5, 800, 13.5, CI.navy, 'center'); ctx.restore(); }
+  ctx.fillStyle = CI.linie; ctx.fillRect(x, y + head, w, 1);
+  const ins = sp(T.cMail, 200, 18);
+  for (let i = 0; i < 6; i++) { const ry = y + head + (i + ins) * row, q = st(T.mbox + 0.25 + i * 0.07, 220); if (q <= 0) continue; ctx.save(); ctx.globalAlpha *= q;
+    ctx.fillStyle = '#E3E8EE'; ctx.beginPath(); ctx.arc(x + 54, ry + 40, 21, 0, Math.PI * 2); ctx.fill(); rr(x + 90, ry + 24, [230, 180, 250, 200, 220, 190][i], 12, 6); ctx.fill();
+    ctx.fillStyle = CI.chip; rr(x + 90, ry + 46, [380, 330, 400, 300, 350, 320][i], 10, 5); ctx.fill(); rr(x + w - 80, ry + 26, 48, 10, 5); ctx.fill(); ctx.fillStyle = CI.linie; ctx.fillRect(x + 30, ry + row - 1, w - 60, 1); ctx.restore(); }
+  if (ins > 0) { const ry = y + head + (ins - 1) * row, tp = st(T.tapCRow, 300), pr = pulse(T.tapCRow, 0.12);
+    ctx.save(); ctx.translate(0, ry + row / 2); ctx.scale(1 - 0.02 * pr, 1 - 0.02 * pr); ctx.translate(0, -(ry + row / 2));
+    ctx.fillStyle = mix('#FFF8E1', '#E8EEF6', tp); ctx.fillRect(x, ry, w, row);
+    const dot = sp(T.cMail + 0.3, 300, 14); ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(x + 15, ry + 40, 5.5 * dot, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = CI.navy; ctx.beginPath(); ctx.arc(x + 54, ry + 40, 21, 0, Math.PI * 2); ctx.fill(); text('V&P', x + 54, ry + 44.5, 800, 12.5, CI.gold, 'center');
+    text('Voß & Partner | Job-Alarm', x + 90, ry + 35, 700, 17, CI.ink); text(CSUBJ, x + 90, ry + 59, 400, fitPx(CSUBJ, 400, 16, w - 130), '#4A505A'); ctx.restore(); }
+  ctx.restore();
+  // b) geöffnete Bestätigungs-Mail
+  if (op > 0) { ctx.save(); ctx.translate((1 - op) * 300 - ac * 160, 0); ctx.globalAlpha *= clamp(op * 1.5) * (1 - clamp(ac * 1.3));
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x, y, w, h);
+    text('‹ Posteingang', x + 30, y + 40, 600, 16, CI.navy); text(CSUBJ, x + 30, y + 82, 700, fitPx(CSUBJ, 700, 21, w - 60), CI.ink);
+    ctx.fillStyle = CI.navy; ctx.beginPath(); ctx.arc(x + 46, y + 118, 16, 0, Math.PI * 2); ctx.fill(); text('V&P', x + 46, y + 122, 800, 10, CI.gold, 'center'); text('Voß & Partner | Job-Alarm', x + 72, y + 123, 600, 15, '#4A505A');
+    ctx.fillStyle = CI.linie; ctx.fillRect(x, y + 146, w, 1); ctx.fillStyle = '#f5f5f7'; ctx.fillRect(x, y + 147, w, h - 147);
+    ctx.fillStyle = '#FFFFFF'; rr(x + 24, y + 166, w - 48, h - 190, 18); ctx.fill();
+    const bx = x + 54; if (logo.naturalWidth) ctx.drawImage(logo, bx, y + 190, 48 * logo.naturalWidth / logo.naturalHeight, 48);
+    text('Bitte bestätigen Sie Ihren Job-Alarm', bx, y + 290, 700, 26, CI.ink, 'left', -0.3);
+    wrapLines('Sie möchten über neue Stellen informiert werden, die zu dieser Suche passen:', w - 108, 400, 17).forEach((l, i) => text(l, bx, y + 326 + i * 25, 400, 17, '#4A505A'));
+    ctx.fillStyle = '#f5f5f7'; rr(bx, y + 370, w - 108, 52, 12); ctx.fill(); text(SUCHE_T, bx + 16, y + 403, 700, 17, CI.ink);
+    wrapLines('Bitte bestätigen Sie mit einem Klick – erst dann ist Ihr Job-Alarm aktiv.', w - 108, 400, 17).forEach((l, i) => text(l, bx, y + 456 + i * 25, 400, 17, '#4A505A'));
+    const pr = pulse(T.tapConfirm, 0.12), bw = measure('Job-Alarm bestätigen', 600, 15.5) + 48; ctx.save(); ctx.translate(bx + bw / 2, y + 520); ctx.scale(1 - 0.04 * pr, 1 - 0.04 * pr);
+    ctx.fillStyle = '#0a3d62'; rr(-bw / 2, -22, bw, 44, 22); ctx.fill(); text('Job-Alarm bestätigen', 0, 5.5, 600, 15.5, '#FFFFFF', 'center'); ctx.restore();
+    ctx.restore(); }
+  // c) Website: „Job-Alarm ist aktiv“
+  if (ac > 0) { ctx.save(); ctx.translate((1 - ac) * 300, 0); ctx.globalAlpha *= clamp(ac * 1.5);
+    ctx.fillStyle = '#f5f5f7'; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#EEF1F4'; ctx.fillRect(x, y, w, 54);
+    [x + 30, x + 52, x + 74].forEach((dx) => { ctx.fillStyle = '#D3D9E0'; ctx.beginPath(); ctx.arc(dx, y + 27, 6, 0, Math.PI * 2); ctx.fill(); });
+    ctx.fillStyle = '#FFFFFF'; rr(-200, y + 11, 400, 32, 16); ctx.fill(); text('voss-partner.de', 0, y + 32.5, 500, 15, '#6e6e73', 'center');
+    sheet(-300, -150, 600, 330, 18); const q = st(T.active + 0.2, 200);
+    okIcon(0, -84, clamp((t - T.active - 0.3) / 0.7));
+    text('Job-Alarm ist aktiv', 0, -12 + (1 - q) * 10, 700, 28, CI.ink, 'center', -0.3);
+    wrapLines('Vielen Dank! Wir informieren Sie per E-Mail, sobald eine neue Stelle zu Ihrer Suche passt:', 500, 400, 17).forEach((l, i) => text(l, 0, 28 + i * 25, 400, 17, '#6e6e73', 'center'));
+    text(SUCHE_T, 0, 108, 700, 17, CI.ink, 'center');
+    ctx.restore(); }
+  ctx.restore();
+}
+// 4) Vorteile
+const PROS = ['Kostenfrei', 'Diskret', 'Jede Stelle nur einmal', 'Abmeldung mit einem Klick'];
+function drawPros() {
+  const o = ov(T.pros, T.prosOut); if (!o.on) return; panelAt(o, 640, 380);
+  ctx.save(); ctx.shadowColor = 'rgba(5,14,26,0.35)'; ctx.shadowBlur = 60 * PS; ctx.shadowOffsetY = 22 * PS;
+  const g = ctx.createLinearGradient(-320, -190, 320, 190); g.addColorStop(0, '#0A1626'); g.addColorStop(0.55, '#0E2A45'); g.addColorStop(1, '#0F3D63'); ctx.fillStyle = g; rr(-320, -190, 640, 380, 26); ctx.fill(); ctx.restore();
+  PROS.forEach((l, i) => { const q = sp(T.pros + 0.3 + i * 0.5, 220, 18); if (q <= 0) return; const y = -114 + i * 76;
+    ctx.save(); ctx.globalAlpha *= clamp(q * 2); ctx.translate((1 - q) * 40, 0);
+    ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(-250, y - 9, 18 * Math.min(1.1, q), 0, Math.PI * 2); ctx.fill(); check(-250, y - 9, 20, clamp((t - T.pros - 0.45 - i * 0.5) / 0.3), CI.navy, 3);
+    text(l, -214, y + 2, 700, 30, '#FFFFFF', 'left', -0.3); ctx.restore(); });
+}
+function drawOverlays() {
+  const v = Math.max(ov(T.web, T.webOut).v, ov(T.done, T.doneOut).v, ov(T.mbox, T.mboxOut).v, ov(T.pros, T.prosOut).v);
+  if (v > 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = `rgba(10,22,38,${0.42 * v})`; ctx.fillRect(0, 0, W, H); }
+  drawWeb(); drawDone(); drawMailbox(); drawPros(); ctx.globalAlpha = 1;
+  const SEQS = [[pscale(960, 430), [T.tapBr, WEB.br[0] + WEB.br[2] / 2, WEB.br[1] + 24], [T.tapRg, WEB.rg[0] + WEB.rg[2] / 2, WEB.rg[1] + 24], [T.tapAlarm, ALARM_X + ALARM_W / 2, -45]],
+    [pscale(600, 410), [T.tapClose, 0, 132]], [pscale(760, 660), [T.tapCRow, 60, MB.y + MB.head + MB.row / 2], [T.tapConfirm, MB.x + 54 + 110, MB.y + 520]]];
+  const sq = SEQS.find((q) => t > q[1][0] - 0.6 && t < q[q.length - 1][0] + 0.7); if (sq) cursor(sq.slice(1), false, sq[0]);
 }
 function drawFoot() {   // wie drawFoot() der Stellenanzeigen; erste Zeile mit Pfad zu den Stellenangeboten
   const rise = sp(T.foot, 120, 18); if (rise <= 0) return; ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -311,7 +439,7 @@ const KC = 46, DC = 2 * Math.sqrt(46);
 window.seek = (tt) => {
   t = tt; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = CI.bg; ctx.fillRect(0, 0, W, H);
   camZ = track(t, KEYS.map(([k, v]) => [k, v[0]]), KC, DC); camX = track(t, KEYS.map(([k, v]) => [k, v[1]]), KC, DC); camY = track(t, KEYS.map(([k, v]) => [k, v[2]]), KC, DC);
-  drawCircle(); drawMotiv(); drawLogo(); drawHook(); drawSub(); drawChips(); drawCard(); drawEnvelope(); drawInbox(); drawNotif(); drawTap(); drawFoot();
+  drawCircle(); drawMotiv(); drawLogo(); drawHook(); drawSub(); drawChips(); drawCard(); drawEnvelope(); drawInbox(); drawNotif(); drawTap(); drawOverlays(); drawFoot();
 };
 window.DUR = DUR;
 window.seek(0);
