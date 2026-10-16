@@ -26,8 +26,6 @@ import { clamp, lerp, spring, track, springType, hash } from '../../lib/motion.j
 // Job-Datei: ?job=jobs/name.js (relativ zu diesem Ordner), sonst ./job.js
 await new Promise((res, rej) => { const q = new URLSearchParams(location.search).get('job'); const el = document.createElement('script'); el.src = q || './job.js'; el.onload = res; el.onerror = () => rej(new Error('job file not found: ' + el.src)); document.head.appendChild(el); });
 const J = window.JOB;
-// ?safe=reel: Instagram-Reel. Logo unter der App-Kopfzeile, Fußband-Text über Bildunterschrift, Text frei von der Button-Spalte, kein QR (auf dem eigenen Handy nicht scanbar)
-const REEL = new URLSearchParams(location.search).get('safe') === 'reel';
 const c = document.getElementById('c'), ctx = c.getContext('2d');
 const W = window.innerWidth, H = window.innerHeight; c.width = W; c.height = H;
 const FF = "'Inter', 'Segoe UI', Arial, sans-serif";
@@ -47,20 +45,20 @@ function capHeight(fs) { const m = ctx.measureText('H'); return (m && m.actualBo
 const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, Math.max(0, w), Math.max(0, h), Math.min(r, Math.max(0, w) / 2, Math.max(0, h) / 2)); };
 
 /* ---------- Layout (einmal, zeitunabhängig) ---------- */
-const M = Math.round(W * 0.09), footH = Math.round(H * 0.122), REEL_B = REEL ? Math.round(H * 0.22) : 0, REEL_R = REEL ? Math.round(W * 0.10) : 0, footTop = H - footH - REEL_B, footBand = H - footTop;
+const M = Math.round(W * 0.09), footH = Math.round(H * 0.122), footTop = H - footH;
 const isLand = W > H * 1.15, SB = isLand ? Math.round(H * 1.35) : W;
 let logoBottom = Math.round(W * 0.045), L = null;
-if (logo.naturalWidth) { const ar = logo.naturalHeight / logo.naturalWidth; let lw = Math.round(SB * 0.145), lh = Math.round(lw * ar); const maxLh = Math.round(H * 0.19); if (lh > maxLh) { lh = maxLh; lw = Math.round(lh / ar); } L = { x: Math.round(W * 0.055), y: REEL ? Math.round(H * 0.13) : Math.round(Math.min(W, H) * 0.045), w: lw, h: lh }; logoBottom = L.y + lh; }
+if (logo.naturalWidth) { const ar = logo.naturalHeight / logo.naturalWidth; let lw = Math.round(SB * 0.145), lh = Math.round(lw * ar); const maxLh = Math.round(H * 0.19); if (lh > maxLh) { lh = maxLh; lw = Math.round(lh / ar); } L = { x: Math.round(W * 0.055), y: Math.round(Math.min(W, H) * 0.045), w: lw, h: lh }; logoBottom = L.y + lh; }
 const branche = (J.branche || '').split('\n').map((s) => s.trim()).filter(Boolean).join(' ');
 const jobRaw = (J.jobtitel || '').trim() || 'Jobtitel', unter = (J.untertitel || '').trim(), region = (J.region || '').trim();
 const projNr = (() => { const d = String(J.projektnr || '').replace(/\D/g, ''); return d ? 'VP-' + d : ''; })();
 let job = jobRaw, mwd = '(m/w/d)'; const mm = jobRaw.match(/\(\s*m\s*\/\s*w\s*\/\s*[dx](?:\s*\/\s*d)?\s*\)\s*$/i); if (mm) job = jobRaw.slice(0, mm.index).trim() || 'Jobtitel';
-const qrUrl = REEL ? '' : (J.qrUrl || '').trim(), qrAn = !!qrUrl;
+const qrUrl = (J.qrUrl || '').trim(), qrAn = !!qrUrl;
 const qrQs = Math.round(Math.max(footH * 1.15, W * 0.11, isLand ? H * 0.30 : 0)), qrCapS = Math.max(11, Math.round(qrQs * 0.11)), qrCapH = Math.round(qrCapS * 1.5), qrChh = qrQs + qrCapH;
-const qrGrenze = qrAn ? (W - M - qrQs - Math.round(M * 0.4)) : (W - M - REEL_R);
+const qrGrenze = qrAn ? (W - M - qrQs - Math.round(M * 0.4)) : (W - M);
 const kickS = Math.max(11, Math.round(SB * 0.022 * ((J.kickerScale || 100) / 100))), subS = Math.max(11, Math.round(SB * 0.024));
 const pillS = Math.max(11, Math.round(SB * 0.026 * (Math.min(170, Math.max(60, J.regionSize || 100)) / 100)));
-const maxW = (isLand && qrAn) ? (qrGrenze - M) : (W - M * 2 - REEL_R), lhF = 1.08;
+const maxW = (isLand && qrAn) ? (qrGrenze - M) : (W - M * 2), lhF = 1.08;
 const nonTitleH = (branche ? kickS * 2.3 : 0) + (unter ? subS * 3.1 : 0) + ((region || projNr) ? pillS * 5.1 : 0);
 const minTop = Math.max(Math.round(H * 0.28), logoBottom + Math.round(H * 0.03));
 const alarmAn = !!J.alarm, alarmH = alarmAn ? Math.round(H * 0.042) : 0, randUnten = Math.round(H * 0.075) + alarmH;
@@ -234,8 +232,8 @@ function drawText() {
 }
 function drawFoot() {
   const rise = sp(T.foot, 120, 18); if (rise <= 0) return;
-  const top = footTop + (1 - rise) * footBand; ctx.save(); ctx.beginPath(); ctx.rect(0, top, W, footBand); ctx.clip();
-  const g = ctx.createLinearGradient(0, footTop, W, footTop + footBand); g.addColorStop(0, '#0A1626'); g.addColorStop(0.55, '#0E2A45'); g.addColorStop(1, '#0F3D63'); ctx.fillStyle = g; ctx.fillRect(0, footTop, W, footBand);
+  const top = footTop + (1 - rise) * footH; ctx.save(); ctx.beginPath(); ctx.rect(0, top, W, footH); ctx.clip();
+  const g = ctx.createLinearGradient(0, footTop, W, footTop + footH); g.addColorStop(0, '#0A1626'); g.addColorStop(0.55, '#0E2A45'); g.addColorStop(1, '#0F3D63'); ctx.fillStyle = g; ctx.fillRect(0, footTop, W, footH);
   const fuss1 = Math.max(13, Math.round(SB * 0.021)), fuss2 = Math.max(11, Math.round(SB * 0.017)); const web = (J.web || 'voss-partner.de').trim(), tel = (J.telefon || '').trim(), zusatz = (J.fusszusatz || '').trim();
   const row = (txt, x, yy, font, color, t0) => { const s = springType(t - t0, 120); if (s <= 0) return; ctx.font = font; ctx.fillStyle = color; ctx.save(); ctx.globalAlpha = Math.min(1, s * 1.4); ctx.fillText(txt, x, yy + (1 - s) * fuss2 * 0.8); ctx.restore(); };
   row(web, M, footTop + footH * 0.38, `700 ${fuss1}px ${FF}`, '#FFFFFF', T.foot + 0.2);
@@ -244,7 +242,7 @@ function drawFoot() {
   if (J.claim) {
     ctx.font = `700 ${fuss1}px ${FF}`; const wLinks1 = ctx.measureText(web).width, wClaim1 = ctx.measureText('Wir finden die Richtigen.').width; ctx.font = `400 ${fuss2}px ${FF}`;
     const wLinks = Math.max(wLinks1, ctx.measureText('Ahlen · Stuttgart').width, ctx.measureText(tel).width); const wClaim = Math.max(wClaim1, ctx.measureText('Personalberatung seit 1992.').width, zusatz ? ctx.measureText(zusatz).width : 0);
-    const claimLinks = qrAn ? (M + wLinks + ((W - 2 * M) - wLinks - wClaim - qrQs) / 2) : (W - M - REEL_R - wClaim);
+    const claimLinks = qrAn ? (M + wLinks + ((W - 2 * M) - wLinks - wClaim - qrQs) / 2) : (W - M - wClaim);
     row('Wir finden die Richtigen', claimLinks, footTop + footH * 0.38, `700 ${fuss1}px ${FF}`, '#FFFFFF', T.claim);
     ctx.font = `700 ${fuss1}px ${FF}`; const dotX = claimLinks + ctx.measureText('Wir finden die Richtigen').width;
     const dot = sp(T.claim + 0.35, 320, 20); if (dot > 0) { const beatPulse = t >= T.hold ? 0.18 * Math.max(0, Math.sin(((t - T.hold) % 2) * Math.PI * 2)) * (((t - T.hold) % 2) < 0.5 ? 1 : 0) : 0; ctx.save(); ctx.fillStyle = CI.gold; ctx.translate(dotX + fuss1 * 0.12, footTop + footH * 0.38 - fuss1 * 0.08); ctx.scale(Math.max(0.001, dot) * (1 + beatPulse), Math.max(0.001, dot) * (1 + beatPulse)); ctx.fillText('.', -fuss1 * 0.12, fuss1 * 0.08); ctx.restore(); }
@@ -255,7 +253,7 @@ function drawFoot() {
 }
 function drawAlarm() {
   if (!alarmAn) return; const s = sp(T.alarm, 140, 19); if (s <= 0) return;
-  const aT = 'Nicht das Richtige? Job-Alarm aktivieren: voss-partner.de/stellenangebote'; const aMaxW = (qrAn ? qrGrenze : W - M - REEL_R) - M;
+  const aT = 'Nicht das Richtige? Job-Alarm aktivieren: voss-partner.de/stellenangebote'; const aMaxW = (qrAn ? qrGrenze : W - M) - M;
   let aS = Math.max(11, Math.round(SB * 0.021)); ctx.font = `600 ${aS}px ${FF}`; const aPad = Math.round(alarmH * 0.55);
   while (aS > 9 && ctx.measureText(aT).width + aPad * 2 + alarmH * 0.9 > aMaxW) { aS -= 1; ctx.font = `600 ${aS}px ${FF}`; }
   const aW = Math.min(aMaxW, Math.round(ctx.measureText(aT).width + aPad * 2 + alarmH * 0.9)); const aY = footTop - Math.round(H * 0.075) * 0.5 - alarmH;
