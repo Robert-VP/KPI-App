@@ -268,3 +268,24 @@ Vorlage: `templates/recruiter-film-v11/`.
 | Interessiert? Melden Sie sich! | Anzeige | 3,2 s |
 | Wie Sie uns erreichen? Am liebsten natürlich über das Telefon. | Anzeige | 4,2 s |
 | Schluss: Unter welcher Rufnummer? Finden Sie es heraus! (Nummer gepixelt) | Anzeige | 5,2 s |
+
+## Musik Version 11 (16.10.2026): Deep House „soulful mit Orgel“
+
+Ohne Sprecherstimme. Erzeugt mit:
+
+```
+node scripts/music_deephouse.mjs --variant latch --bpm 128 --dur 91.7 \
+  --sections "0:intro,12:full,36:perc,48:light,56:full,84:lift,100:full,120:build,124:lift,156:light,168:full,180:lift,188:outro" \
+  --cues templates/recruiter-film-v11/cues.json --out out/music_v11_deephouse.wav
+```
+
+| Beat | Szene | Musik |
+|---|---|---|
+| 0–12 | „Sie überzeugen am Telefon?“ | Gefiltertes Intro, Riser; Drop genau auf „gesucht!“ |
+| 12–48 | Recruiter gesucht, Direktansprache, Aufgaben | Voller Groove, ab „Suchen. Ansprechen. Überzeugen.“ mit Percussion |
+| 48–56 | Was Sie erwartet (Einarbeitung) | Leichter Groove zum Lesen |
+| 56–120 | Entwicklung, Arbeitsumfeld, Über uns | Voller Groove, ab Über uns mit Melodie |
+| 120–124 | Goldene Blende | Build ohne Kick, Snare-Wirbel |
+| 124–156 | Anzeigenblock | Drop mit Melodie |
+| 156–188 | Interessiert? / Telefon | Leichter, dann voller Groove |
+| 188–196 | Rufnummer ausgepixelt, Schluss | Filter schließt sich, letzter Takt ohne Kick |

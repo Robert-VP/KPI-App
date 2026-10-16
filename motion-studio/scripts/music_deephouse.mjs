@@ -120,39 +120,60 @@ const VARS = {
     hook: [[[0, 72], [7, 71]], [[0, 67], [10, 69]]] },
 };
 const P = VARS[VAR]; if (!P) throw new Error('unknown variant ' + VAR);
+VARS.latch.lift = [[[3, 76], [6, 74], [10, 72], [14, 69]], [[3, 72], [6, 74], [8, 76], [11, 79], [14, 76]]];   // sanfte Melodie für lange Fassungen
 const st = (barStart, s) => barStart + s * step + (s % 2 ? P.swing * step : 0);
+
+/* ---------- Abschnitte ----------
+   --sections "0:intro,12:full,36:perc,…" (Startbeat:Stufe). Stufen:
+   intro  Filter öffnet sich, Kick + geschlossene Hats, kein Bass/Clap · light  Groove ohne Clap und offene Hats (zum Lesen)
+   full   voller Groove · perc  + Percussion bzw. Hook (sugar/deep) · lift  + Melodie · build  ohne Kick/Bass, Filter + Riser, Snare-Wirbel
+   outro  Filter schließt sich, letzter Takt ohne Kick
+   Standard reproduziert die 12-s-Hörproben. */
+const DEF = VAR === 'latch' ? '0:intro,4:full,12:perc' : '0:intro,4:full,8:perc';
+const SEC = sarg('sections', DEF).split(',').map((x) => { const [b, l] = x.split(':'); return { b: Number(b), l: l.trim() }; }).sort((a, b) => a.b - b.b);
+const totalBeats = DUR / beat;
+SEC.forEach((x, i) => { x.e = i + 1 < SEC.length ? SEC[i + 1].b : Math.ceil(totalBeats / 4) * 4; });
+const secAt = (bt) => { let r = SEC[0]; for (const x of SEC) if (bt >= x.b) r = x; return r; };
+const LV = { intro: 0, outro: 0, build: 0, light: 1, full: 2, perc: 3, lift: 4 };
+const FILT = SEC.filter((x) => x.l === 'intro' || x.l === 'build' || x.l === 'outro').map((x) => ({ t0: x.b * beat, t1: x.e * beat, dir: x.l === 'outro' ? -1 : 1 }));
 
 const bars = Math.ceil(DUR / barLen);
 for (let bi = 0; bi < bars; bi++) {
-  const b0 = bi * barLen, ch = CH[P.prog[bi % P.prog.length]], intro = bi === 0, late = bi >= 3;
-  for (let q = 0; q < 4; q++) kick(b0 + q * beat, intro ? 0.85 : 1);
-  if (!intro) { clap(b0 + beat); clap(b0 + 3 * beat); }
+  const b0 = bi * barLen, sec = secAt(bi * 4), L = sec.l, lv = LV[L] ?? 2, ch = CH[P.prog[bi % P.prog.length]];
+  const quiet = L === 'intro' || L === 'build' || L === 'outro', lastOutro = L === 'outro' && bi * 4 + 4 >= sec.e;
+  if (L !== 'build' && !lastOutro) for (let q = 0; q < 4; q++) kick(b0 + q * beat, L === 'intro' ? 0.85 : 1);
+  if (lv >= 2) { clap(b0 + beat); clap(b0 + 3 * beat); }
+  if (L === 'build') for (let k = 0; k < 16; k++) { const t = b0 + k * step; if (k >= 8 || k % 2 === 0) clap(t, 0.25 + 0.6 * (k / 16)); }
   for (let s = 0; s < 16; s++) {
     const t = st(b0, s);
-    if (s % 4 === 2) { if (!intro) hat(t, true, 0.9); else hat(t, false, 0.6); }
+    if (s % 4 === 2) { if (lv >= 2) hat(t, true, 0.9); else hat(t, false, 0.6); }
     else if (VAR !== 'sugar' || s % 2 === 0) hat(t, false, [0.55, 0.3, 0, 0.4][s % 4]);
-    if (VAR === 'sugar' && !intro) shaker(t, s % 2 ? 0.7 : 1);
+    if (VAR === 'sugar' && lv >= 2) shaker(t, s % 2 ? 0.7 : 1);
   }
-  if (late && VAR === 'latch') for (const [s, f, p] of [[7, 330, -0.5], [10, 250, 0.5], [15, 300, -0.3]]) perc(st(b0, s), f, p);
-  if (!intro) for (const [s, l, o] of P.bass) bass(st(b0, s), ch.b + o, l * step * 0.9, P.bassCut || 520);
-  for (const [s, l] of P.stab) P.stabFn(st(b0, s), ch.n, l * step, intro ? 0.6 : 1);
-  pad(b0, ch.n.map((m) => m - 12), barLen * 0.92, P.padG);
-  if (P.hook && bi >= 2) for (const [s, m] of P.hook[bi % 2]) pluck(st(b0, s), m, 0.9, s % 4 === 0 ? -0.3 : 0.3);
+  if (lv >= 3 && VAR === 'latch') for (const [s, f, p] of [[7, 330, -0.5], [10, 250, 0.5], [15, 300, -0.3]]) perc(st(b0, s), f, p);
+  if (lv >= 1 || (L === 'outro' && !lastOutro)) for (const [s, l, o] of P.bass) bass(st(b0, s), ch.b + o, l * step * 0.9, P.bassCut || 520);
+  for (const [s, l] of P.stab) P.stabFn(st(b0, s), ch.n, l * step, quiet ? 0.6 : 1);
+  pad(b0, ch.n.map((m) => m - 12), barLen * (lastOutro ? 1.6 : 0.92), P.padG);
+  if (P.hook && lv >= 3) for (const [s, m] of P.hook[bi % 2]) pluck(st(b0, s), m, 0.9, s % 4 === 0 ? -0.3 : 0.3);
+  if (P.lift && lv >= 4) for (const [s, m] of P.lift[bi % 2]) pluck(st(b0, s), m, 0.55, s % 4 === 0 ? -0.3 : 0.3);
 }
-riser(barLen * 0.5, barLen * 0.5);
+// Riser vor jedem Übergang aus Intro/Build in den Groove
+SEC.forEach((x, i) => { const nx = SEC[i + 1]; if (!nx || !(x.l === 'intro' || x.l === 'build') || nx.l === 'outro') return;
+  const len = x.l === 'intro' ? barLen * 0.5 : Math.min((x.e - x.b) * beat, barLen * 2); riser(x.e * beat - len, len); });
 
 /* ---------- SFX der Vorlage (optional) ---------- */
 let cues = [];
 if (CUES && existsSync(CUES)) {
   const S = {
-    click: (t0, p) => voice(t0, 0.05, (t) => noise() * Math.exp(-t * 180) * 0.6 + Math.sin(TAU * 2400 * t) * Math.exp(-t * 300) * 0.4, [out(DRY, p, 1)]),
-    pop: (t0, p) => voice(t0, 0.15, (t) => Math.sin(TAU * (900 * Math.exp(-t * 25) + 180) * t) * Math.exp(-t * 35) * 0.7, [out(DRY, p, 1)]),
-    thump: (t0, p) => voice(t0, 0.3, (t) => Math.sin(TAU * (90 * Math.exp(-t * 18) + 40) * t) * Math.exp(-t * 14) * 0.9, [out(DRY, p, 1)]),
-    whoosh: (t0, p) => { const f = svf(); voice(t0, 0.5, (t) => { const w = Math.sin(Math.PI * Math.min(1, t / 0.5 * 1.2)); f.run(noise(), 600 + 3000 * t, 0.8); return f.bp * w * w * 0.9; }, [out(DRY, p, 1)]); },
-    tick: (t0, p) => voice(t0, 0.03, (t) => Math.sin(TAU * 4000 * t) * Math.exp(-t * 400) * 0.3, [out(DRY, p, 1)]),
-    ding: (t0, p) => voice(t0, 0.6, (t) => (Math.sin(TAU * 1320 * t) + 0.5 * Math.sin(TAU * 1980 * t)) * Math.exp(-t * 6) * 0.3, [out(DRY, p, 1), out(REV, p, 0.3)]),
+    click: (t0, p, g) => voice(t0, 0.05, (t) => noise() * Math.exp(-t * 180) * 0.6 + Math.sin(TAU * 2400 * t) * Math.exp(-t * 300) * 0.4, [out(DRY, p, g)]),
+    pop: (t0, p, g) => voice(t0, 0.15, (t) => Math.sin(TAU * (900 * Math.exp(-t * 25) + 180) * t) * Math.exp(-t * 35) * 0.7, [out(DRY, p, g)]),
+    thump: (t0, p, g) => voice(t0, 0.3, (t) => Math.sin(TAU * (90 * Math.exp(-t * 18) + 40) * t) * Math.exp(-t * 14) * 0.9, [out(DRY, p, g)]),
+    whoosh: (t0, p, g) => { const f = svf(); voice(t0, 0.5, (t) => { const w = Math.sin(Math.PI * Math.min(1, t / 0.5 * 1.2)); f.run(noise(), 600 + 3000 * t, 0.8); return f.bp * w * w * 0.9; }, [out(DRY, p, g)]); },
+    tick: (t0, p, g) => voice(t0, 0.03, (t) => Math.sin(TAU * 4000 * t) * Math.exp(-t * 400) * 0.3, [out(DRY, p, g)]),
+    ding: (t0, p, g) => voice(t0, 0.6, (t) => (Math.sin(TAU * 1320 * t) + 0.5 * Math.sin(TAU * 1980 * t)) * Math.exp(-t * 6) * 0.3, [out(DRY, p, g), out(REV, p, 0.3 * g)]),
   };
-  cues = JSON.parse(readFileSync(CUES, 'utf8')); for (const c of cues) (S[c.sfx] || S.click)(c.t, c.pan || 0);
+  const SG = arg('sfxgain', 0.5);   // SFX sitzen im Groove statt darüber
+  cues = JSON.parse(readFileSync(CUES, 'utf8')); for (const c of cues) (S[c.sfx] || S.click)(c.t, c.pan || 0, SG);
 }
 
 /* ---------- Effekte ---------- */
@@ -180,7 +201,7 @@ const fL = svf(), fR = svf(); let hpL = 0, hpR = 0, xl = 0, xr = 0;
 const ML = new Float32Array(N), MR = new Float32Array(N);
 for (let i = 0; i < N; i++) {
   const t = i / SR; let mL = MUS[0][i] * sc[i] + dlL[i] * (0.5 + 0.5 * sc[i]) + rvL[i] * (0.6 + 0.4 * sc[i]), mR = MUS[1][i] * sc[i] + dlR[i] * (0.5 + 0.5 * sc[i]) + rvR[i] * (0.6 + 0.4 * sc[i]);
-  if (t < barLen) { const c = 300 * 2 ** (6 * (t / barLen) ** 2); mL = fL.run(mL, c, 0.9); mR = fR.run(mR, c, 0.9); }   // Intro: Filter öffnet sich bis zum Drop
+  for (const f of FILT) if (t >= f.t0 && t < f.t1) { const p = (t - f.t0) / (f.t1 - f.t0), q = f.dir > 0 ? p : 1 - p; const c = 300 * 2 ** (6 * q * q); mL = fL.run(mL, c, 0.9); mR = fR.run(mR, c, 0.9); }   // Filterfahrten in Intro, Build, Outro
   let L = mL + DRY[0][i], R = mR + DRY[1][i];
   hpL = 0.9974 * (hpL + L - xl); xl = L; hpR = 0.9974 * (hpR + R - xr); xr = R;   // DC/Subsonic-Hochpass ~20 Hz
   ML[i] = hpL; MR[i] = hpR;
@@ -194,6 +215,6 @@ buf.writeUInt32LE(SR * 4, 28); buf.writeUInt16LE(4, 32); buf.writeUInt16LE(16, 3
 for (let i = 0; i < N; i++) { const fd = i > N - fade ? (N - i) / fade : 1;
   buf.writeInt16LE(Math.round(Math.tanh(ML[i] * g) * 0.89 * fd * 32767), 44 + i * 4); buf.writeInt16LE(Math.round(Math.tanh(MR[i] * g) * 0.89 * fd * 32767), 46 + i * 4); }
 writeFileSync(OUT, buf);
-if (CUES) { const totalBeats = Math.ceil(DUR / beat), beats = Array.from({ length: totalBeats }, (_, i) => +(i * beat).toFixed(3));
+if (CUES) { const nb = Math.ceil(DUR / beat), beats = Array.from({ length: nb }, (_, i) => +(i * beat).toFixed(3));
   writeFileSync('beats.json', JSON.stringify({ bpm: BPM, beats, downbeats: beats.filter((_, i) => i % 4 === 0), hits: cues.map((c) => c.t) }, null, 1)); }
 console.log(`wrote ${OUT} (deep house "${VAR}", ${DUR}s @ ${BPM} BPM${cues.length ? `, ${cues.length} sfx cues` : ''})`);
