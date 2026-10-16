@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 T=templates/jobalarm
 node --input-type=module -e "import { CUES } from './$T/timeline.mjs'; import { writeFileSync } from 'node:fs'; writeFileSync('$T/cues.json', JSON.stringify(CUES, null, 1));"
-node scripts/music_deephouse.mjs --variant latch --bpm 120 --dur 34 --sections "0:intro,4:full,20:perc,36:lift,52:full,64:outro" --cues $T/cues.json --out out/music_jobalarm.wav
+node scripts/music_deephouse.mjs --variant latch --bpm 120 --dur 34 --sections "0:intro,4:perc,12:drive,20:drive,36:peak,52:perc,56:drive,64:outro" --fills --cues $T/cues.json --out out/music_jobalarm.wav
 for f in 1080x1920 1080x1350 1080x1080; do
   ( node render.mjs --fps 60 --sub 4 --dur 34 --w ${f%x*} --h ${f#*x} --page $T/index.html --out out/jobalarm_${f}_silent.mp4 | grep -E "done|error"
     bash scripts/mix.sh out/jobalarm_${f}_silent.mp4 out/music_jobalarm.wav out/jobalarm_erklaervideo_${f}.mp4 ) &

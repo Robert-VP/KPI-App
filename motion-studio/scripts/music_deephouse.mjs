@@ -134,7 +134,7 @@ const SEC = sarg('sections', DEF).split(',').map((x) => { const [b, l] = x.split
 const totalBeats = DUR / beat;
 SEC.forEach((x, i) => { x.e = i + 1 < SEC.length ? SEC[i + 1].b : Math.ceil(totalBeats / 4) * 4; });
 const secAt = (bt) => { let r = SEC[0]; for (const x of SEC) if (bt >= x.b) r = x; return r; };
-const LV = { intro: 0, outro: 0, build: 0, light: 1, full: 2, perc: 3, lift: 4 };
+const LV = { intro: 0, outro: 0, build: 0, light: 1, full: 2, perc: 3, lift: 4, drive: 5, peak: 6 };   // drive: + 16tel-Shaker, mehr Bass/Percussion · peak: drive + Melodie
 const FILT = SEC.filter((x) => x.l === 'intro' || x.l === 'build' || x.l === 'outro').map((x) => ({ t0: x.b * beat, t1: x.e * beat, dir: x.l === 'outro' ? -1 : 1 }));
 
 const bars = Math.ceil(DUR / barLen);
@@ -148,15 +148,21 @@ for (let bi = 0; bi < bars; bi++) {
     const t = st(b0, s);
     if (s % 4 === 2) { if (lv >= 2) hat(t, true, 0.9); else hat(t, false, 0.6); }
     else if (VAR !== 'sugar' || s % 2 === 0) hat(t, false, [0.55, 0.3, 0, 0.4][s % 4]);
-    if (VAR === 'sugar' && lv >= 2) shaker(t, s % 2 ? 0.7 : 1);
+    if ((VAR === 'sugar' && lv >= 2) || lv >= 5) shaker(t, s % 2 ? 0.7 : 1);
   }
   if (lv >= 3 && VAR === 'latch') for (const [s, f, p] of [[7, 330, -0.5], [10, 250, 0.5], [15, 300, -0.3]]) perc(st(b0, s), f, p);
+  if (lv >= 5 && VAR === 'latch') for (const [s, f, p] of [[3, 360, 0.4], [13, 270, -0.4]]) perc(st(b0, s), f, p);
   if (lv >= 1 || (L === 'outro' && !lastOutro)) for (const [s, l, o] of P.bass) bass(st(b0, s), ch.b + o, l * step * 0.9, P.bassCut || 520);
+  if (lv >= 5) for (const [s, o] of [[0, 12], [15, 12]]) bass(st(b0, s), ch.b + o, step * 0.8, (P.bassCut || 520) + 200);   // treibender: Oktav-Akzente
   for (const [s, l] of P.stab) P.stabFn(st(b0, s), ch.n, l * step, quiet ? 0.6 : 1);
   pad(b0, ch.n.map((m) => m - 12), barLen * (lastOutro ? 1.6 : 0.92), P.padG);
   if (P.hook && lv >= 3) for (const [s, m] of P.hook[bi % 2]) pluck(st(b0, s), m, 0.9, s % 4 === 0 ? -0.3 : 0.3);
-  if (P.lift && lv >= 4) for (const [s, m] of P.lift[bi % 2]) pluck(st(b0, s), m, 0.55, s % 4 === 0 ? -0.3 : 0.3);
+  if (P.lift && (L === 'lift' || L === 'peak')) for (const [s, m] of P.lift[bi % 2]) pluck(st(b0, s), m, 0.55, s % 4 === 0 ? -0.3 : 0.3);
 }
+// --fills: Snare-Fill in den zwei Beats vor jedem neuen Abschnitt und ein Becken auf dessen erster Zählzeit
+function crash(t0, g = 1) { const f = svf(); voice(t0, 1.8, (t) => { f.run(noise(), 5200, 0.6); return f.hp * Math.exp(-t * 2.4) * Math.min(1, t * 600); }, [out(DRY, 0.3, 0.2 * g), out(REV, -0.3, 0.12 * g)]); }
+if (argv.includes('--fills')) SEC.forEach((x, i) => { if (i === 0 || x.l === 'outro' || x.l === 'build' || SEC[i - 1].l === 'intro' || SEC[i - 1].l === 'build') { if (i > 0 && x.l !== 'outro') crash(x.b * beat, 0.9); return; }
+  crash(x.b * beat); for (let k = 0; k < 8; k++) clap((x.b - 2) * beat + k * step, 0.2 + 0.08 * k); });
 // Riser vor jedem Übergang aus Intro/Build in den Groove
 SEC.forEach((x, i) => { const nx = SEC[i + 1]; if (!nx || !(x.l === 'intro' || x.l === 'build') || nx.l === 'outro') return;
   const len = x.l === 'intro' ? barLen * 0.5 : Math.min((x.e - x.b) * beat, barLen * 2); riser(x.e * beat - len, len); });
