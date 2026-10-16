@@ -15,6 +15,8 @@
   from assets/vp-tools/font. Logo: assets/vp-tools/logo/logo-hell.png. Layout, motif and footer band follow
   templates/stellenanzeige/index.html, which is a 1:1 port of the generator's renderCIHell().
 - A job-ad video: `bash scripts/anzeige.sh templates/stellenanzeige 12` (edit templates/stellenanzeige/job.js first).
+- Social versions of a job ad: `bash scripts/social.sh jobs/name.js 12` → Instagram Reel 1080x1920 (`?safe=reel`: logo below the app header,
+  footer text above the caption, text clear of the button column, no QR) and LinkedIn 1080x1350 (ad layout 1:1 incl. QR), 30 fps.
 - Banned: centered title on a gradient, everything fading in,
   corner labels and frame borders, glow on UI, generic particle bursts.
 - One display font, one UI font. One accent color unless the brief says otherwise.
