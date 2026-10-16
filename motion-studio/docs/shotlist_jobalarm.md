@@ -26,5 +26,5 @@ Zeiten der langen Fassung (LinkedIn):
 | 16–19,5 s | Dialog „Fast geschafft!“ (Text der Website), Tipp auf „Schließen“ | ruhiger |
 | 19,5–26 s | Postfach: „Bitte bestätigen: Ihr Job-Alarm bei Voß & Partner“ ploppt auf, Mail öffnen, „Job-Alarm bestätigen“ → „Job-Alarm ist aktiv“ | drive |
 | 26–32 s | Schritt 3: neue Stelle ploppt im Posteingang auf, öffnen: Gebietsverkaufsleiter (m/w/d) Kälte- und Klimatechnik, „Diskret & kostenfrei“ | peak (Melodie) |
-| 32–36 s | Vorteile: Kostenfrei · Diskret · Jede Stelle nur einmal · Abmeldung mit einem Klick | drive |
-| 36–44 s | Anzeige mit Fußband, Schlussbild ab ca. 38 s | Groove, Ausklang |
+| 32–36,75 s | Vorteile: Kostenfrei · Diskret · Jede Stelle nur einmal · Abmeldung mit einem Klick (letzter Punkt steht gut 3 s) | drive |
+| 36,75–44 s | Anzeige mit Fußband, Schlussbild ab ca. 39 s (Standzeit gut 5 s) | Groove, Ausklang |

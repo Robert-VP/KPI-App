@@ -15,8 +15,8 @@ export const T = {
   mbox: bt(39.5), cMail: bt(41), tapCRow: bt(42.5), cOpen: bt(43), tapConfirm: bt(46), active: bt(46.5), mboxOut: bt(52),   // Bestätigung
   p3: bt(52), inbox: bt(52.5), newMail: bt(54.5), tapRow: bt(56.5), open: bt(57),               // Schritt 3: neue Stelle ploppt auf
   nHead: bt(57.6), nTitle: bt(58.2), nLine: bt(58.8), nJob: bt(59.5), nLoc: bt(60.2), nBtn: bt(61), badge: bt(62.5),
-  pros: bt(64), prosOut: bt(72), prosStep: 0.5,                                                               // Vorteile
-  end: bt(72), foot: bt(74), url: bt(74.5), claim: bt(75),                                     // Auflösung zur Anzeige, Schlussbild ab ca. 38 s
+  pros: bt(64), prosOut: bt(73.5), prosStep: 0.35,                                                               // Vorteile, letzter steht gut 3 s
+  end: bt(73.5), foot: bt(75.5), url: bt(76), claim: bt(76.5),                                     // Auflösung zur Anzeige, Schlussbild ab ca. 39 s
 };
 export const SECTIONS = '0:intro,4:perc,12:drive,20:drive,32:perc,40:drive,52:peak,64:drive,72:perc,84:outro';
 // Kurzfassung fürs Instagram-Reel: gleiche Szenen, ohne „Fast geschafft!“, alles straffer
@@ -28,8 +28,8 @@ export const T_KURZ = {
   mbox: bt(18.5), cMail: bt(19.25), tapCRow: bt(20.25), cOpen: bt(20.5), tapConfirm: bt(22.5), active: bt(23), mboxOut: bt(26),
   p3: bt(26), inbox: bt(26.5), newMail: bt(27.5), tapRow: bt(28.75), open: bt(29.25),
   nHead: bt(29.65), nTitle: bt(30.05), nLine: bt(30.45), nJob: bt(30.85), nLoc: bt(31.25), nBtn: bt(31.65), badge: bt(32.25),
-  pros: bt(33), prosOut: bt(41), prosStep: 0.35,
-  end: bt(41), foot: bt(43), url: bt(43.5), claim: bt(44),                                     // Schlussbild ab ca. 22,5 s
+  pros: bt(33), prosOut: bt(41.75), prosStep: 0.35,
+  end: bt(41.75), foot: bt(43.75), url: bt(44.25), claim: bt(44.75),                                     // Schlussbild ab ca. 23 s
 };
 export const SECTIONS_KURZ = '0:intro,4:perc,8:drive,16:drive,24:peak,32:drive,40:perc,52:outro';
 const r = (x) => Math.round(x * 10000) / 10000;
