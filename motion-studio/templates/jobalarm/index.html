@@ -65,6 +65,9 @@ const CHIP_POS = (() => { const out = []; let x = 87, y = 528; const rowW = 890;
 const SEL = CHIPS.indexOf('Kältetechnik');
 const SUCHE = 'Kälte- & Klimatechnik · Süd', MAIL = 'ihr.name@beispiel.de';
 const titleS = fit('Job-Alarm einrichten', 800, 289), sucheS = fit(SUCHE, 700, 250), nTitleS = fit('Eine neue Stelle für Sie', 800, 240), jobS = fit('Servicetechniker (m/w/d) Kältetechnik', 700, 342);
+// Beispielstelle in der Benachrichtigung (Titel zweizeilig, Karte wächst um eine Zeile)
+const JOB = { meta: 'VP-2304 · Vertrieb', titel: ['Gebietsverkaufsleiter (m/w/d)', 'Kälte- und Klimatechnik'], ort: 'Bayern West' };
+const JDY = Math.round(jobS * 1.26), JY = (JOB.titel.length - 1) * JDY;
 const urlS = fit('voss-partner.de/stellenangebote', 700, 430), eyeS = fit('NEU: JOB-ALARM', 800, 241, 0.26);
 
 /* ---------- Szenenteile ---------- */
@@ -165,8 +168,8 @@ function drawNotif() {
   const p = sp(T.notif, 140, 18); if (p <= 0) return; group('C');
   const el = (t0) => st(t0, 220), rise = (t0) => (1 - el(t0)) * 10;
   ctx.save(); ctx.translate((1 - p) * 420, 0); ctx.globalAlpha = clamp(p * 2.5);
-  shadow(true); ctx.fillStyle = '#FFFFFF'; rr(536, 738, 468, 339, 24); ctx.fill(); shadow(false);
-  ctx.save(); rr(536, 738, 468, 339, 24); ctx.clip(); ctx.fillStyle = CI.feld; ctx.fillRect(536, 738, 468, 77); ctx.fillStyle = CI.linie; ctx.fillRect(536, 814, 468, 1); ctx.restore();
+  shadow(true); ctx.fillStyle = '#FFFFFF'; rr(536, 738, 468, 339 + JDY, 24); ctx.fill(); shadow(false);
+  ctx.save(); rr(536, 738, 468, 339 + JDY, 24); ctx.clip(); ctx.fillStyle = CI.feld; ctx.fillRect(536, 738, 468, 77); ctx.fillStyle = CI.linie; ctx.fillRect(536, 814, 468, 1); ctx.restore();
   const a = el(T.nHead); ctx.globalAlpha = clamp(p * 2.5) * a;
   ctx.fillStyle = CI.navy; ctx.beginPath(); ctx.arc(580, 776, 20 * (0.7 + 0.3 * a), 0, Math.PI * 2); ctx.fill(); text('V&P', 580, 780.5, 800, 12.5, CI.gold, 'center');
   text('Voß & Partner', 612, 773 + rise(T.nHead), 600, 16, CI.ink); const vw = measure('Voß & Partner', 600, 16); ctx.fillStyle = CI.ink; ctx.fillRect(612 + vw + 6, 760 + rise(T.nHead), 1.6, 16); text('Job-Alarm', 612 + vw + 13, 773 + rise(T.nHead), 600, 16, CI.ink);
@@ -176,10 +179,10 @@ function drawNotif() {
   row(T.nTitle, () => text('Eine neue Stelle für Sie', 560, 858, 800, nTitleS, CI.ink));
   row(T.nLine, () => { text('Ihr Job-Alarm: ', 560, 883, 400, 15, '#4A505A'); text(SUCHE, 560 + measure('Ihr Job-Alarm: ', 400, 15), 883, 700, 15, CI.ink); });
   const dv = clamp((t - T.nLine - 0.2) / 0.4); if (dv > 0) { ctx.fillStyle = CI.linie; ctx.fillRect(560, 902, 421 * (1 - (1 - dv) ** 3), 1); }
-  row(T.nJob, () => { text('VP-2304 · Service', 560, 929, 400, 13, CI.grau); text('Servicetechniker (m/w/d) Kältetechnik', 560, 952, 700, jobS, CI.ink); });
-  row(T.nLoc, () => { pin(567, 973); text('Raum Stuttgart', 580, 977, 400, 15, '#5A606A'); });
-  const dv2 = clamp((t - T.nLoc - 0.2) / 0.4); if (dv2 > 0) { ctx.fillStyle = CI.linie; ctx.fillRect(560, 994, 421 * (1 - (1 - dv2) ** 3), 1); }
-  const b = sp(T.nBtn, 260, 20); if (b > 0) { ctx.save(); ctx.translate(634, 1032); ctx.scale(0.6 + 0.4 * b, 0.6 + 0.4 * b); ctx.globalAlpha = clamp(p * 2.5) * clamp(b * 2.5);
+  row(T.nJob, () => { text(JOB.meta, 560, 929, 400, 13, CI.grau); JOB.titel.forEach((z, i) => text(z, 560, 952 + i * JDY, 700, jobS, CI.ink)); });
+  row(T.nLoc, () => { pin(567, 973 + JY); text(JOB.ort, 580, 977 + JY, 400, 15, '#5A606A'); });
+  const dv2 = clamp((t - T.nLoc - 0.2) / 0.4); if (dv2 > 0) { ctx.fillStyle = CI.linie; ctx.fillRect(560, 994 + JY, 421 * (1 - (1 - dv2) ** 3), 1); }
+  const b = sp(T.nBtn, 260, 20); if (b > 0) { ctx.save(); ctx.translate(634, 1032 + JY); ctx.scale(0.6 + 0.4 * b, 0.6 + 0.4 * b); ctx.globalAlpha = clamp(p * 2.5) * clamp(b * 2.5);
     ctx.fillStyle = CI.navy; rr(-74, -19, 148, 38, 19); ctx.fill(); text('Stelle ansehen', 0, 5.5, 600, 15, '#FFFFFF', 'center'); ctx.restore(); }
   ctx.restore();
   const g = sp(T.badge, 300, 16); if (g > 0) { ctx.save(); ctx.translate(931, 730); ctx.rotate((1 - g) * -0.12); ctx.scale(Math.max(0.001, g), Math.max(0.001, g));
@@ -223,7 +226,7 @@ const CH = cam(70, 180, 800, 400, 'B', 'B', 1.5, false);                 // Hook
 const CT = cam(60, 180, 900, 620, 'B', 'B', 1.2, false);                 // Erklärzeile + Bereiche
 const C1 = cam(60, 180, 900, 620, 'B', 'B', 1.3, false);                 // Schritt 1: Textblock mit Bereichen, mittig
 const C2 = cam(60, 405, 600, 1185, 'B', 'C', 2.0);                       // Schritt 2: Erklärzeile + Formular, oben bündig unter der Headline
-const C3 = cam(60, 180, 1030, 1090, 'B', 'C', 1.3, false);               // Schritt 3: Text + Benachrichtigung, mittig
+const C3 = cam(60, 180, 1030, 1090 + JY, 'B', 'C', 1.3, false);               // Schritt 3: Text + Benachrichtigung, mittig
 const KEYS = [[0, CH], [T.sub, CT], [T.p1, C1], [T.p2, C2], [T.p3, C3], [T.end, C0]];
 const KC = 46, DC = 2 * Math.sqrt(46);
 
