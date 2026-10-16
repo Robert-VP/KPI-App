@@ -1,7 +1,8 @@
-// Zeitplan des Job-Alarm-Erklärvideos (120 BPM, 44 s = 22 Takte). Von index.html und vom Cue-Export genutzt.
+// Zeitplan des Job-Alarm-Erklärvideos (120 BPM). Zwei Fassungen: LinkedIn (lang, 44 s) und Instagram-Reel (kurz, 28 s, ?v=kurz).
+// Von index.html und vom Cue-Export genutzt.
 // Ablauf: Hook → Stellenseite (wo?) → Formular → „Fast geschafft!“ → Bestätigungs-Mail → „Job-Alarm ist aktiv“
 //         → neue Stelle ploppt im Posteingang auf → Vorteile → Anzeige mit Fußband.
-export const BPM = 120, DUR = 44;
+export const BPM = 120, DUR = 44, DUR_KURZ = 28;
 const B = 60 / BPM;
 export const bt = (n) => n * B;
 export const T = {
@@ -14,13 +15,26 @@ export const T = {
   mbox: bt(39.5), cMail: bt(41), tapCRow: bt(42.5), cOpen: bt(43), tapConfirm: bt(46), active: bt(46.5), mboxOut: bt(52),   // Bestätigung
   p3: bt(52), inbox: bt(52.5), newMail: bt(54.5), tapRow: bt(56.5), open: bt(57),               // Schritt 3: neue Stelle ploppt auf
   nHead: bt(57.6), nTitle: bt(58.2), nLine: bt(58.8), nJob: bt(59.5), nLoc: bt(60.2), nBtn: bt(61), badge: bt(62.5),
-  pros: bt(64), prosOut: bt(72),                                                               // Vorteile
+  pros: bt(64), prosOut: bt(72), prosStep: 0.5,                                                               // Vorteile
   end: bt(72), foot: bt(74), url: bt(74.5), claim: bt(75),                                     // Auflösung zur Anzeige, Schlussbild ab ca. 38 s
 };
 export const SECTIONS = '0:intro,4:perc,12:drive,20:drive,32:perc,40:drive,52:peak,64:drive,72:perc,84:outro';
+// Kurzfassung fürs Instagram-Reel: gleiche Szenen, ohne „Fast geschafft!“, alles straffer
+export const T_KURZ = {
+  circle: bt(0), logo: bt(0.5), eyebrow: bt(1.5), h1: bt(2.5), h2: bt(4), sub: bt(6), chips: bt(7),
+  p1: bt(8), web: bt(8.5), tapBr: bt(10.5), tapRg: bt(11.75), tapAlarm: bt(13.25), webOut: bt(14.25), tap1: 1e9, env: 1e9,
+  p2: bt(14.25), card: bt(14.25), suche: bt(14.75), tapMail: bt(15.25), mail: bt(15.5), mailEnd: bt(16.5), tapCheck: bt(17), tapBtn: bt(17.75),
+  done: 1e9, tapClose: 1e9, doneOut: 1e9,
+  mbox: bt(18.5), cMail: bt(19.25), tapCRow: bt(20.25), cOpen: bt(20.5), tapConfirm: bt(22.5), active: bt(23), mboxOut: bt(26),
+  p3: bt(26), inbox: bt(26.5), newMail: bt(27.5), tapRow: bt(28.75), open: bt(29.25),
+  nHead: bt(29.65), nTitle: bt(30.05), nLine: bt(30.45), nJob: bt(30.85), nLoc: bt(31.25), nBtn: bt(31.65), badge: bt(32.25),
+  pros: bt(33), prosOut: bt(41), prosStep: 0.35,
+  end: bt(41), foot: bt(43), url: bt(43.5), claim: bt(44),                                     // Schlussbild ab ca. 22,5 s
+};
+export const SECTIONS_KURZ = '0:intro,4:perc,8:drive,16:drive,24:peak,32:drive,40:perc,52:outro';
 const r = (x) => Math.round(x * 10000) / 10000;
 const ticks = (t0, n, dt, pan) => Array.from({ length: n }, (_, i) => ({ t: t0 + i * dt, sfx: 'tick', pan }));
-export const CUES = [
+export const cuesFor = (T) => [
   { t: T.circle, sfx: 'whoosh', pan: 0.4 }, { t: T.logo, sfx: 'pop', pan: -0.5 }, ...ticks(T.eyebrow + 0.1, 6, 0.07, -0.3),
   { t: T.h1, sfx: 'thump' }, { t: T.h2, sfx: 'thump' }, { t: T.sub, sfx: 'whoosh', pan: -0.2 },
   ...[0, 1, 2, 3, 4, 5, 6].map((i) => ({ t: T.chips + i * 0.08, sfx: 'pop', pan: -0.6 + i * 0.2 })),
@@ -35,7 +49,8 @@ export const CUES = [
   { t: T.newMail - 0.05, sfx: 'whoosh', pan: 0.5 }, { t: T.newMail + 0.1, sfx: 'ding', pan: 0.4 }, { t: T.newMail + 0.25, sfx: 'pop', pan: 0.6 },
   { t: T.tapRow, sfx: 'click', pan: 0.3 }, { t: T.open, sfx: 'whoosh', pan: 0.3 },
   { t: T.nTitle, sfx: 'tick', pan: 0.4 }, { t: T.nJob, sfx: 'tick', pan: 0.4 }, { t: T.nBtn, sfx: 'pop', pan: 0.4 }, { t: T.badge, sfx: 'pop', pan: 0.6 },
-  ...[0, 1, 2, 3].map((i) => ({ t: T.pros + 0.3 + i * 0.5, sfx: 'pop', pan: -0.3 + i * 0.2 })),
+  ...[0, 1, 2, 3].map((i) => ({ t: T.pros + 0.3 + i * T.prosStep, sfx: 'pop', pan: -0.3 + i * 0.2 })),
   { t: T.end, sfx: 'whoosh', pan: 0 }, { t: T.foot, sfx: 'whoosh', pan: -0.3 },
   ...ticks(T.url, 3, 0.1, -0.5), { t: T.claim, sfx: 'tick', pan: 0.5 }, { t: T.claim + 0.35, sfx: 'pop', pan: 0.5 },
-].map((c) => ({ ...c, t: r(c.t) }));
+].filter((c) => c.t < 1e6).map((c) => ({ ...c, t: r(c.t) }));
+export const CUES = cuesFor(T), CUES_KURZ = cuesFor(T_KURZ);

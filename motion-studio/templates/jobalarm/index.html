@@ -16,7 +16,9 @@
 <canvas id="c"></canvas>
 <script type="module">
 import { clamp, lerp, spring, track, springType, hash } from '../../lib/motion.js';
-import { T, DUR } from './timeline.mjs';
+import { T as T_LANG, DUR as DUR_LANG, T_KURZ, DUR_KURZ } from './timeline.mjs';
+const KURZ = new URLSearchParams(location.search).get('v') === 'kurz';   // ?v=kurz: Instagram-Reel-Fassung
+const T = KURZ ? T_KURZ : T_LANG, DUR = KURZ ? DUR_KURZ : DUR_LANG;
 
 /* ============================================================
    Job-Alarm erklärt: Die Anzeige baut sich auf, die Kamera führt durch
@@ -255,11 +257,11 @@ function drawNotif() {
   const g = sp(T.badge, 300, 16); if (g > 0) { ctx.save(); ctx.translate(931, 730); ctx.rotate((1 - g) * -0.12); ctx.scale(Math.max(0.001, g), Math.max(0.001, g));
     ctx.fillStyle = CI.gold; rr(-89, -17, 178, 34, 17); ctx.fill(); text('Diskret & kostenfrei', 0, 6, 700, 16, CI.ink, 'center'); ctx.restore(); }
 }
-function cursor(seq, world, m = 1) {   // Finger-Tipp: Punkt mit weißem Ring, Druck + Welle; seq = [[t, x, y], …]
+function cursor(seq, world, m = 1, panX = 0) {   // Finger-Tipp: Punkt mit weißem Ring, Druck + Welle; seq = [[t, x, y], …]
   const kx = [[0, seq[0][1]], ...seq.slice(1).map((s2, i) => [seq[i][0] + 0.15, s2[1]])], ky = [[0, seq[0][2]], ...seq.slice(1).map((s2, i) => [seq[i][0] + 0.15, s2[2]])];
   const x = track(t, kx, 90, 2 * Math.sqrt(90)), y = track(t, ky, 90, 2 * Math.sqrt(90));
   const a = st(seq[0][0] - 0.6, 200) * (1 - st(seq[seq.length - 1][0] + 0.35, 200)); if (a <= 0.01) return;
-  if (world) { ctx.setTransform(camZ, 0, 0, camZ, W / 2 - camX * camZ, H / 2 - camY * camZ); ctx.translate(ox, oy); ctx.scale(s, s); } else panelBase(m);
+  if (world) { ctx.setTransform(camZ, 0, 0, camZ, W / 2 - camX * camZ, H / 2 - camY * camZ); ctx.translate(ox, oy); ctx.scale(s, s); } else { panelBase(m); ctx.translate(-panX, 0); }
   for (const [tt] of seq) { const q = clamp((t - tt) / 0.5); if (q > 0 && q < 1) { ctx.strokeStyle = `rgba(15,53,86,${0.35 * (1 - q)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 20 + 40 * q, 0, Math.PI * 2); ctx.stroke(); } }
   const pr = seq.reduce((m, [tt]) => Math.max(m, pulse(tt - 0.05, 0.12)), 0), k = 1 - 0.18 * pr;
   ctx.save(); ctx.translate(x, y); ctx.scale(k, k); ctx.globalAlpha = a; ctx.shadowColor = 'rgba(15,53,86,0.25)'; ctx.shadowBlur = 16 * PS; ctx.shadowOffsetY = 5 * PS;
@@ -271,6 +273,7 @@ function drawTap() {
 }
 
 /* ---------- Eingeblendete Ebenen in Bildschirmkoordinaten: Stellenseite, „Fast geschafft!“, Postfach, Vorteile ---------- */
+const PS2 = W / 1080 * 1.25, PILL_Y = H > W * 1.5 ? H * 0.07 : H * 0.035, PILL_BOTTOM = PILL_Y + 64 * PS2 + 22;   // Schrittmarke (im Reel unter der App-Kopfzeile)
 const PS = Math.min(W, H) / 1080, CXo = W / 2 / PS, CYo = H * 0.47 / PS;   // Ebenen-Koordinaten: Mitte des Bildes, Einheit = 1080er-Pixel
 function wrapLines(str, maxW, w, px) { const out = []; let line = ''; for (const wd of str.split(' ')) { const tt = line ? line + ' ' + wd : wd; if (measure(tt, w, px) > maxW && line) { out.push(line); line = wd; } else line = tt; } if (line) out.push(line); return out; }
 function fitPx(str, w, px, maxW) { while (px > 10 && measure(str, w, px) > maxW) px -= 0.5; return px; }
@@ -285,8 +288,10 @@ const SUCHE_T = 'Kälte- & Klimatechnik · Süd';
 const WEB = { br: [-40, -128, 270, 48], rg: [242, -128, 210, 48] };
 const SEG = (() => { let x = -448; return ['Alle', 'Vertrieb & Außendienst', 'Technik & Projekte', 'Führung'].map((l) => { const w = measure(l, 500, 14.5) + 28; const o = { l, x, w }; x += w + 2; return o; }); })();
 const ALARM_W = measure('Job-Alarm für diese Suche', 600, 15) + 28, ALARM_X = 452 - ALARM_W;
+const WEB_M = Math.min(pscale(960, 430) * 1.6, H * 0.62 / (430 * PS));   // Stellenseite vergrößert, Bild zeigt einen Ausschnitt
+function webPan() { const hw = W / 2 / (PS * WEB_M), lim = Math.max(0, 480 - hw - 6); return clamp(track(t, [[0, 150], [T.tapAlarm - 0.8, 300]], 60, 2 * Math.sqrt(60)), -lim, lim); }
 function drawWeb() {
-  const o = ov(T.web, T.webOut); if (!o.on) return; panelAt(o, 960, 430);
+  const o = ov(T.web, T.webOut); if (!o.on) return; panelBase(WEB_M); ctx.translate(-webPan(), (1 - o.a) * 90 + o.b * 50); { const k = 0.94 + 0.06 * clamp(o.a); ctx.scale(k, k); } ctx.globalAlpha = o.v;
   sheet(-480, -215, 960, 430, 22); ctx.save(); rr(-480, -215, 960, 430, 22); ctx.clip();
   ctx.fillStyle = '#EEF1F4'; ctx.fillRect(-480, -215, 960, 54); [-450, -428, -406].forEach((x) => { ctx.fillStyle = '#D3D9E0'; ctx.beginPath(); ctx.arc(x, -188, 6, 0, Math.PI * 2); ctx.fill(); });
   ctx.fillStyle = '#FFFFFF'; rr(-250, -204, 500, 32, 16); ctx.fill(); text('voss-partner.de/stellenangebote', 0, -182.5, 500, 15, '#6e6e73', 'center');
@@ -386,18 +391,40 @@ function drawPros() {
   const o = ov(T.pros, T.prosOut); if (!o.on) return; panelAt(o, 640, 380);
   ctx.save(); ctx.shadowColor = 'rgba(5,14,26,0.35)'; ctx.shadowBlur = 60 * PS; ctx.shadowOffsetY = 22 * PS;
   const g = ctx.createLinearGradient(-320, -190, 320, 190); g.addColorStop(0, '#0A1626'); g.addColorStop(0.55, '#0E2A45'); g.addColorStop(1, '#0F3D63'); ctx.fillStyle = g; rr(-320, -190, 640, 380, 26); ctx.fill(); ctx.restore();
-  PROS.forEach((l, i) => { const q = sp(T.pros + 0.3 + i * 0.5, 220, 18); if (q <= 0) return; const y = -114 + i * 76;
+  PROS.forEach((l, i) => { const q = sp(T.pros + 0.3 + i * T.prosStep, 220, 18); if (q <= 0) return; const y = -114 + i * 76;
     ctx.save(); ctx.globalAlpha *= clamp(q * 2); ctx.translate((1 - q) * 40, 0);
-    ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(-250, y - 9, 18 * Math.min(1.1, q), 0, Math.PI * 2); ctx.fill(); check(-250, y - 9, 20, clamp((t - T.pros - 0.45 - i * 0.5) / 0.3), CI.navy, 3);
+    ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(-250, y - 9, 18 * Math.min(1.1, q), 0, Math.PI * 2); ctx.fill(); check(-250, y - 9, 20, clamp((t - T.pros - 0.45 - i * T.prosStep) / 0.3), CI.navy, 3);
     text(l, -214, y + 2, 700, 30, '#FFFFFF', 'left', -0.3); ctx.restore(); });
+}
+function drawTopFade() {   // ruhiger oberer Rand hinter der Schrittmarke, deckt angeschnittene Zeilen ab
+  const v = st(T.p1, 180) * (1 - st(T.end, 200)); if (v <= 0.005) return; ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const h = PILL_BOTTOM + 40, g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, `rgba(244,245,246,${v})`); g.addColorStop(0.72, `rgba(244,245,246,${0.92 * v})`); g.addColorStop(1, 'rgba(244,245,246,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, h);
+}
+const STEPS = ['Suche festlegen', 'E-Mail bestätigen', 'Stellen erhalten'];
+function drawSteps() {
+  const vis = st(T.p1, 180) * (1 - st(T.end, 200)); if (vis <= 0.005) return;
+  const starts = [T.p1, T.p2, T.p3], widths = STEPS.map((l) => 22 + 44 + 16 + measure(l, 700, 26) + 26 + 58 + 26);
+  const w = track(t, [[0, widths[0]], [T.p2, widths[1]], [T.p3, widths[2]]], 200, 2 * Math.sqrt(200));
+  ctx.setTransform(PS2, 0, 0, PS2, W / 2, PILL_Y + (1 - vis) * -30); ctx.globalAlpha = clamp(vis * 1.5);
+  ctx.save(); ctx.shadowColor = 'rgba(5,14,26,0.28)'; ctx.shadowBlur = 24 * PS2; ctx.shadowOffsetY = 8 * PS2; ctx.fillStyle = CI.navy; rr(-w / 2, 0, w, 64, 32); ctx.fill(); ctx.restore();
+  const x0 = -w / 2 + 22; ctx.save(); rr(-w / 2, 0, w, 64, 32); ctx.clip();
+  STEPS.forEach((l, i) => { const a = st(starts[i], 220) * (i < 2 ? 1 - st(starts[i + 1], 220) : 1); if (a <= 0.01) return; const dy = (1 - st(starts[i], 220)) * 26 - (i < 2 ? st(starts[i + 1], 220) * 26 : 0);
+    ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, dy);
+    ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(x0 + 22, 32, 22, 0, Math.PI * 2); ctx.fill(); text(String(i + 1), x0 + 22, 41, 800, 24, CI.navy, 'center');
+    text(l, x0 + 60, 41, 700, 26, '#FFFFFF', 'left', -0.2); ctx.restore(); });
+  ctx.restore();
+  const cur = t >= T.p3 ? 2 : t >= T.p2 ? 1 : 0;   // Fortschritt: drei Punkte rechts
+  for (let i = 0; i < 3; i++) { const on = i <= cur ? 1 : 0, pp = pulse(starts[i], 0.14); ctx.fillStyle = on ? CI.gold : 'rgba(255,255,255,0.28)'; ctx.beginPath(); ctx.arc(w / 2 - 26 - 58 + 7 + i * 22, 32, 6 * (1 + 0.5 * pp), 0, Math.PI * 2); ctx.fill(); }
+  ctx.globalAlpha = 1;
 }
 function drawOverlays() {
   const v = Math.max(ov(T.web, T.webOut).v, ov(T.done, T.doneOut).v, ov(T.mbox, T.mboxOut).v, ov(T.pros, T.prosOut).v);
   if (v > 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = `rgba(10,22,38,${0.42 * v})`; ctx.fillRect(0, 0, W, H); }
   drawWeb(); drawDone(); drawMailbox(); drawPros(); ctx.globalAlpha = 1;
-  const SEQS = [[pscale(960, 430), [T.tapBr, WEB.br[0] + WEB.br[2] / 2, WEB.br[1] + 24], [T.tapRg, WEB.rg[0] + WEB.rg[2] / 2, WEB.rg[1] + 24], [T.tapAlarm, ALARM_X + ALARM_W / 2, -45]],
+  const SEQS = [[WEB_M, [T.tapBr, WEB.br[0] + WEB.br[2] / 2, WEB.br[1] + 24], [T.tapRg, WEB.rg[0] + WEB.rg[2] / 2, WEB.rg[1] + 24], [T.tapAlarm, ALARM_X + ALARM_W / 2, -45]],
     [pscale(600, 410), [T.tapClose, 0, 132]], [pscale(760, 660), [T.tapCRow, 60, MB.y + MB.head + MB.row / 2], [T.tapConfirm, MB.x + 54 + 110, MB.y + 520]]];
-  const sq = SEQS.find((q) => t > q[1][0] - 0.6 && t < q[q.length - 1][0] + 0.7); if (sq) cursor(sq.slice(1), false, sq[0]);
+  const sq = SEQS.find((q) => t > q[1][0] - 0.6 && t < q[q.length - 1][0] + 0.7); if (sq) cursor(sq.slice(1), false, sq[0], sq === SEQS[0] ? webPan() : 0);
 }
 function drawFoot() {   // wie drawFoot() der Stellenanzeigen; erste Zeile mit Pfad zu den Stellenangeboten
   const rise = sp(T.foot, 120, 18); if (rise <= 0) return; ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -421,8 +448,8 @@ function drawFoot() {   // wie drawFoot() der Stellenanzeigen; erste Zeile mit P
 /* ---------- Kamera: Fokus auf den jeweiligen Schritt, am Ende zurück auf die ganze Anzeige ---------- */
 // Ausschnitt aus einem Bereich der Bühne: Zoom so, dass er passt (max. zmax); oben bündig (Erklärzeile bleibt im Bild) oder mittig
 function cam(x0, y0, x1, y1, gT, gB, zmax, top = true) {
-  const [X0, Y0] = scr(x0, y0, gT), [X1, Y1] = scr(x1, y1, gB), m = top ? 0 : 0.035 * H;
-  const z = Math.min(zmax, W / (X1 - X0), (H - 2 * m) / (Y1 - Y0));
+  const [X0, Y0] = scr(x0, y0, gT), [X1, Y1] = scr(x1, y1, gB), m = top ? PILL_BOTTOM : 0.035 * H;
+  const z = Math.min(zmax, W / (X1 - X0), (H - (top ? m + 0.03 * H : 2 * m)) / (Y1 - Y0));
   const fx = clamp((X0 + X1) / 2, W / (2 * z), W - W / (2 * z)), fy = top ? Y0 + (H / 2 - m) / z : (Y0 + Y1) / 2;
   return [z, fx, fy];
 }
@@ -439,7 +466,7 @@ const KC = 46, DC = 2 * Math.sqrt(46);
 window.seek = (tt) => {
   t = tt; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = CI.bg; ctx.fillRect(0, 0, W, H);
   camZ = track(t, KEYS.map(([k, v]) => [k, v[0]]), KC, DC); camX = track(t, KEYS.map(([k, v]) => [k, v[1]]), KC, DC); camY = track(t, KEYS.map(([k, v]) => [k, v[2]]), KC, DC);
-  drawCircle(); drawMotiv(); drawLogo(); drawHook(); drawSub(); drawChips(); drawCard(); drawEnvelope(); drawInbox(); drawNotif(); drawTap(); drawOverlays(); drawFoot();
+  drawCircle(); drawMotiv(); drawLogo(); drawHook(); drawSub(); drawChips(); drawCard(); drawEnvelope(); drawInbox(); drawNotif(); drawTap(); drawTopFade(); drawOverlays(); drawSteps(); drawFoot();
 };
 window.DUR = DUR;
 window.seek(0);
