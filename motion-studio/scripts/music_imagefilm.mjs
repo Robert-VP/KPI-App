@@ -1,7 +1,7 @@
 // node scripts/music_imagefilm.mjs --style epic|techno|hybrid [--groove out/music_imagefilm_groove.wav] [--out out/x.wav] [--sfxgain 0.5]
 // Alternative Musiken für den Imagefilm, komplett im Code synthetisiert (lizenzfrei, deterministisch).
 // Der Ablauf folgt den Kapiteln aus templates/imagefilm/timeline.mjs (Wechsel auf dem Raster der Mosaik-Übergänge), die SFX der Vorlage werden dazugemischt.
-//   epic    1 · Episch: Trailer-Sound mit Orchester-Synths (Streicher-Ostinato, Bläser, Chor, Taiko, Braams), D-Moll, Schluss in D-Dur
+//   epic    1 · Episch, Richtung Hans Zimmer: Streicher-Ostinato, Hörner-Thema, Kriegstrommeln, Pauken, Chor, Solostimme, D-Moll, Schluss in D-Dur
 //   techno  3 · Melodic Techno: rollender Bass, Arpeggio, große Lead-Melodie zur Auszeichnung, A-Moll, Schluss in A-Dur
 //   hybrid  4 · Episch + Deep House: Intro, Auszeichnung und Outro episch (A-Moll), dazwischen der Deep-House-Groove aus --groove
 // Klang-Logo in allen drei: drei Glockentöne (Quinte unten, Grundton, Terz) beim Logo im Intro, im Outro nach Dur aufgelöst.
@@ -71,38 +71,78 @@ function snareRoll(t0, len, g = 1) {   // Wirbel: immer dichter und lauter
   for (let t = 0; t < len;) { const p = t / len; snare(t0 + t, g * (0.15 + 0.85 * p * p)); t += 1 / (4 + 20 * p * p); }
 }
 
-/* ---------- Episch ---------- */
-function taiko(t0, g = 1, f0 = 50) {
-  const f = svf(); let ph = 0;
-  voice(t0, 1.6, (t) => { ph += TAU * (f0 + 75 * Math.exp(-t * 26)) / SR; const body = Math.sin(ph) * Math.exp(-t * 4.2); f.run(noise(), 850, 0.9);
-    return Math.tanh((body + f.bp * Math.exp(-t * 32) * 1.3) * 1.7) * Math.min(1, t * 1500); }, [out(DRY, 0, 0.5 * g), out(REV, 0, 0.3 * g)]);
+/* ---------- Episch (Richtung Hans Zimmer: Ostinato der tiefen Streicher mit 3-3-2-Akzenten, Hörner-Thema, Kriegstrommeln, Pauken, Chor, Solostimme) ---------- */
+function taiko(t0, g = 1, f0 = 50, pan = 0) {   // zwei Spieler leicht versetzt
+  [[0, 1, 0, -0.2], [0.007, 0.7, 6, 0.35]].forEach(([dt, gg, df, pp]) => { const f = svf(); let ph = 0;
+    voice(t0 + dt, 1.8, (t) => { ph += TAU * (f0 + df + 75 * Math.exp(-t * 26)) / SR; const body = Math.sin(ph) * Math.exp(-t * 3.8); f.run(noise(), 800, 0.9);
+      return Math.tanh((body + f.bp * Math.exp(-t * 30) * 1.2) * 1.7) * Math.min(1, t * 1500) * gg; }, [out(DRY, pan + pp, 0.4 * g), out(REV, 0, 0.34 * g)]); });
 }
-function tom(t0, g, f0, pan) { let ph = 0; voice(t0, 0.6, (t) => { ph += TAU * f0 * (1 + 0.6 * Math.exp(-t * 30)) / SR; return Math.sin(ph) * Math.exp(-t * 9); }, [out(DRY, pan, 0.4 * g), out(REV, pan, 0.2 * g)]); }
+function tom(t0, g, f0, pan) { let ph = 0; voice(t0, 0.6, (t) => { ph += TAU * f0 * (1 + 0.6 * Math.exp(-t * 30)) / SR; return Math.sin(ph) * Math.exp(-t * 9); }, [out(DRY, pan, 0.4 * g), out(REV, pan, 0.22 * g)]); }
+function timp(t0, m, g = 1) {   // Pauke
+  const fq = mtof(m); let p1 = 0, p2 = 0;
+  voice(t0, 2.4, (t) => { const f = fq * (1 + 0.04 * Math.exp(-t * 20)); p1 += TAU * f / SR; p2 += TAU * f * 1.5 / SR;
+    return (Math.sin(p1) + 0.35 * Math.sin(p2) * Math.exp(-t * 3)) * Math.exp(-t * 1.6) * Math.min(1, t * 800) * g; }, [out(DRY, -0.2, 0.32), out(REV, 0, 0.26)]);
+}
+function timpRoll(t0, len, m, g = 1) { for (let t = 0; t < len; t += 0.06) timp(t0 + t, m, g * 0.5 * (0.12 + 0.88 * (t / len) ** 2)); }
 function braam(t0, len, notes, g = 1) {   // tiefer Blechbläser-Schlag
   notes.forEach((m) => [-1, 0, 1].forEach((d) => { const s = saw(mtof(m) * 2 ** (d * 9 / 1200)), f = svf();
     voice(t0, len + 1.2, (t) => { const c = 260 + 2500 * Math.min(1, t / 0.1) * Math.exp(-Math.max(0, t - 0.1) * 1.4); f.run(s(), c, 1.3);
-      return Math.tanh(f.lp * 2.2) * (1 + 0.22 * Math.sin(TAU * 7 * t) * Math.exp(-t * 2)) * adsr(t, 0.012, 0.5, 0.5, len, 1.1); }, [out(MUS, d * 0.5, 0.09 * g), out(REV, d * 0.5, 0.06 * g)]); }));
+      return Math.tanh(f.lp * 2.2) * (1 + 0.22 * Math.sin(TAU * 7 * t) * Math.exp(-t * 2)) * adsr(t, 0.012, 0.5, 0.5, len, 1.1); }, [out(MUS, d * 0.5, 0.08 * g), out(REV, d * 0.5, 0.06 * g)]); }));
 }
-function spic(t0, m, len, vel = 1, pan = 0) {   // Streicher-Spiccato für das Ostinato
-  const a = saw(mtof(m) * 1.002), b = saw(mtof(m) * 0.998), f = svf();
-  voice(t0, len + 0.12, (t) => { f.run((a() + b()) * 0.5, 800 + 2800 * Math.exp(-t * 14), 0.9); return f.lp * adsr(t, 0.005, 0.07, 0.5, len, 0.08) * vel; }, [out(MUS, pan, 0.17), out(REV, pan, 0.08)]);
+function swell(t1, len, g = 1) { const f = svf(); voice(t1 - len, len, (t) => { const p = t / len; f.run(noise(), 3000 + 5000 * p, 0.7); return f.hp * p ** 3 * g; }, [out(DRY, 0.2, 0.22), out(REV, -0.2, 0.15)]); }
+function shepard(t0, len, g = 1) {   // endlos steigender Ton
+  const ph = new Array(6).fill(0);
+  voice(t0, len, (t) => { const p = t / len; let v = 0; for (let k = 0; k < 6; k++) { const x = ((k + p * 1.6) % 6) / 6; ph[k] += TAU * 55 * 2 ** (x * 6) / SR; v += (Math.sin(ph[k]) + 0.3 * Math.sin(2 * ph[k])) * Math.sin(Math.PI * x) ** 2; }
+    return v * (0.15 + 0.85 * p * p) * g; }, [out(MUS, 0, 0.07), out(REV, 0, 0.06)]);
 }
-function strings(t0, notes, len, g = 1) {   // Streicherfläche
-  notes.forEach((m) => [-1, 1].forEach((d) => { const s = vsaw(mtof(m) * 2 ** (d * 6 / 1200), 0.004, 5 + rnd()), f = svf();
-    voice(t0, len + 1.0, (t) => { f.run(s(), 1300 + 700 * Math.min(1, t / 1.5), 0.7); return f.lp * adsr(t, 0.45, 0.4, 0.85, len, 1.0); }, [out(MUS, d * 0.6, 0.05 * g), out(REV, d * 0.6, 0.05 * g)]); }));
+function cello(t0, m, len, vel, pan) {   // tiefe Streicher, kurz gestrichen
+  const ss = [0.997, 1, 1.003].map((d) => saw(mtof(m) * d)), f = svf();
+  voice(t0, len + 0.15, (t) => { let v = 0; for (const s of ss) v += s(); f.run(v / 3, 350 + 2400 * vel * Math.exp(-t * 16), 0.9); return f.lp * adsr(t, 0.006, 0.09, 0.55, len, 0.1) * (0.4 + 0.6 * vel); },
+    [out(MUS, pan, 0.2), out(REV, pan, 0.07)]);
 }
-function brass(t0, notes, len, g = 1) {   // Hörner/Posaunen
-  notes.forEach((m) => [-1, 0, 1].forEach((d) => { const s = vsaw(mtof(m) * 2 ** (d * 5 / 1200), 0.003, 5.5), f = svf();
-    voice(t0, len + 0.5, (t) => { f.run(s(), 300 + 1900 * Math.min(1, t / 0.08) * (0.75 + 0.25 * Math.exp(-t * 3)), 1.1); return Math.tanh(f.lp * 1.5) * adsr(t, 0.05, 0.3, 0.8, len, 0.4); },
-      [out(MUS, d * 0.4, 0.065 * g), out(REV, d * 0.4, 0.06 * g)]); }));
+function ens(t0, notes, len, g = 1, bright = 1, att = 0.5) {   // Streicher-Ensemble, breit
+  notes.forEach((m) => [-11, -4, 3, 9].forEach((c, j) => { const s = vsaw(mtof(m) * 2 ** (c / 1200), 0.003, 4.8 + rnd()), f = svf(), pan = (j / 1.5 - 1) * 0.8, cut = Math.min(5000, mtof(m) * 4 * bright + 500);
+    voice(t0, len + 1.2, (t) => { f.run(s(), cut * (0.6 + 0.4 * Math.min(1, t / 1.2)), 0.7); return f.lp * adsr(t, att, 0.4, 0.9, len, 1.2); }, [out(MUS, pan, 0.03 * g), out(REV, pan, 0.035 * g)]); }));
+}
+function hornChord(t0, notes, len, g = 1) {   // Hörner-Akkord mit Crescendo
+  notes.forEach((m) => [-6, 0, 6].forEach((c, j) => { const s = vsaw(mtof(m) * 2 ** (c / 1200), 0.003, 5.2), f = svf();
+    voice(t0, len + 0.8, (t) => { const d = Math.min(1, t / len) ** 1.5; f.run(s(), 300 + 1700 * (0.3 + 0.7 * d), 1.0); return Math.tanh(f.lp * 1.4) * (0.35 + 0.65 * d) * adsr(t, 0.3, 0.1, 1, len, 0.7); },
+      [out(MUS, (j - 1) * 0.4, 0.05 * g), out(REV, (j - 1) * 0.4, 0.06 * g)]); }));
+}
+const lineAt = (ph, t) => { let k = 0; while (k + 1 < ph.length && ph[k + 1][0] <= t) k++; return k; };
+function legato(ph, render) {   // eine Stimme über eine ganze Phrase: Portamento zwischen den Tönen
+  const t0 = ph[0][0], tEnd = ph.at(-1)[0] + ph.at(-1)[2];
+  const pitch = (t) => { const k = lineAt(ph, t), [ts, m] = ph[k], pr = k ? ph[k - 1][1] : m, gl = Math.min(1, (t - ts) / 0.09); return pr + (m - pr) * (1 - (1 - gl) ** 2); };
+  const shape = (t) => { const k = lineAt(ph, t), [ts, , l] = ph[k]; return { u: (t - ts) / l, nt: t - ts }; };
+  render(t0, tEnd, pitch, shape);
+}
+function hornLine(ph, g = 1, oct = 0) {   // Hörner unisono, jeder Ton schwillt an
+  legato(ph, (t0, tEnd, pitch, shape) => [-7, -2, 3, 8].forEach((c, j) => { let p = rnd(); const f = svf(), pan = (j - 1.5) * 0.25;
+    voice(t0, tEnd - t0 + 0.8, (t) => { const at = t0 + t, { u } = shape(at), fq = mtof(pitch(at) + oct) * 2 ** (c / 1200) * (1 + 0.004 * Math.sin(TAU * 5.2 * t) * Math.min(1, t)), dt = fq / SR;
+      p += dt; if (p >= 1) p -= 1; const v = 2 * p - 1 - blep(p, dt);
+      const dyn = (0.72 + 0.28 * Math.sin(Math.PI * Math.min(1, u))) * Math.min(1, t / 0.25) * (at > tEnd ? Math.max(0, 1 - (at - tEnd) / 0.7) : 1);
+      f.run(v, 250 + 2300 * dyn * dyn, 1.0); return Math.tanh(f.lp * 1.6) * dyn; }, [out(MUS, pan, 0.07 * g), out(REV, pan, 0.075 * g)]); }));
+}
+function vocal(ph, g = 1) {   // Solostimme auf „a“: Formanten, verzögertes Vibrato, Portamento, Atem
+  const FM = [[850, 1], [1220, 0.5], [2810, 0.28], [3500, 0.12]];
+  legato(ph, (t0, tEnd, pitch, shape) => { let p = 0; const fs = FM.map(() => svf());
+    voice(t0, tEnd - t0 + 1.2, (t) => { const at = t0 + t, { u, nt } = shape(at), vib = 0.007 * Math.min(1, Math.max(0, nt - 0.35) * 2), fq = mtof(pitch(at)) * (1 + vib * Math.sin(TAU * 5.4 * t)), dt = fq / SR;
+      p += dt; if (p >= 1) p -= 1; const v = (2 * p - 1 - blep(p, dt)) + noise() * 0.08;
+      const dyn = (0.6 + 0.4 * Math.sin(Math.PI * Math.min(1, u))) * Math.min(1, t / 0.4) * (at > tEnd ? Math.max(0, 1 - (at - tEnd) / 1.0) : 1);
+      let y = 0; fs.forEach((f, j) => { f.run(v, FM[j][0], 9); y += f.bp * FM[j][1]; }); return y * dyn; }, [out(MUS, 0, 0.1 * g), out(REV, 0, 0.12 * g), out(DLY, 0, 0.04 * g)]); });
 }
 function choir(t0, notes, len, g = 1) {   // Chor auf „a“: drei Formantfilter
   const FM = [[730, 1.0], [1090, 0.5], [2440, 0.25]];
-  notes.forEach((m) => [-1, 0, 1].forEach((d) => { const s = vsaw(mtof(m) * 2 ** (d * 10 / 1200), 0.005, 4.5 + rnd()), fs = FM.map(() => svf());
-    voice(t0, len + 1.4, (t) => { const v = s(); let y = 0; fs.forEach((f, j) => { f.run(v, FM[j][0], 6); y += f.bp * FM[j][1]; }); return y * adsr(t, 0.8, 0.5, 0.9, len, 1.4); },
-      [out(MUS, d * 0.7, 0.07 * g), out(REV, d * 0.7, 0.11 * g)]); }));
+  notes.forEach((m) => [-12, -4, 4, 12].forEach((d, j) => { const s = vsaw(mtof(m) * 2 ** (d / 1200), 0.005, 4.5 + rnd()), fs = FM.map(() => svf());
+    voice(t0, len + 1.4, (t) => { const v = s(); let y = 0; fs.forEach((f, k) => { f.run(v, FM[k][0], 6); y += f.bp * FM[k][1]; }); return y * adsr(t, 0.9, 0.5, 0.9, len, 1.4); },
+      [out(MUS, (j / 1.5 - 1) * 0.8, 0.055 * g), out(REV, (j / 1.5 - 1) * 0.8, 0.09 * g)]); }));
 }
 
+// Hörner-Thema (eigene Komposition), acht Takte über Dm – Bb – F – C, je zwei Takte: [Takt, Beat, MIDI in D-Moll, Länge in Beats]
+const THEME = [[0, 0, 62, 2], [0, 2, 69, 2], [1, 0, 67, 1.5], [1, 1.5, 65, 0.5], [1, 2, 64, 1], [1, 3, 65, 1],
+  [2, 0, 62, 2], [2, 2, 70, 2], [3, 0, 69, 3], [3, 3, 67, 1],
+  [4, 0, 69, 2], [4, 2, 72, 2], [5, 0, 70, 1.5], [5, 1.5, 69, 0.5], [5, 2, 67, 2],
+  [6, 0, 67, 2], [6, 2, 64, 2], [7, 0, 64, 3], [7, 3, 65, 1]];
 function epic(K, only) {   // K: Transposition (0 = D-Moll), only: nur diese Kapitel (Mischform)
   const CH = { Dm: [38, 3], Bb: [34, 4], F: [41, 4], C: [36, 4], Gm: [43, 3], A: [45, 4], D: [38, 4], G: [43, 4] };
   const ch = (n) => ({ r: CH[n][0] + K, th: CH[n][1] });
@@ -110,42 +150,53 @@ function epic(K, only) {   // K: Transposition (0 = D-Moll), only: nur diese Kap
   const on = (s) => !only || only.includes(s);
   const base = 74 + K, motif = (maj) => [base - 5, base, base + (maj ? 4 : 3)];
   const prog = (s, names, fn) => { if (on(s)) bars(G[s], NEXT(s), (b, k) => fn(b, ch(names[k % names.length]), k)); };
-  const ost = (b, c, vel, rate = 4, oct = 12, pan = 0, until = Infinity) => { const pat = [0, 12, 7, 12, c.th, 12, 7, 12], n = Math.round(4 * rate), d = BAR / n;
-    for (let i = 0; i < n; i++) if (b + i * d < until) spic(b + i * d, c.r + oct + pat[i % 8], d * 0.8, vel * (i % 4 === 0 ? 1 : 0.72), pan); };
-  const DR = [[[0, 1]], [[0, 1], [2.5, 0.6]], [[0, 1], [1.5, 0.55], [2, 0.8], [3.5, 0.5]], [[0, 1], [0.75, 0.45], [1.5, 0.6], [2, 0.85], [2.5, 0.5], [3, 0.7], [3.5, 0.55], [3.75, 0.4]]];
-  const drums = (b, lvl, g = 1) => { for (const [q, v] of DR[lvl]) taiko(b + q * beat, v * g, q === 0 ? 46 : 58); if (lvl >= 2) tom(b + 3.75 * beat, 0.4 * g, 150, 0.4); if (lvl >= 3) tom(b + 1.75 * beat, 0.3 * g, 120, -0.4); };
-  const braamOf = (c) => [c.r, c.r + 12, c.r + 19, c.r + 24];
-  const impact = (t, g, c) => { taiko(t, 1.3 * g, 40); braam(t, 1.8, braamOf(c), g); crash(t, g); subDrop(t, g); };
-  const logo = (s, maj) => LOGO[s].forEach((d, i) => { const m = motif(maj)[i]; bell(S0(s) + d, m, 1); piano(S0(s) + d, [m - 12], 1.2, 0.55); });
+  const theme = (t0, from, to) => THEME.filter(([b]) => b >= from && b < to).map(([b, q, m, l]) => [t0 + (b - from) * BAR + q * beat, m + K, l * beat]);
+  const ost = (b, c, vel, rate = 4, until = Infinity) => { const n = Math.round(4 * rate), d = BAR / n, PAT = [0, 0, 12, 0, 0, 12, 7, 12];
+    for (let i = 0; i < n; i++) { const t = b + i * d, x = i % 8, acc = x === 0 || x === 3 || x === 6; if (t >= until) break;
+      cello(t, c.r + 12 + PAT[x], d * 0.85, vel * (acc ? 1 : 0.55), i % 2 ? 0.25 : -0.25); if (acc) cello(t, c.r, d * 0.9, vel * 0.8, 0); } };
+  const DR = [[[0, 1], [0.3, 0.55]], [[0, 1], [1.5, 0.55], [2.5, 0.6]], [[0, 1], [0.75, 0.45], [1.5, 0.7], [2, 0.85], [3, 0.7], [3.5, 0.5]],
+    [[0, 1], [0.75, 0.5], [1.5, 0.75], [2, 0.9], [2.75, 0.5], [3, 0.8], [3.5, 0.6], [3.75, 0.45]]];
+  const drums = (b, lvl, g = 1) => { for (const [q, v] of DR[lvl]) taiko(b + q * beat, v * g, q === 0 ? 44 : 56, q % 1 ? 0.3 : -0.1);
+    if (lvl >= 2) { tom(b + 3.75 * beat, 0.4 * g, 150, 0.45); tom(b + 1.75 * beat, 0.3 * g, 120, -0.45); } };
+  const impact = (t, g, c) => { taiko(t, 1.3 * g, 38); braam(t, 1.8, [c.r, c.r + 12, c.r + 19, c.r + 24], g); crash(t, g); subDrop(t, g); timp(t, c.r + 12, g); };
+  const logo = (s, maj) => LOGO[s].forEach((d, i) => { const m = motif(maj)[i]; bell(S0(s) + d, m, 1); piano(S0(s) + d, [m - 12], 1.2, 0.5); });
 
-  if (on('intro')) { const c = ch('Dm'); strings(0, [c.r + 12, c.r + 19], 4.2, 0.9); choir(0.3, [c.r + 24, c.r + 31], 3.6, 0.45); subDrop(0.25, 0.45); logo('intro', false); riser(2.4, 1.6, 0.8); }
-  prog('open', ['Dm', 'Bb', 'F', 'C'], (b, c, k) => { if (k === 0) impact(b, 0.75, c); strings(b, tri(c, 24), BAR, 0.9); ost(b, c, 0.4, 2); drums(b, 0, 0.6); });
-  prog('markt', ['Dm', 'Bb', 'F', 'C'], (b, c, k) => { if (k === 0) { taiko(b, 0.9, 42); crash(b, 0.6); } strings(b, tri(c, 24), BAR, 0.9); ost(b, c, 0.5); drums(b, 1, 0.7); });
-  prog('grund', ['Dm', 'Bb', 'F', 'C'], (b, c, k) => { if (k === 0) { taiko(b, 1, 42); crash(b, 0.7); } strings(b, tri(c, 24), BAR); brass(b, tri(c, 12), BAR * 0.95, 0.6); ost(b, c, 0.55); drums(b, 2, 0.75); });
-  prog('mandate', ['Dm', 'Bb', 'Gm', 'A'], (b, c, k) => { if (k === 0) { taiko(b, 1, 42); crash(b, 0.7); } strings(b, tri(c, 24), BAR); brass(b, tri(c, 12), BAR * 0.95, 0.6);
-    ost(b, c, 0.6); ost(b, c, 0.28, 4, 24, 0.4); drums(b, 2, 0.8); });
-  prog('direkt', ['Dm', 'Bb', 'F', 'C'], (b, c, k) => { if (k === 0) impact(b, 0.85, c); strings(b, tri(c, 24), BAR); choir(b, tri(c, 24), BAR * 0.95, 0.5);
-    ost(b, c, 0.65); ost(b, c, 0.32, 4, 24, 0.4); [0, 1.5, 3].forEach((q) => brass(b + q * beat, tri(c, 12), 0.35, 0.7)); drums(b, 3, 0.85); });
-  if (on('messen')) {   // Ostinato wird schneller, Snare-Wirbel und Riser, kurze Stille vor der Auszeichnung
-    const t0 = G.messen, stop = G.award - 0.4, rates = [2, 4, 4, 8];
-    ['Dm', 'Bb', 'Gm', 'A'].forEach((n, k) => { const b = t0 + k * BAR, c = ch(n); strings(b, tri(c, 24), Math.min(BAR, stop - b), 0.9 + 0.2 * k);
-      ost(b, c, 0.5 + 0.12 * k, rates[k], 12, 0, stop); if (k >= 2) ost(b, c, 0.35, rates[k], 24, 0.4, stop); taiko(b, 0.6 + 0.2 * k, 44); });
-    snareRoll(t0 + 2 * BAR, 2 * BAR - 0.4, 1); riser(t0 + BAR, 3 * BAR - 0.4);
+  if (on('intro')) { const c = ch('Dm'); ens(0, [c.r, c.r + 12], 4.6, 1.2, 0.5, 1.5); choir(0.4, [c.r + 24, c.r + 31], 3.8, 0.5); subDrop(0.25, 0.45); logo('intro', false);
+    vocal([[1.6, 77 + K, 0.8], [2.4, 76 + K, 0.5], [2.9, 74 + K, 1.4]], 0.8); swell(G.open, 1.6); }
+  prog('open', ['Dm', 'Dm', 'Bb', 'Bb'], (b, c, k) => { if (k === 0) { impact(b, 0.8, c); hornLine(theme(b, 0, 4), 0.55, -12); }
+    if (k % 2 === 0) ens(b, [c.r + 12, ...tri(c, 24)], 2 * BAR, 1, 0.8); drums(b, 0, 0.6); });
+  prog('markt', ['F', 'F', 'C', 'C', 'Dm'], (b, c, k) => { if (k === 0) { taiko(b, 0.9, 40); crash(b, 0.6); } if (k % 2 === 0) ens(b, [c.r + 12, ...tri(c, 24)], (k === 4 ? 1 : 2) * BAR, 1);
+    ost(b, c, 0.55, 2); drums(b, 1, 0.6); timp(b, c.r + 12, 0.5); });
+  prog('grund', ['Dm', 'Dm', 'Bb', 'Bb', 'C'], (b, c, k) => { if (k === 0) { taiko(b, 1, 40); crash(b, 0.7); } if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24)], (k === 4 ? 1 : 2) * BAR, 1); hornChord(b, tri(c, 12), (k === 4 ? 1 : 2) * BAR * 0.95, 0.8); }
+    ost(b, c, 0.62); drums(b, 1, 0.75); if (k === 4) swell(NEXT('grund'), 1.5); });
+  prog('mandate', ['Gm', 'Gm', 'Dm', 'Dm', 'A', 'A'], (b, c, k) => { if (k === 0) { impact(b, 0.6, c); } if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24)], 2 * BAR, 1.1); choir(b, tri(c, 24), 2 * BAR * 0.95, 0.45); }
+    ost(b, c, 0.72); [0, 1.5, 3].forEach((q) => braam(b + q * beat, 0.25, [c.r, c.r + 12], 0.35)); drums(b, 2, 0.8); if (k === 5) { timpRoll(b + BAR / 2, BAR / 2, c.r + 12, 0.8); swell(b + BAR, 1.6); } });
+  prog('direkt', ['Dm', 'Dm', 'Bb', 'Bb', 'F', 'F', 'C', 'C', 'Dm'], (b, c, k) => { if (k === 0) { impact(b, 0.95, c); hornLine(theme(b, 0, 8), 1.0); hornLine(theme(b, 0, 8), 0.4, 12); }
+    if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24), c.r + 36], (k === 8 ? 1 : 2) * BAR, 1.2); choir(b, tri(c, 24), (k === 8 ? 1 : 2) * BAR * 0.95, 0.6); }
+    ost(b, c, 0.85); drums(b, 3, 0.9); if (k === 8) hornChord(b, tri(c, 12), BAR, 0.9); });
+  if (on('messen')) {   // Ostinato wird schneller, endlos steigender Ton, Pauken- und Snare-Wirbel, kurze Stille vor der Auszeichnung
+    const t0 = G.messen, stop = G.award - 0.4;
+    ['Dm', 'Bb', 'Gm', 'A'].forEach((n, k) => { const b = t0 + k * BAR, c = ch(n); ens(b, [c.r + 12, ...tri(c, 24)], Math.min(BAR, stop - b), 0.9 + 0.25 * k, 0.8 + 0.2 * k, 0.2);
+      ost(b, c, 0.6 + 0.12 * k, [4, 4, 8, 8][k], stop); taiko(b, 0.6 + 0.2 * k, 42); if (k >= 2) choir(b, tri(c, 24), Math.min(BAR, stop - b), 0.5 + 0.2 * k); });
+    shepard(t0, stop - t0, 1); snareRoll(t0 + 2 * BAR, 2 * BAR - 0.4, 1); timpRoll(t0 + 2 * BAR, 2 * BAR - 0.4, ch('A').r + 12, 1);
   }
-  const MEL = [[[0, 74, 2], [2, 77, 2]], [[0, 72, 2], [2, 77, 2]], [[0, 79, 3], [3, 76, 1]], [[0, 74, 4]], [[0, 77, 2], [2, 82, 2]], [[0, 79, 2], [2, 76, 2]]];
-  prog('award', ['Bb', 'F', 'C', 'Dm', 'Bb', 'C'], (b, c, k) => { if (k === 0) impact(b, 1.1, c); if (k === 2) impact(b, 0.8, c);
-    strings(b, tri(c, 24), BAR, 1.1); choir(b, tri(c, 24), BAR * 0.95, 0.8); ost(b, c, 0.7); ost(b, c, 0.35, 4, 24, 0.4); drums(b, 3, 1);
-    for (const [q, m, l] of MEL[k % MEL.length]) { brass(b + q * beat, [m + K, m + K - 12], l * beat * 0.95, 0.9); strings(b + q * beat, [m + K + 12], l * beat, 0.5); } });
-  prog('werte', ['Dm', 'Bb', 'F', 'C'], (b, c, k) => { if (k === 0) { taiko(b, 0.8, 42); crash(b, 0.5); } strings(b, tri(c, 24), BAR, 0.8); ost(b, c, 0.3, 2);
-    [0, 7, 12, c.th + 12, 19, c.th + 12, 12, 7].forEach((o, i) => piano(b + i * beat / 2, [c.r + 24 + o], beat * 0.45, 0.55));
-    if (k >= 2) choir(b, tri(c, 24), BAR * 0.95, 0.6); drums(b, 1, 0.5); });
-  if (on('outro')) {   // D-Dur, Klang-Logo in Dur, plagaler Schluss D – G – D
+  prog('award', ['Bb', 'Bb', 'F', 'F', 'C', 'C'], (b, c, k) => { if (k === 0) { impact(b, 1.2, c); hornLine(theme(b, 2, 8), 1.15); hornLine(theme(b, 2, 8), 0.6, 12); hornLine(theme(b, 2, 8), 0.5, -12); }
+    if (k === 2) impact(b, 0.85, c);
+    if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24), ...tri(c, 36)], 2 * BAR, 1.3, 1.2); choir(b, [...tri(c, 24), c.r + 36], 2 * BAR * 0.95, 0.95); }
+    ost(b, c, 0.9); drums(b, 3, 1); });
+  prog('werte', ['Dm', 'Dm', 'Bb', 'C'], (b, c, k) => { if (k === 0) { taiko(b, 0.8, 40); crash(b, 0.4);
+      vocal([[b + 0.3, 74 + K, 1.6], [b + 2.0, 77 + K, 1.0], [b + 3.0, 76 + K, 0.9], [b + 4.0, 74 + K, 1.8], [b + 6.0, 72 + K, 0.9], [b + 7.0, 76 + K, 1.0]], 0.9); }
+    ens(b, [c.r + 12, ...tri(c, 24)], BAR, 0.9, 0.7, 0.8); ost(b, c, 0.3, 2);
+    [0, 7, 12, c.th + 12, 19, c.th + 12, 12, 7].forEach((o, i) => piano(b + i * beat / 2, [c.r + 24 + o], beat * 0.45, 0.45));
+    if (k >= 2) choir(b, tri(c, 24), BAR * 0.95, 0.65); if (k === 3) { timpRoll(b + BAR / 2, BAR / 2, c.r + 12, 0.7); swell(b + BAR, 1.5); } });
+  if (on('outro')) {   // D-Dur: Klang-Logo in Dur, Thema endet in Dur, plagaler Schluss D – G – D
     const t0 = G.outro, cD = ch('D'), cG = ch('G');
-    impact(t0, 0.6, cD); strings(t0, tri(cD, 24), BAR, 0.9); choir(t0, tri(cD, 24), BAR, 0.45); ost(t0, cD, 0.3, 2); logo('outro', true);
-    strings(t0 + BAR, tri(cG, 24), BAR, 1); brass(t0 + BAR, tri(cG, 12), BAR * 0.95, 0.6); choir(t0 + BAR, tri(cG, 24), BAR, 0.6); ost(t0 + BAR, cG, 0.45); taiko(t0 + BAR, 0.6, 46);
-    snareRoll(t0 + BAR + 1.0, 1.0, 0.6);
-    const tf = t0 + 2 * BAR; impact(tf, 0.95, cD); strings(tf, [...tri(cD, 12), ...tri(cD, 24)], DUR - tf - 1.4, 1.1); choir(tf, tri(cD, 24), DUR - tf - 1.4, 0.8);
-    brass(tf, tri(cD, 12), 3.6, 0.8); bell(tf + 0.05, base + 4, 0.5);
+    impact(t0, 0.7, cD); ens(t0, [cD.r + 12, ...tri(cD, 24)], BAR, 1); choir(t0, tri(cD, 24), BAR, 0.5); hornChord(t0, tri(cD, 12), BAR * 0.95, 0.6); ost(t0, cD, 0.35, 2); logo('outro', true);
+    ens(t0 + BAR, [cG.r + 12, ...tri(cG, 24)], BAR, 1.1); choir(t0 + BAR, tri(cG, 24), BAR, 0.7); ost(t0 + BAR, cG, 0.5);
+    hornLine([[t0 + BAR, 71 + K, beat * 2], [t0 + BAR + 2 * beat, 69 + K, beat * 2], [t0 + 2 * BAR, 74 + K, DUR - t0 - 2 * BAR - 1.6]], 1.0);
+    timpRoll(t0 + BAR + 1.0, 1.0, cD.r + 12, 0.8); swell(t0 + 2 * BAR, 1.2);
+    const tf = t0 + 2 * BAR, hold = DUR - tf - 1.4; impact(tf, 1.0, cD); ens(tf, [cD.r, cD.r + 12, ...tri(cD, 24), ...tri(cD, 36)], hold, 1.3, 1.1); choir(tf, [...tri(cD, 24), cD.r + 36], hold, 0.95);
+    hornChord(tf, tri(cD, 12), hold * 0.6, 0.8); bell(tf + 0.05, base + 4, 0.45); taiko(tf + 2 * beat, 0.5, 40);
   }
 }
 
@@ -274,12 +325,12 @@ if (STYLE === 'hybrid') {   // Groove einlesen, in den epischen Fenstern ausblen
   gm = 1;
 }
 let pk = 0; for (let i = 0; i < N; i++) { ML[i] = ML[i] * gm + SFX[0][i] * 0.6; MR[i] = MR[i] * gm + SFX[1][i] * 0.6; pk = Math.max(pk, Math.abs(ML[i]), Math.abs(MR[i])); }
-const g = (STYLE === 'hybrid' ? 0.95 : 1.15) / pk, fade = Math.round(1.2 * SR);
+const g = 1.15 / pk, fade = Math.round(1.2 * SR);
 const buf = Buffer.alloc(44 + N * 4);
 buf.write('RIFF', 0); buf.writeUInt32LE(36 + N * 4, 4); buf.write('WAVE', 8); buf.write('fmt ', 12);
 buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(2, 22); buf.writeUInt32LE(SR, 24);
 buf.writeUInt32LE(SR * 4, 28); buf.writeUInt16LE(4, 32); buf.writeUInt16LE(16, 34); buf.write('data', 36); buf.writeUInt32LE(N * 4, 40);
-const sat = STYLE === 'hybrid' ? (x) => x : Math.tanh;
+const sat = Math.tanh;   // sanfte Sättigung fängt die Spitzen der Schläge ab
 for (let i = 0; i < N; i++) { const fd = i > N - fade ? (N - i) / fade : 1;
   buf.writeInt16LE(Math.round(Math.max(-1, Math.min(1, sat(ML[i] * g))) * 0.89 * fd * 32767), 44 + i * 4); buf.writeInt16LE(Math.round(Math.max(-1, Math.min(1, sat(MR[i] * g))) * 0.89 * fd * 32767), 46 + i * 4); }
 writeFileSync(OUT, buf);
