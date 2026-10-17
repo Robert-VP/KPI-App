@@ -1,0 +1,29 @@
+---
+name: motion-reel
+description: Make a product or showreel motion video rendered from code. Use when the user asks for a launch video, showreel, product reel, animated explainer or motion ad.
+---
+
+# Motion reel
+
+## Inputs to collect first
+Product + URL, duration, formats (9:16 / 1:1 / 16:9), brand colors + fonts,
+a reference (frame, video, or image folder), music (file or "synthesize").
+
+## Pipeline
+1. Gather assets from the URL with Playwright into ./assets. List them.
+2. If a reference exists, write docs/style_guide.md from it (see docs/prompts/05_reference.md).
+3. Measure or synthesize music. `python3 beats.py track.wav > beats.json`, or `node scripts/music.mjs`.
+4. Write docs/shotlist.md on the beat grid. Show it and wait for OK.
+5. Build index.html with window.seek(t) using lib/motion.js springs. Follow CLAUDE.md.
+6. Contact sheet (`bash scripts/review.sh`) → critique (docs/prompts/09_critique.md) → fix. 3 rounds minimum.
+7. `node render.mjs` → sound → `bash scripts/mix.sh` (-14 LUFS) → out/final.mp4, all formats (`bash scripts/formats.sh`).
+8. Deliver final.mp4, contact.png, poster.png. Say what you'd improve next.
+
+## Job-ad videos (Voß & Partner)
+For a Stellenanzeige as video, do not design from scratch: fill templates/stellenanzeige/job.js and run
+`bash scripts/anzeige.sh templates/stellenanzeige 12`. The template is the generator's layout, animated. Default CI is docs/style_guide.md.
+
+## Hard rules
+- Real product UI only. Never invent screens.
+- No Math.random, no timers, no CSS transitions in render mode.
+- Banned: corner labels, centered title on gradient, everything fading in.
