@@ -1,16 +1,16 @@
-// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 100 s, 16:9 und 4:5), mit Logo-Intro. Eigene Formulierungen, keine konkreten Mandate.
+// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 104 s, 16:9 und 4:5), mit Logo-Intro. Eigene Formulierungen, keine konkreten Mandate.
 // Neun Kapitel, Wechsel jeweils mit dem goldenen Dreiecks-Mosaik. Texte aus voss-partner.de (Website-Repository),
 // Positionen fiktiv, angelehnt an die Art der Mandate von Voß & Partner.
-export const BPM = 120, DUR = 100;
+export const BPM = 120, DUR = 104;
 const B = 60 / BPM;
 export const bt = (n) => n * B;
-export const WIPES = [4, 12, 22, 32, 44, 62, 70, 82, 90];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
+export const WIPES = [4, 12, 22, 32, 44, 62, 74, 86, 94];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
 export const COVER = 0.37;
 export const SCENES = ['intro', 'open', 'markt', 'grund', 'mandate', 'direkt', 'messen', 'award', 'werte', 'outro'];
 export const STAGE = { intro: 'light', open: 'navy', markt: 'light', grund: 'light', mandate: 'dark', direkt: 'navy', messen: 'light', award: 'navy', werte: 'light', outro: 'navy' };
 export const sceneStart = (i) => (i === 0 ? 0 : WIPES[i - 1] + COVER);
-// Musik: Stimmung folgt dem Inhalt (Beats). ruhig → Groove → treibend (Direktansprache) → Aufbau (Messen) → Höhepunkt (Auszeichnung) → warm aus
-export const SECTIONS = '0:intro,24:light,44:full,64:perc,88:drive,124:drive,132:build,140:peak,164:full,180:perc,192:outro';
+// Musik: Stimmung folgt dem Inhalt (Beats). ruhig → Groove → treibend (Direktansprache) → Aufbau (Messen), Melodie bei den Schwerpunkt-Messen → Höhepunkt (Auszeichnung) → warm aus
+export const SECTIONS = '0:intro,24:light,44:full,64:perc,88:drive,124:drive,136:lift,144:build,148:peak,172:full,188:perc,200:outro';
 
 export const TXT = {
   intro: { line: 'SEIT 1992' },                                                  // farbiges Originallogo als kurzes Intro
@@ -26,7 +26,7 @@ export const TXT = {
     sub: 'Wir identifizieren und gewinnen gezielt Kandidaten, die heute erfolgreich sind – und morgen Ihr Team verstärken.',
     viz: 'Wir sprechen die Menschen an, die heute erfolgreich arbeiten.', procHead: 'Vier Schritte. Klar und planbar.',
     steps: ['Bedarfsanalyse', 'Anforderungsprofil & Strategie', 'Marktanalyse & Ansprache', 'Präsentation & Begleitung'] },
-  messen: { eyebrow: 'WO SIE UNS TREFFEN', head: 'Persönlicher Austausch ist durch nichts zu ersetzen.', note: 'Termin auf einer Messe vereinbaren? Schreiben Sie uns kurz.' },
+  messen: { eyebrow: 'WO SIE UNS TREFFEN', head: 'Persönlicher Austausch ist durch nichts zu ersetzen.', focus: 'IM FOKUS', note: 'Termin auf einer Messe vereinbaren? Schreiben Sie uns kurz.' },
   award: { eyebrow: 'AUSGEZEICHNET', head: 'Beste Personalberater', sub: 'SZ-Institut der Süddeutschen Zeitung', years: ['2024', '2025', '2026'], streak: 'Zum dritten Mal in Folge.',
     quote: 'Für uns die Bestätigung: Wer sich spezialisiert, besetzt besser.' },
   werte: { eyebrow: 'WORAUF SIE SICH VERLASSEN KÖNNEN', tiles: [
@@ -51,6 +51,9 @@ export const MANDATE = [
 export const MESSEN = [['Data Centre World', 'Frankfurt'], ['IFAT', 'München'], ['Intersolar', 'München'], ['FeuerTrutz', 'Nürnberg'], ['Chillventa', 'Nürnberg'], ['Belektro', 'Berlin'],
   ['GET Nord', 'Hamburg'], ['BAU', 'München'], ['Oldenburger Rohrleitungsforum', 'Oldenburg'], ['Elektrotechnik', 'Dortmund'], ['eltefa', 'Stuttgart'], ['ISH', 'Frankfurt'],
   ['Tausendwasser', 'Berlin'], ['Light + Building', 'Frankfurt'], ['MCE', 'Mailand'], ['SHK+E', 'Essen'], ['IFH/Intherm', 'Nürnberg']];
+// Diese fünf Messen sollen besonders erkennbar sein: im Durchlauf gold markiert, danach als ruhige Liste
+export const MESSEN_FOKUS = ['ISH', 'IFH/Intherm', 'Chillventa', 'IFAT', 'GET Nord'];
+export const FOKUS_U = 6.2;                                                       // Ende Durchlauf, Beginn der Liste (s nach Szenenstart)
 // Durchlauf der Messen: Position in Zeilen, schneller werdend
 export const REEL = { u0: 1.6, v0: 0.75, a: 0.95 };
 export const reelPos = (u) => { const x = Math.max(0, u - REEL.u0); return REEL.v0 * x + REEL.a * x * x; };
@@ -74,8 +77,10 @@ export const CUES = (() => {
   [0, 1, 2, 3].forEach((i) => c.push({ t: at('direkt', 13.9 + i * 0.55), sfx: 'pop', pan: -0.45 + i * 0.3 }));
   for (let k = 1; k < 40; k++) {   // jede Messe, die durch die Mitte läuft, tickt – schneller werdend
     const x = (-REEL.v0 + Math.sqrt(REEL.v0 * REEL.v0 + 4 * REEL.a * k)) / (2 * REEL.a), u = REEL.u0 + x;
-    if (u < 7.6) c.push({ t: at('messen', u), sfx: 'tick', pan: 0.2 });
+    if (u < FOKUS_U) c.push({ t: at('messen', u), sfx: 'tick', pan: 0.2 });
   }
+  c.push({ t: at('messen', FOKUS_U - 0.1), sfx: 'whoosh', pan: 0 });
+  MESSEN_FOKUS.forEach((_, i) => c.push({ t: at('messen', FOKUS_U + 0.3 + i * 0.28), sfx: 'pop', pan: -0.4 + i * 0.2 }));
   c.push({ t: at('award', 0.4), sfx: 'thump' }); [0, 1, 2].forEach((i) => c.push({ t: at('award', 1.8 + i * 0.7), sfx: 'pop', pan: -0.4 + i * 0.4 }));
   c.push({ t: at('award', 4.0), sfx: 'ding', pan: 0 });
   [0, 1, 2, 3].forEach((i) => c.push({ t: at('werte', 0.6 + i * 0.5), sfx: 'pop', pan: -0.45 + i * 0.3 }));
