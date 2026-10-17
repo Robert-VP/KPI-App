@@ -101,7 +101,7 @@ const MW = (() => { const cell = Math.round(Math.max(W, H) / 8.5), cs = cell * 0
 const sstep = (x) => x * x * (3 - 2 * x);
 function drawMosaic() { for (const tw of WIPES) { if (t < tw || t > tw + 0.85) continue; ctx.fillStyle = CI.gold; for (const m of MW.out) { const p = clamp((t - tw - m.d) / 0.13), q = clamp((t - tw - 0.4 - m.d) / 0.13), k = sstep(p) * (1 - sstep(q)); if (k > 0.001) tri(m.x, m.y, MW.cell * 1.07 * k, m.up); } } }
 function drawLogo(s0, light) { const img = light ? LOGO_H : LOGO_W; if (!img) return; const q = sp(s0 + 0.15, 160, 18); if (q <= 0) return; const h = (LAND ? 78 : 88) * U, w = h * img.naturalWidth / img.naturalHeight;
-  ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(Math.round(W * 0.045) + w / 2, Math.round(H * (LAND ? 0.07 : 0.045)) + h / 2); ctx.scale(Math.max(0.001, q), Math.max(0.001, q)); ctx.drawImage(img, -w / 2, -h / 2, w, h); ctx.restore(); }
+  ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(Math.round(W * 0.045) + w / 2, Math.round(H * 0.045) + h / 2); ctx.scale(Math.max(0.001, q), Math.max(0.001, q)); ctx.drawImage(img, -w / 2, -h / 2, w, h); ctx.restore(); }
 
 /* ============================================================ Szenen ============================================================ */
 // 1) Einstieg: Hero-Video, „Wir finden die Richtigen.“
@@ -128,14 +128,14 @@ function sMarkt(s0) {
 }
 // 3) Grundsatz: alle Positionen, Hauptsache in unserer Branche – Pyramide von Fach bis Geschäftsführung
 function sGrund(s0) {
-  const T = TXT.grund, hS = (LAND ? 70 : 60) * U, colW = LAND ? W * 0.40 : CW, x0 = M, y0 = H * (LAND ? 0.28 : 0.2);
+  const T = TXT.grund, hS = (LAND ? 70 : 60) * U, colW = LAND ? W * 0.46 : CW, x0 = M, y0 = H * (LAND ? 0.28 : 0.2);
   eyebrow(T.eyebrow, x0, y0, s0 + 0.2, CI.navy);
   const l1 = wrapLines(T.lines[0], colW, 800, hS), l2 = wrapLines(T.lines[1], colW, 800, hS); let y = y0 + 30 * U + hS;
   l1.forEach((l, i) => rise(l, x0, y + i * hS * 1.12, 800, hS, CI.ink, s0 + 0.4 + i * 0.12, 'left', -1.2 * U)); y += l1.length * hS * 1.12;
   l2.forEach((l, i) => rise(l, x0, y + i * hS * 1.12, 800, hS, CI.navy, s0 + 1.2 + i * 0.12, 'left', -1.2 * U)); y += l2.length * hS * 1.12;
   rise(T.note, x0, y + 30 * U, 600, 28 * U, CI.grau, s0 + 5.0);
   // Pyramide
-  const lx0 = LAND ? W * 0.52 : M, lw = LAND ? W - M - lx0 : CW, th = 128 * U, gap = 14 * U, ly = LAND ? H * 0.5 - (3 * th + 2 * gap) / 2 : y + 90 * U;
+  const lx0 = LAND ? W * 0.56 : M, lw = LAND ? W - M - lx0 : CW, th = 128 * U, gap = 14 * U, ly = LAND ? H * 0.5 - (3 * th + 2 * gap) / 2 : y + 90 * U;
   const tiers = T.tiers, widths = [0.62, 0.81, 1], fills = [CI.gold, CI.navy, '#DCE6F0'], cols = [CI.navy, WHITE, CI.navy];
   for (let k = 2; k >= 0; k--) { const q = sp(s0 + 2.6 + (2 - k) * 0.8, 200, 20); if (q <= 0) continue; const w = lw * widths[k], x = lx0 + (lw - w) / 2, yy = ly + k * (th + gap);
     ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(0, (1 - q) * 40 * U); ctx.fillStyle = fills[k]; rr(x, yy, w, th, 18 * U); ctx.fill();
@@ -237,7 +237,7 @@ function sAward(s0) {
     ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 30 * U; ctx.shadowOffsetY = 10 * U; ctx.fillStyle = CI.gold; rr(-bw / 2, -bh / 2, bw, bh, 22 * U); ctx.fill(); ctx.shadowColor = 'transparent';
     text('SZ-INSTITUT', 0, -bh / 2 + 40 * U, 800, 16 * U, CI.navy, 'center', 3 * U); text(yr, 0, 22 * U, 800, 76 * U, CI.navy, 'center', -2 * U); text('Beste Personalberater', 0, bh / 2 - 28 * U, 700, 19 * U, CI.navy, 'center'); ctx.restore(); });
   rise(T.streak, LAND ? W / 2 : M, by + bh + 84 * U, 800, 52 * U, CI.gold, s0 + 4.0, al, -1 * U);
-  const qS = (LAND ? 32 : 30) * U, ql = wrapLines(`„${T.quote}“`, LAND ? W * 0.62 : CW, 600, qS);
+  const qS = (LAND ? 32 : 30) * U, ql = wrapLines(T.quote, LAND ? W * 0.62 : CW, 600, qS);
   ql.forEach((l, i) => rise(l, LAND ? W / 2 : M, by + bh + 160 * U + i * qS * 1.4, 600, qS, '#D5E2EE', s0 + 6.0 + i * 0.15, al));
 }
 // 8) Worauf Sie sich verlassen können
