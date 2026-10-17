@@ -30,7 +30,7 @@ const CI = { bg: '#F4F5F6', ink: '#111418', navy: '#0F3556', steel: '#2E6FB2', s
 const WHITE = '#FFFFFF', LBLUE = '#A9C7E4';
 await Promise.all(['400', '600', '700', '800'].map((w) => document.fonts.load(`${w} 40px Inter`)));
 const loadImg = (src) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
-const [LOGO_W, LOGO_H] = await Promise.all([loadImg('../../assets/vp-tools/logo/logo-weiss.png'), loadImg('../../assets/vp-tools/logo/logo-hell.png')]);
+const [LOGO_W, LOGO_H, LOGO_F] = await Promise.all([loadImg('../../assets/vp-tools/logo/logo-weiss.png'), loadImg('../../assets/vp-tools/logo/logo-hell.png'), loadImg('../../assets/vp-tools/logo/logo-farbe.png')]);
 
 /* ---------- Maße ---------- */
 const U = Math.min(W, H) / 1080, LAND = W > H * 1.2, M = Math.round((LAND ? 140 : 90) * U), CW = W - 2 * M;
@@ -104,6 +104,14 @@ function drawLogo(s0, light) { const img = light ? LOGO_H : LOGO_W; if (!img) re
   ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(Math.round(W * 0.045) + w / 2, Math.round(H * 0.045) + h / 2); ctx.scale(Math.max(0.001, q), Math.max(0.001, q)); ctx.drawImage(img, -w / 2, -h / 2, w, h); ctx.restore(); }
 
 /* ============================================================ Szenen ============================================================ */
+// 0) Intro: farbiges Originallogo auf heller Bühne mit Dreiecksmotiv
+function sIntro(s0) {
+  const img = LOGO_F || LOGO_H; if (!img) return; const q = sp(s0 + 0.2, 150, 17); if (q <= 0) return;
+  const h = Math.min(H * 0.38, 400 * U), w = h * img.naturalWidth / img.naturalHeight, cy = H * 0.46;
+  ctx.save(); ctx.globalAlpha = clamp(q * 1.8); ctx.translate(W / 2, cy + (1 - Math.min(q, 1)) * 30 * U); const k = 0.86 + 0.14 * q; ctx.scale(k, k); ctx.drawImage(img, -w / 2, -h / 2, w, h); ctx.restore();
+  const g = st(s0 + 1.0, 220); if (g > 0) { ctx.fillStyle = CI.gold; rr(W / 2 - 60 * U * g, cy + h / 2 + 48 * U, 120 * U * g, 6 * U, 3 * U); ctx.fill(); }
+  rise(TXT.intro.line, W / 2, cy + h / 2 + 108 * U, 800, 26 * U, CI.navy, s0 + 1.2, 'center', 7 * U);
+}
 // 1) Einstieg: Hero-Video, „Wir finden die Richtigen.“
 function sOpen(s0) {
   const T = TXT.open, cS = (LAND ? 136 : 112) * U, sS = 32 * U, subW = LAND ? W * 0.52 : CW, sub = wrapLines(T.sub, subW, 400, sS);
@@ -123,7 +131,7 @@ function sMarkt(s0) {
   let x = M, y = y0 + 30 * U + yS * 0.86 + 120 * U;
   T.chips.forEach((ch, i) => { const w = measure(ch, 600, chS) + 48 * U; if (x + w > W - M) { x = M; y += chH + 14 * U; } const q = sp(s0 + 2.8 + i * 0.12, 260, 20);
     if (q > 0) { ctx.save(); ctx.translate(x + w / 2, y + chH / 2); const k = 0.6 + 0.4 * q; ctx.scale(k, k); ctx.globalAlpha = clamp(q * 2.5);
-      ctx.fillStyle = i % 4 === 3 ? CI.navy : CI.chip; rr(-w / 2, -chH / 2, w, chH, chH / 2); ctx.fill(); text(ch, 0, chS * 0.36, 600, chS, i % 4 === 3 ? WHITE : CI.navy, 'center'); ctx.restore(); }
+      ctx.fillStyle = CI.chip; rr(-w / 2, -chH / 2, w, chH, chH / 2); ctx.fill(); text(ch, 0, chS * 0.36, 600, chS, CI.navy, 'center'); ctx.restore(); }
     x += w + 12 * U; });
 }
 // 3) Grundsatz: alle Positionen, Hauptsache in unserer Branche – Pyramide von Fach bis Geschäftsführung
@@ -269,7 +277,7 @@ function sOutro(s0) {
   rise(T.resp, W / 2, by + bh + 60 * U, 600, 24 * U, LBLUE, s0 + 3.0, 'center');
 }
 
-const DRAW = { open: sOpen, markt: sMarkt, grund: sGrund, mandate: sMandate, direkt: sDirekt, messen: sMessen, award: sAward, werte: sWerte, outro: sOutro };
+const DRAW = { intro: sIntro, open: sOpen, markt: sMarkt, grund: sGrund, mandate: sMandate, direkt: sDirekt, messen: sMessen, award: sAward, werte: sWerte, outro: sOutro };
 const sceneIdx = () => { let i = 0; for (let k = 0; k < WIPES.length; k++) if (t >= WIPES[k] + COVER) i = k + 1; return i; };
 
 window.seek = async (tt) => {
@@ -277,7 +285,7 @@ window.seek = async (tt) => {
   const i = sceneIdx(), name = SCENES[i], s0 = sceneStart(i), stage = STAGE[name];
   vidImg = stage === 'light' ? null : await videoFrame(t * 0.85 + i * 2.3);
   if (stage === 'light') drawLight(s0); else drawNavy(t - s0, stage === 'dark');
-  if (name !== 'outro') drawLogo(s0, stage === 'light');
+  if (name !== 'outro' && name !== 'intro') drawLogo(s0, stage === 'light');
   DRAW[name](s0);
   drawMosaic();
 };

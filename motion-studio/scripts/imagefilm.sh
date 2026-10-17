@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bash scripts/imagefilm.sh — Imagefilm Voß & Partner (96 s, 60 fps) in 16:9 und 4:5, Musik Deep House mit wechselnder Stimmung.
+# bash scripts/imagefilm.sh — Imagefilm Voß & Partner (100 s, 60 fps, mit Logo-Intro) in 16:9 und 4:5, Musik Deep House mit wechselnder Stimmung.
 #   out/imagefilm_voss_partner_16x9.mp4            Website, Präsentationen, YouTube
 #   out/imagefilm_voss_partner_4x5_linkedin.mp4    LinkedIn-Feed
 # Jedes Format wird in Abschnitten von 24 s gerendert (fertige Abschnitte werden übersprungen) und dann zusammengefügt.

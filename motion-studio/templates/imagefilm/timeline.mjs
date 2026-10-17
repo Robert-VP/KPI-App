@@ -1,18 +1,19 @@
-// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 96 s, 16:9 und 4:5). Eigene Formulierungen, keine konkreten Mandate.
+// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 100 s, 16:9 und 4:5), mit Logo-Intro. Eigene Formulierungen, keine konkreten Mandate.
 // Neun Kapitel, Wechsel jeweils mit dem goldenen Dreiecks-Mosaik. Texte aus voss-partner.de (Website-Repository),
 // Positionen fiktiv, angelehnt an die Art der Mandate von Voß & Partner.
-export const BPM = 120, DUR = 96;
+export const BPM = 120, DUR = 100;
 const B = 60 / BPM;
 export const bt = (n) => n * B;
-export const WIPES = [8, 18, 28, 40, 58, 66, 78, 86];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
+export const WIPES = [4, 12, 22, 32, 44, 62, 70, 82, 90];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
 export const COVER = 0.37;
-export const SCENES = ['open', 'markt', 'grund', 'mandate', 'direkt', 'messen', 'award', 'werte', 'outro'];
-export const STAGE = { open: 'navy', markt: 'light', grund: 'light', mandate: 'dark', direkt: 'navy', messen: 'light', award: 'navy', werte: 'light', outro: 'navy' };
+export const SCENES = ['intro', 'open', 'markt', 'grund', 'mandate', 'direkt', 'messen', 'award', 'werte', 'outro'];
+export const STAGE = { intro: 'light', open: 'navy', markt: 'light', grund: 'light', mandate: 'dark', direkt: 'navy', messen: 'light', award: 'navy', werte: 'light', outro: 'navy' };
 export const sceneStart = (i) => (i === 0 ? 0 : WIPES[i - 1] + COVER);
 // Musik: Stimmung folgt dem Inhalt (Beats). ruhig → Groove → treibend (Direktansprache) → Aufbau (Messen) → Höhepunkt (Auszeichnung) → warm aus
-export const SECTIONS = '0:intro,16:light,36:full,56:perc,80:drive,116:drive,124:build,132:peak,156:full,172:perc,184:outro';
+export const SECTIONS = '0:intro,24:light,44:full,64:perc,88:drive,124:drive,132:build,140:peak,164:full,180:perc,192:outro';
 
 export const TXT = {
+  intro: { line: 'SEIT 1992' },                                                  // farbiges Originallogo als kurzes Intro
   open: { eyebrow: 'PERSONALBERATUNG MIT TECHNISCHER KOMPETENZ', claim: ['Wir finden', 'die Richtigen'],
     sub: 'Seit 1992 besetzen wir Schlüsselpositionen in der Gebäudetechnik, Versorgungstechnik und in industriell geprägten Umfeldern.' },
   markt: { eyebrow: 'MARKTKENNTNIS', label: 'Seit über drei Jahrzehnten zuhause in:',
@@ -60,7 +61,8 @@ const at = (scene, u) => S0[SCENES.indexOf(scene)] + u;
 export const CUES = (() => {
   const c = [];
   WIPES.forEach((w) => { c.push({ t: w, sfx: 'whoosh', pan: 0 }); c.push({ t: w + 0.37, sfx: 'thump' }); });
-  c.push({ t: 0.3, sfx: 'pop', pan: -0.5 }, { t: 1.6, sfx: 'thump' }, { t: 2.4, sfx: 'thump' }, { t: 2.9, sfx: 'pop', pan: 0.3 });
+  c.push({ t: 0.25, sfx: 'whoosh', pan: 0 }, { t: 0.45, sfx: 'thump' }, { t: 1.2, sfx: 'tick', pan: 0.3 });
+  c.push({ t: at('open', 0.3), sfx: 'pop', pan: -0.5 }, { t: at('open', 1.6), sfx: 'thump' }, { t: at('open', 2.4), sfx: 'thump' }, { t: at('open', 2.9), sfx: 'pop', pan: 0.3 });
   for (let i = 0; i < 12; i++) c.push({ t: at('markt', 0.5 + i * 0.16), sfx: 'tick', pan: 0.3 });
   TXT.markt.chips.forEach((_, i) => c.push({ t: at('markt', 2.8 + i * 0.12), sfx: 'pop', pan: -0.6 + (i % 6) * 0.24 }));
   c.push({ t: at('grund', 0.4), sfx: 'thump' }, { t: at('grund', 1.2), sfx: 'thump' });
