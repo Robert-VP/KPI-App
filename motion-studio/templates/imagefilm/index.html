@@ -260,6 +260,8 @@ function sWerte(s0) {
     ctx.fillStyle = CI.gold; rr(x + 32 * U, y + 34 * U, 46 * U, 7 * U, 3.5 * U); ctx.fill();
     text(ti, x + 32 * U, y + 100 * U, 800, fitPx(ti, 800, 36 * U, tw - 64 * U), CI.ink, 'left', -0.5 * U);
     wrapLines(tx, tw - 64 * U, 400, 24 * U).forEach((l, j) => text(l, x + 32 * U, y + 150 * U + j * 34 * U, 400, 24 * U, CI.grau)); ctx.restore(); });
+  const pS = (LAND ? 46 : 38) * U, py = ty + (LAND ? 1 : 2) * (th + gap) + (LAND ? 70 : 60) * U;   // Haltung: Leidenschaft und Neugier
+  T.passion.forEach((l, i) => rise(l, M, py + pS + i * pS * 1.25, 800, pS, CI.navy, s0 + 3.4 + i * 0.15, 'left', -0.6 * U));
 }
 // 9) Outro: Logo, Claim, Call to Action
 function sOutro(s0) {

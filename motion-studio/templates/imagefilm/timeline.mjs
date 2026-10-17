@@ -33,7 +33,8 @@ export const TXT = {
     ['Seit 1992', 'Inhabergeführt, in zweiter Generation.'],
     ['Ahlen · Stuttgart', 'Mandate in ganz Deutschland, Österreich und der Schweiz.'],
     ['Diskret', 'Auf Wunsch unter unserem Logo – Ihre Strategie bleibt geschützt.'],
-    ['Gewährleistung', 'Bewährt sich eine Besetzung nicht, besetzen wir ohne zusätzliche Kosten nach.']] },
+    ['Gewährleistung', 'Bewährt sich eine Besetzung nicht, besetzen wir ohne zusätzliche Kosten nach.']],
+    passion: ['Was wir tun, tun wir aus Leidenschaft –', 'und mit echter Neugier auf unsere Branche.'] },
   outro: { claim: 'Wir finden die Richtigen', cta: 'Sprechen wir über Ihre Position.', ctaSub: 'Erstgespräch vereinbaren – kostenfrei und unverbindlich.',
     tel: '02528 / 9501-77', web: 'voss-partner.de', resp: 'Antwort innerhalb von 24 Stunden.' },
 };
@@ -79,6 +80,7 @@ export const CUES = (() => {
   c.push({ t: at('award', 0.4), sfx: 'thump' }); [0, 1, 2].forEach((i) => c.push({ t: at('award', 1.8 + i * 0.7), sfx: 'pop', pan: -0.4 + i * 0.4 }));
   c.push({ t: at('award', 4.0), sfx: 'ding', pan: 0 });
   [0, 1, 2, 3].forEach((i) => c.push({ t: at('werte', 0.6 + i * 0.5), sfx: 'pop', pan: -0.45 + i * 0.3 }));
+  c.push({ t: at('werte', 3.4), sfx: 'ding', pan: 0 });
   c.push({ t: at('outro', 0.3), sfx: 'pop' }, { t: at('outro', 1.0), sfx: 'thump' }, { t: at('outro', 2.2), sfx: 'whoosh', pan: 0.2 }, { t: at('outro', 2.6), sfx: 'ding', pan: 0 });
   return c.filter((x) => x.t < DUR).sort((a, b) => a.t - b.t).map((x) => ({ ...x, t: r4(x.t) }));
 })();
