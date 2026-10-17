@@ -42,6 +42,8 @@ const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, Math.max(0,
 function text(str, x, y, w, px, color, align = 'left', ls = 0) { ctx.font = `${w} ${px}px ${FF}`; ctx.letterSpacing = `${ls}px`; ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(str, x, y); ctx.textAlign = 'left'; ctx.letterSpacing = '0px'; }
 function measure(str, w, px, ls = 0) { ctx.font = `${w} ${px}px ${FF}`; ctx.letterSpacing = `${ls}px`; const m = ctx.measureText(str).width; ctx.letterSpacing = '0px'; return m; }
 function wrapLines(str, maxW, w, px) { const out = []; let line = ''; for (const wd of str.split(' ')) { const tt = line ? line + ' ' + wd : wd; if (measure(tt, w, px) > maxW && line) { out.push(line); line = wd; } else line = tt; } if (line) out.push(line); return out; }
+// wie wrapLines, bricht aber nur zwischen ganzen Einträgen „a · b · c“ um
+function wrapItems(str, maxW, w, px) { const out = []; let line = ''; for (const it of str.split(' · ')) { const tt = line ? line + ' · ' + it : it; if (measure(tt, w, px) > maxW && line) { out.push(line); line = it; } else line = tt; } if (line) out.push(line); return out; }
 function fitPx(str, w, px, maxW) { while (px > 10 && measure(str, w, px) > maxW) px -= 0.5; return px; }
 // Zeile steigt aus einer Maske (kein bloßes Einblenden)
 function rise(str, x, y, w, px, color, t0, align = 'left', ls = 0) {
@@ -148,7 +150,7 @@ function sGrund(s0) {
   for (let k = 2; k >= 0; k--) { const q = sp(s0 + 2.6 + (2 - k) * 0.8, 200, 20); if (q <= 0) continue; const w = lw * widths[k], x = lx0 + (lw - w) / 2, yy = ly + k * (th + gap);
     ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(0, (1 - q) * 40 * U); ctx.fillStyle = fills[k]; rr(x, yy, w, th, 18 * U); ctx.fill();
     text(tiers[k][0], x + w / 2, yy + 48 * U, 800, 30 * U, cols[k], 'center', -0.3 * U);
-    wrapLines(tiers[k][1], w - 48 * U, 400, 21 * U).slice(0, 2).forEach((l, i) => text(l, x + w / 2, yy + 84 * U + i * 27 * U, 400, 21 * U, cols[k], 'center'));
+    wrapItems(tiers[k][1], w - 48 * U, 400, 21 * U).slice(0, 2).forEach((l, i) => text(l, x + w / 2, yy + 84 * U + i * 27 * U, 400, 21 * U, cols[k], 'center'));
     ctx.restore(); }
 }
 // 4) Mandate: drei laufende Reihen von Fach bis Geschäftsführung
@@ -217,7 +219,7 @@ function sDirekt(s0) {
 function sMessen(s0) {
   const T = TXT.messen, y0 = H * (LAND ? 0.16 : 0.15), hS = (LAND ? 62 : 54) * U, u = t - s0;
   eyebrow(T.eyebrow, M, y0, s0 + 0.2, CI.navy);
-  const hl = wrapLines(T.head, CW, 800, hS); hl.forEach((l, i) => rise(l, M, y0 + 30 * U + hS + i * hS * 1.12, 800, hS, CI.ink, s0 + 0.4 + i * 0.12, 'left', -1 * U));
+  const hl = wrapLines(T.head, LAND ? W * 0.7 : CW, 800, hS); hl.forEach((l, i) => rise(l, M, y0 + 30 * U + hS + i * hS * 1.12, 800, hS, CI.ink, s0 + 0.4 + i * 0.12, 'left', -1 * U));
   const wy0 = y0 + 30 * U + hS * (1 + 1.12 * hl.length) + 40 * U, wy1 = H * (LAND ? 0.86 : 0.84), cy = (wy0 + wy1) / 2, RH = 112 * U;
   const q = st(s0 + 1.0, 180); if (q <= 0) return;
   ctx.save(); ctx.globalAlpha = q; ctx.fillStyle = '#FFFFFF'; ctx.save(); ctx.shadowColor = 'rgba(15,53,86,0.10)'; ctx.shadowBlur = 40 * U; ctx.shadowOffsetY = 12 * U; rr(M, wy0, CW, wy1 - wy0, 26 * U); ctx.fill(); ctx.restore();

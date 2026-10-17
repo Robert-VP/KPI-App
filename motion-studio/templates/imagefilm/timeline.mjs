@@ -1,16 +1,16 @@
-// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 104 s, 16:9 und 4:5), mit Logo-Intro. Eigene Formulierungen, keine konkreten Mandate.
+// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 100 s, 16:9 und 4:5), mit Logo-Intro. Eigene Formulierungen, keine konkreten Mandate.
 // Neun Kapitel, Wechsel jeweils mit dem goldenen Dreiecks-Mosaik. Texte aus voss-partner.de (Website-Repository),
 // Positionen fiktiv, angelehnt an die Art der Mandate von Voß & Partner.
-export const BPM = 120, DUR = 104;
+export const BPM = 120, DUR = 100;
 const B = 60 / BPM;
 export const bt = (n) => n * B;
-export const WIPES = [4, 12, 22, 32, 44, 62, 74, 86, 94];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
+export const WIPES = [4, 12, 22, 32, 44, 62, 70, 82, 90];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
 export const COVER = 0.37;
 export const SCENES = ['intro', 'open', 'markt', 'grund', 'mandate', 'direkt', 'messen', 'award', 'werte', 'outro'];
 export const STAGE = { intro: 'light', open: 'navy', markt: 'light', grund: 'light', mandate: 'dark', direkt: 'navy', messen: 'light', award: 'navy', werte: 'light', outro: 'navy' };
 export const sceneStart = (i) => (i === 0 ? 0 : WIPES[i - 1] + COVER);
 // Musik: Stimmung folgt dem Inhalt (Beats). ruhig → Groove → treibend (Direktansprache) → Aufbau (Messen) → Höhepunkt (Auszeichnung) → warm aus
-export const SECTIONS = '0:intro,24:light,44:full,64:perc,88:drive,124:drive,136:build,148:peak,172:full,188:perc,200:outro';
+export const SECTIONS = '0:intro,24:light,44:full,64:perc,88:drive,124:drive,132:build,140:peak,164:full,180:perc,192:outro';
 
 export const TXT = {
   intro: { line: 'SEIT 1992' },                                                  // farbiges Originallogo als kurzes Intro
@@ -20,7 +20,7 @@ export const TXT = {
     chips: ['Technische Gebäudeausrüstung', 'Versorgungstechnik', 'Heizungs- & Sanitärtechnik', 'Kälte- & Klimatechnik', 'Lüftungstechnik', 'Gebäudeautomation',
       'MSR/Elektrotechnik', 'Energietechnik', 'Rohrleitungsbau', 'Tiefbau', 'Umwelttechnologie', 'Anlagenbau'] },
   grund: { eyebrow: 'UNSER GRUNDSATZ', lines: ['Breit in den Positionen.', 'Tief in der Branche.'], note: 'Jede Ebene – in den Märkten, die wir seit 1992 kennen.',
-    tiers: [['Geschäftsführung', 'Geschäftsführer · CFO'], ['Leitung', 'Vertriebsleitung · Niederlassungsleitung · Leiter Service · Werksleitung'], ['Fach- und Spezialisten', 'Projektingenieure · Fachplaner · Area Sales · Servicetechnik']] },
+    tiers: [['Geschäftsführung', 'Geschäftsführer · Vorstand · CFO · COO'], ['Leitung', 'Vertriebsleitung · Niederlassungsleitung · Leiter Service · Werksleitung'], ['Fachkräfte', 'Projektingenieure · Fachplaner · Außendienstmitarbeiter · Servicetechniker']] },
   mandate: { eyebrow: 'POSITIONEN, DIE WIR BESETZEN', head: 'Unterschiedliche Ebenen. Eine Branche.', note: 'Beispielhafte Positionen – unsere Mandate bleiben vertraulich.' },
   direkt: { eyebrow: 'ECHTE DIREKTANSPRACHE', head: ['Wir warten nicht', 'auf Bewerbungen'],
     sub: 'Wir identifizieren und gewinnen gezielt Kandidaten, die heute erfolgreich sind – und morgen Ihr Team verstärken.',
@@ -48,14 +48,12 @@ export const MANDATE = [
    ['VERTRIEB', 'Technischer Berater (m/w/d)', 'Wasseraufbereitung'], ['FACH', 'Konstrukteur (m/w/d)', 'Anlagenbau']],
 ];
 // Messen laut Website (Abschnitt „Wo Sie uns treffen“), ohne Stand
-// Die ersten fünf (ISH, IFH/Intherm, Chillventa, IFAT, GET Nord) sollen gut erkennbar sein: sie stehen am Anfang und bleiben jeweils kurz stehen.
-export const MESSEN = [['ISH', 'Frankfurt'], ['IFH/Intherm', 'Nürnberg'], ['Chillventa', 'Nürnberg'], ['IFAT', 'München'], ['GET Nord', 'Hamburg'],
-  ['Data Centre World', 'Frankfurt'], ['Intersolar', 'München'], ['FeuerTrutz', 'Nürnberg'], ['Belektro', 'Berlin'], ['BAU', 'München'], ['Oldenburger Rohrleitungsforum', 'Oldenburg'],
-  ['Elektrotechnik', 'Dortmund'], ['eltefa', 'Stuttgart'], ['Tausendwasser', 'Berlin'], ['Light + Building', 'Frankfurt'], ['MCE', 'Mailand'], ['SHK+E', 'Essen']];
-// Durchlauf der Messen (Position in Zeilen): erst vier ruhige Schritte durch die ersten fünf, dann schneller werdend durch alle
-export const REEL = { steps: [1.8, 2.9, 4.0, 5.1], dur: 0.4, u1: 6.0, v0: 0.75, a: 0.95 };
-const ease = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-export const reelPos = (u) => { const x = Math.max(0, u - REEL.u1); return REEL.steps.reduce((p, s) => p + ease((u - s) / REEL.dur), 0) + REEL.v0 * x + REEL.a * x * x; };
+export const MESSEN = [['Data Centre World', 'Frankfurt'], ['IFAT', 'München'], ['Intersolar', 'München'], ['FeuerTrutz', 'Nürnberg'], ['Chillventa', 'Nürnberg'], ['Belektro', 'Berlin'],
+  ['GET Nord', 'Hamburg'], ['BAU', 'München'], ['Oldenburger Rohrleitungsforum', 'Oldenburg'], ['Elektrotechnik', 'Dortmund'], ['eltefa', 'Stuttgart'], ['ISH', 'Frankfurt'],
+  ['Tausendwasser', 'Berlin'], ['Light + Building', 'Frankfurt'], ['MCE', 'Mailand'], ['SHK+E', 'Essen'], ['IFH/Intherm', 'Nürnberg']];
+// Durchlauf der Messen: Position in Zeilen, schneller werdend
+export const REEL = { u0: 1.6, v0: 0.75, a: 0.95 };
+export const reelPos = (u) => { const x = Math.max(0, u - REEL.u0); return REEL.v0 * x + REEL.a * x * x; };
 
 const r4 = (x) => Math.round(x * 10000) / 10000;
 const S0 = SCENES.map((_, i) => sceneStart(i));
@@ -74,10 +72,9 @@ export const CUES = (() => {
   [0, 1, 2, 3, 4, 5].forEach((i) => c.push({ t: at('direkt', 9.8 + i * 0.22), sfx: 'ding', pan: -0.5 + i * 0.2 }));
   c.push({ t: at('direkt', 13.2), sfx: 'whoosh', pan: -0.3 });
   [0, 1, 2, 3].forEach((i) => c.push({ t: at('direkt', 13.9 + i * 0.55), sfx: 'pop', pan: -0.45 + i * 0.3 }));
-  REEL.steps.forEach((s) => c.push({ t: at('messen', s + REEL.dur * 0.6), sfx: 'pop', pan: 0.2 }));
-  for (let k = 1; k < 60; k++) {   // jede Messe, die danach durch die Mitte läuft, tickt – schneller werdend
-    const x = (-REEL.v0 + Math.sqrt(REEL.v0 * REEL.v0 + 4 * REEL.a * k)) / (2 * REEL.a), u = REEL.u1 + x;
-    if (u < 11.4) c.push({ t: at('messen', u), sfx: 'tick', pan: 0.2 });
+  for (let k = 1; k < 40; k++) {   // jede Messe, die durch die Mitte läuft, tickt – schneller werdend
+    const x = (-REEL.v0 + Math.sqrt(REEL.v0 * REEL.v0 + 4 * REEL.a * k)) / (2 * REEL.a), u = REEL.u0 + x;
+    if (u < 7.6) c.push({ t: at('messen', u), sfx: 'tick', pan: 0.2 });
   }
   c.push({ t: at('award', 0.4), sfx: 'thump' }); [0, 1, 2].forEach((i) => c.push({ t: at('award', 1.8 + i * 0.7), sfx: 'pop', pan: -0.4 + i * 0.4 }));
   c.push({ t: at('award', 4.0), sfx: 'ding', pan: 0 });
