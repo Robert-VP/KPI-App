@@ -39,9 +39,9 @@ export const TXT = {
 // Mandate: [Ebene, Titel, Zusatz]. Aktuelle Stellen (VP-23xx) und abgeschlossene Projekte laut Auftraggeber.
 export const MANDATE = [
   [['GESCHÄFTSFÜHRUNG', 'CFO (m/w/d)', 'Finanzen'], ['VERTRIEBSLEITUNG', 'Sales Director (m/w/d)', 'Industrielle Kühlsysteme · Oberfranken'], ['LEITUNG', 'Technischer Leiter (m/w/d)', 'Kälte- und Klimafachgroßhandel · München'],
-   ['LEITUNG', 'Werksleitung (m/w/d)', 'Industrielle Fertigung'], ['VERTRIEBSLEITUNG', 'Gesamtvertriebsleiter (m/w/d)', 'Armaturen Gas- und Wasserversorgung · NRW'], ['LEITUNG', 'Leiter Controlling (m/w/d)', 'SHK-Großhandel · Süddeutschland']],
+   ['LEITUNG', 'Werksleitung (m/w/d)', 'Abgeschlossenes Mandat'], ['VERTRIEBSLEITUNG', 'Gesamtvertriebsleiter (m/w/d)', 'Armaturen Gas- und Wasserversorgung · NRW'], ['LEITUNG', 'Leiter Controlling (m/w/d)', 'SHK-Großhandel · Süddeutschland']],
   [['VERTRIEBSLEITUNG', 'Vertriebsleiter (m/w/d)', 'Kältetechnik'], ['LEITUNG', 'Niederlassungsleiter (m/w/d)', 'Kälte- und Klimafachgroßhandel · Wien'], ['LEITUNG', 'Leiter Service (m/w/d)', 'Kälte-, Klima- und Wärmepumpentechnik'],
-   ['LEITUNG', 'Leiter Schulungswesen (m/w/d)', 'Aus- und Weiterbildung'], ['LEITUNG', 'Bereichsleiter Anlagenbau (m/w/d)', 'Kältetechnik · Hessen, RLP, NRW'], ['LEITUNG', 'Personalleitung (m/w/d)', 'Agrar- und Lebensmittelwirtschaft · Münsterland']],
+   ['LEITUNG', 'Leiter Schulungswesen (m/w/d)', 'Abgeschlossenes Mandat'], ['LEITUNG', 'Bereichsleiter Anlagenbau (m/w/d)', 'Kältetechnik · Hessen, RLP, NRW'], ['LEITUNG', 'Personalleitung (m/w/d)', 'Agrar- und Lebensmittelwirtschaft · Münsterland']],
   [['FACH', 'Projektingenieur (m/w/d)', 'Versorgungstechnik HLS · Stuttgart'], ['FACH', 'Fachplaner (m/w/d) HVAC', 'Rhein-Main'], ['VERTRIEB', 'Area Sales Manager (m/w/d)', 'Wärmepumpen · Kassel-Hannover'],
    ['VERTRIEB', 'Außendienst (m/w/d)', 'Haus- und Gebäudeautomation · Köln/Bonn'], ['VERTRIEB', 'Vertriebsmitarbeiter (m/w/d)', 'Brandschutz · Berlin'], ['VERTRIEB', 'Technischer Vertrieb (m/w/d)', 'Wasseraufbereitung · bundesweit'],
    ['FACH', 'Obermonteur (m/w/d)', 'Kältetechnik · Raum Stuttgart'], ['GEBIETSLEITUNG', 'Gebietsverkaufsleiter (m/w/d)', 'Armaturen Gas/Wasser · Nordbayern']],
