@@ -22,3 +22,14 @@ sind eigenständig formuliert, nicht im Wortlaut übernommen.
 | 70–82 s | Auszeichnung | „Beste Personalberater“ · „SZ-Institut der Süddeutschen Zeitung“ · Plaketten 2024 · 2025 · 2026 · „Zum dritten Mal in Folge.“ · „Für uns die Bestätigung: Wer sich spezialisiert, besetzt besser.“ | Höhepunkt mit Melodie |
 | 82–90 s | Verlässlichkeit | Seit 1992 (inhabergeführt, zweite Generation) · Ahlen · Stuttgart (Mandate in Deutschland, Österreich, Schweiz) · Diskret (auf Wunsch unter unserem Logo) · Gewährleistung (Nachbesetzung ohne zusätzliche Kosten) · „Was wir tun, tun wir aus Leidenschaft – und mit echter Neugier auf unsere Branche.“ | Groove |
 | 90–100 s | Outro | Logo · „Wir finden die Richtigen.“ · „Sprechen wir über Ihre Position.“ · „Erstgespräch vereinbaren – kostenfrei und unverbindlich.“ · 02528 / 9501-77 · voss-partner.de · „Antwort innerhalb von 24 Stunden.“ | warm, filtert aus |
+
+## Alternative Musiken (Bild unverändert)
+
+`bash scripts/imagefilm_musik.sh` legt drei weitere Musiken unter die stummen Renderings (`scripts/music_imagefilm.mjs`, lizenzfrei im Code erzeugt).
+Alle mit Klang-Logo: drei Glockentöne beim Logo im Intro, im Outro nach Dur aufgelöst.
+
+| Datei-Endung | Richtung | Verlauf |
+|---|---|---|
+| `_1_episch` | Trailer-Sound mit Orchester-Synths, D-Moll | Logo mit tiefer Fläche und Klang-Logo · Braam und Taiko beim Hero · Streicher-Ostinato ab Marktkenntnis, Bläser ab Grundsatz · volle Trommeln und Chor bei der Direktansprache · Messen: Ostinato wird schneller, Snare-Wirbel, kurze Stille · Auszeichnung: großer Schlag, Bläser-Thema, Chor · Verlässlichkeit ruhig mit Klavier, Chor beim Leidenschafts-Satz · Outro D – G – D in Dur |
+| `_3_melodic_techno` | Melodic Techno, A-Moll | Arpeggio und Klang-Logo im Intro · Kick und rollender Bass ab dem Hero, Arpeggio öffnet sich Kapitel für Kapitel · Messen: Break mit Snare-Wirbel · Auszeichnung: Drop mit großer Supersaw-Melodie · Outro in A-Dur |
+| `_4_episch_deephouse` | Mischform | Intro und Hero, Auszeichnung und Outro episch (A-Moll), dazwischen der Deep-House-Groove der Hauptfassung |
