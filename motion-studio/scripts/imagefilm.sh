@@ -11,7 +11,7 @@ node scripts/music_deephouse.mjs --variant latch --bpm 120 --dur $DUR --sections
 render() {   # $1 = BxH, $2 = Name
   local f=$1 name=$2 W=${1%x*} H=${1#*x} list=out/imagefilm_${1}_parts.txt; : > $list
   for st in $(seq 0 24 $((DUR - 1))); do local d=$(( DUR - st < 24 ? DUR - st : 24 )); local p=out/imagefilm_${f}_part$st.mp4
-    ffprobe -v error $p >/dev/null 2>&1 || node render.mjs --fps 60 --sub 4 --start $st --dur $d --w $W --h $H --page $T/index.html --out $p | grep -E "done|error"
+    python3 -c "import sys; sys.exit(0 if float(sys.argv[1] or 0) >= $d - 0.05 else 1)" "$(ffprobe -v error -show_entries format=duration -of csv=p=0 $p 2>/dev/null)" || node render.mjs --fps 60 --sub 4 --start $st --dur $d --w $W --h $H --page $T/index.html --out $p | grep -E "done|error"
     echo "file '$(basename $p)'" >> $list; done
   ffmpeg -v error -y -f concat -safe 0 -i $list -c copy out/imagefilm_${f}_silent.mp4
   bash scripts/mix.sh out/imagefilm_${f}_silent.mp4 out/music_imagefilm.wav out/$name
