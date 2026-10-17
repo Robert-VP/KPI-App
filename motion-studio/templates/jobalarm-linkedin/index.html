@@ -102,13 +102,17 @@ function drawCircle() {
   const g = ctx.createLinearGradient(0, 378, 0, 1215); g.addColorStop(0, '#E7EBF2'); g.addColorStop(1, '#F2F3F5');
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(918, 807, 429 * (0.6 + 0.4 * p), 0, Math.PI * 2); ctx.globalAlpha = BASE * p; ctx.fill(); ctx.globalAlpha = BASE * 1;
 }
-function drawMotiv() {
-  ctx.setTransform(camZ, 0, 0, camZ, W / 2 - camX * camZ, H / 2 - camY * camZ); const life = t >= T.foot ? 1 : 0;
+function drawMotiv() {   // fest am oberen Bildrand wie in den Stellenanzeigen, schimmert von Anfang an, weicht der Schrift aus
+  ctx.setTransform(1, 0, 0, 1, 0, 0); const t0 = T.circle + 1.6, life = t >= t0 ? 1 : 0;
+  const toS = (wy) => (wy - camY) * camZ + H / 2, eyeS = toS(oy + (185 + eB) * s) - H * 0.02, chipS2 = toS(oy + (505 + eB) * s) - H * 0.02;
+  const xThS = (ox + 790 * s - camX) * camZ + W / 2, flat = clamp((1.08 - camZ) / 0.08), fb = H * 0.10;
+  const limL = Math.max(eyeS, H * 0.08), limR = Math.max(lerp(eyeS, chipS2, flat), H * 0.08);
   for (const p of TRI) {
     const delay = T.circle + 0.1 + (1 - clamp(p.t)) * 0.9 + (p.x / W) * -0.15 + (p.y / H) * 0.6; const q = sp(delay, 150, 20); if (q <= 0.001) continue;
-    const shimmer = life ? 0.08 * Math.sin((t - T.foot) * Math.PI * 2 / 2 + hash(p.x * 0.37 + p.y * 0.11) * 6.28) : 0;
+    const cut = clamp(((p.x < xThS ? limL : limR) - p.y) / fb); if (cut <= 0.001) continue;
+    const shimmer = life ? 0.08 * Math.sin((t - t0) * Math.PI * 2 / 2 + hash(p.x * 0.37 + p.y * 0.11) * 6.28) : 0;   // wie drawMotiv() der Stellenanzeigen
     const size = p.size * Math.min(1.12, q), hw = size * 0.5, hh = size * 0.866 * 0.5;
-    ctx.globalAlpha = BASE * clamp(p.alpha * clamp(q) + shimmer, 0, 0.9); ctx.fillStyle = p.col; ctx.beginPath();
+    ctx.globalAlpha = BASE * clamp((p.alpha * clamp(q) + shimmer) * cut, 0, 0.9); ctx.fillStyle = p.col; ctx.beginPath();
     if (p.up) { ctx.moveTo(p.x, p.y - hh); ctx.lineTo(p.x - hw, p.y + hh); ctx.lineTo(p.x + hw, p.y + hh); } else { ctx.moveTo(p.x, p.y + hh); ctx.lineTo(p.x - hw, p.y - hh); ctx.lineTo(p.x + hw, p.y - hh); }
     ctx.closePath(); ctx.fill();
   }
@@ -487,8 +491,8 @@ function cam(x0, y0, x1, y1, gT, gB, zmax, top = true) {
   return [z, fx, fy];
 }
 const C0 = [1, W / 2, H / 2];
-const CH = cam(70, 180, 800, 400, 'B', 'B', 1.5, false);                 // Hook: Headline mittig und groß
-const CT = cam(60, 180, 900, 620, 'B', 'B', 1.2, false);                 // Erklärzeile + Bereiche
+const CH = [1.35, W / (2 * 1.35), H / (2 * 1.35)];                     // Hook: groß, oben links verankert (Logo und Dreiecke bleiben oben)                 // Hook: Headline mittig und groß
+const CT = [1.2, W / (2 * 1.2), H / (2 * 1.2)];                         // Erklärzeile + Bereiche, oben links verankert                 // Erklärzeile + Bereiche
 const C1 = cam(60, 180, 900, 620, 'B', 'B', 1.3, false);                 // Schritt 1: Textblock mit Bereichen, mittig
 const C2 = cam(60, 405, 600, 1185, 'B', 'C', 2.0);                       // Schritt 2: Erklärzeile + Formular, oben bündig unter der Headline
 const C3 = cam(60, 180, 1030, 1090 + JY, 'B', 'C', 1.3, false);               // Schritt 3: Text + Benachrichtigung, mittig
