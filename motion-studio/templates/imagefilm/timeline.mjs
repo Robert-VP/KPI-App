@@ -49,7 +49,7 @@ export const MANDATE = [
    ['VERTRIEB', 'Technischer Berater (m/w/d)', 'Wasseraufbereitung'], ['FACH', 'Konstrukteur (m/w/d)', 'Anlagenbau']],
 ];
 // Messen laut Website (Abschnitt „Wo Sie uns treffen“), ohne Stand
-export const MESSEN = [['Data Centre World', 'Frankfurt'], ['IFAT', 'München'], ['Intersolar', 'München'], ['FeuerTrutz', 'Nürnberg'], ['Chillventa', 'Nürnberg'], ['Belektro', 'Berlin'],
+export const MESSEN = [['Data Centre World', 'Frankfurt'], ['IFAT', 'München'], ['Intersolar', 'München'], ['FeuerTrutz', 'Nürnberg'], ['Chillventa', 'Nürnberg'], ['gedatec', 'Berlin'],
   ['GET Nord', 'Hamburg'], ['BAU', 'München'], ['Oldenburger Rohrleitungsforum', 'Oldenburg'], ['Elektrotechnik', 'Dortmund'], ['eltefa', 'Stuttgart'], ['ISH', 'Frankfurt'],
   ['Tausendwasser', 'Berlin'], ['Light + Building', 'Frankfurt'], ['MCE', 'Mailand'], ['SHK+E', 'Essen'], ['IFH/Intherm', 'Nürnberg']];
 // Durchlauf der Messen: Position in Zeilen, schneller werdend
