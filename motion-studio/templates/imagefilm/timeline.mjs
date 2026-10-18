@@ -36,7 +36,9 @@ export const TXT = {
     ['Gewährleistung', 'Bewährt sich eine Besetzung nicht, besetzen wir ohne zusätzliche Kosten nach.']],
     haltung: 'UNSERE HALTUNG', passion: ['Was wir tun, tun wir aus Leidenschaft', 'und mit echter Neugier auf unsere Branche'] },   // Zeile 2 in Marine, goldener Punkt wie bei den Claims
   outro: { claim: 'Wir finden die Richtigen', cta: 'Sprechen wir über Ihre Position.', ctaSub: 'Erstgespräch vereinbaren – kostenfrei und unverbindlich.',
-    tel: '02528 / 9501-77', web: 'voss-partner.de', resp: 'Antwort innerhalb von 24 Stunden.' },
+    sites: [{ label: 'AHLEN · STAMMSITZ', street: 'Münsterstraße 124', city: '59227 Ahlen', tel: '02528 / 9501-77' },     // laut voss-partner.de/kontakt
+      { label: 'STUTTGART · NIEDERLASSUNG', street: 'Moserstraße 20', city: '70182 Stuttgart', tel: '0711 / 3346-45' }],
+    web: 'voss-partner.de', mail: 'info@voss-partner.de', resp: 'Antwort innerhalb von 24 Stunden.' },
 };
 // Fiktive, typische Positionen (keine konkreten Mandate): [Ebene, Titel, Branche] – von der Fachkraft bis zur Geschäftsführung
 export const MANDATE = [

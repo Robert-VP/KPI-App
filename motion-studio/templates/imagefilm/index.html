@@ -270,20 +270,28 @@ function sWerte(s0) {
 }
 // 9) Outro: Logo, Claim, Call to Action
 function sOutro(s0) {
-  const T = TXT.outro, lq = sp(s0 + 0.3, 160, 16), lh = (LAND ? 150 : 170) * U;
-  if (LOGO_W && lq > 0) { const w = lh * LOGO_W.naturalWidth / LOGO_W.naturalHeight; ctx.save(); ctx.globalAlpha = clamp(lq * 2); ctx.translate(W / 2, H * (LAND ? 0.22 : 0.2)); ctx.scale(lq, lq); ctx.drawImage(LOGO_W, -w / 2, -lh / 2, w, lh); ctx.restore(); }
-  const cS = (LAND ? 76 : 68) * U, cy = H * (LAND ? 0.22 : 0.2) + lh / 2 + 40 * U + cS;
+  const T = TXT.outro, lq = sp(s0 + 0.3, 160, 16), lh = (LAND ? 118 : 160) * U, ly = H * (LAND ? 0.15 : 0.23);
+  if (LOGO_W && lq > 0) { const w = lh * LOGO_W.naturalWidth / LOGO_W.naturalHeight; ctx.save(); ctx.globalAlpha = clamp(lq * 2); ctx.translate(W / 2, ly); ctx.scale(lq, lq); ctx.drawImage(LOGO_W, -w / 2, -lh / 2, w, lh); ctx.restore(); }
+  const cS = (LAND ? 70 : 64) * U, cy = ly + lh / 2 + 34 * U + cS;
   rise(T.claim, W / 2 - measure('.', 800, cS) / 2, cy, 800, cS, WHITE, s0 + 1.0, 'center', -1.5 * U); goldDot(W / 2 + measure(T.claim, 800, cS, -1.5 * U) / 2 - measure('.', 800, cS) / 2, cy, cS, s0 + 1.5);
-  const q = sp(s0 + 2.2, 200, 20); if (q <= 0) return; const bw = Math.min(CW, 960 * U), bh = 300 * U, bx = W / 2 - bw / 2, by = cy + 60 * U;
+  // Kontaktkarte: Erstgespräch, beide Standorte mit Adresse und Telefon, Website und E-Mail
+  const q = sp(s0 + 2.2, 200, 20); if (q <= 0) return; const bw = Math.min(CW, 1040 * U), bh = 452 * U, bx = W / 2 - bw / 2, by = cy + 52 * U;
   ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(0, (1 - q) * 50 * U); ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 50 * U; ctx.shadowOffsetY = 16 * U; ctx.fillStyle = '#FFFFFF'; rr(bx, by, bw, bh, 28 * U); ctx.fill(); ctx.restore();
-  text(T.cta, W / 2, by + 78 * U, 800, fitPx(T.cta, 800, 44 * U, bw - 80 * U), CI.ink, 'center', -0.8 * U);
-  text(T.ctaSub, W / 2, by + 124 * U, 400, fitPx(T.ctaSub, 400, 25 * U, bw - 80 * U), CI.grau, 'center');
-  const p1 = measure(T.tel, 700, 28 * U) + 70 * U, p2 = measure(T.web, 700, 28 * U) + 60 * U, py = by + 172 * U, pg = 18 * U, px0 = W / 2 - (p1 + p2 + pg) / 2;
-  ctx.fillStyle = CI.navy; rr(px0, py, p1, 64 * U, 32 * U); ctx.fill(); text(T.tel, px0 + p1 / 2 + 12 * U, py + 42 * U, 700, 28 * U, WHITE, 'center');
-  ctx.strokeStyle = WHITE; ctx.lineWidth = 2.4 * U; ctx.beginPath(); ctx.arc(px0 + 34 * U, py + 32 * U, 11 * U, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(px0 + 34 * U, py + 32 * U, 4 * U, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = CI.navy; ctx.lineWidth = 2 * U; rr(px0 + p1 + pg, py, p2, 64 * U, 32 * U); ctx.stroke(); text(T.web, px0 + p1 + pg + p2 / 2, py + 42 * U, 700, 28 * U, CI.navy, 'center');
+  text(T.cta, W / 2, by + 70 * U, 800, fitPx(T.cta, 800, 42 * U, bw - 80 * U), CI.ink, 'center', -0.8 * U);
+  text(T.ctaSub, W / 2, by + 112 * U, 400, fitPx(T.ctaSub, 400, 24 * U, bw - 80 * U), CI.grau, 'center');
+  const colW = bw / 2, top = by + 150 * U; ctx.fillStyle = CI.chip; ctx.fillRect(W / 2 - 1 * U, top + 10 * U, 2 * U, 196 * U); ctx.fillRect(bx + 40 * U, by + 380 * U, bw - 80 * U, 2 * U);
+  T.sites.forEach((S, i) => { const cq = clamp((t - s0 - 2.5 - i * 0.2) / 0.35); if (cq <= 0) return; const cx = bx + colW * (i + 0.5), cw = colW - 56 * U;
+    ctx.save(); ctx.globalAlpha *= cq; ctx.translate(0, (1 - cq) * 14 * U);
+    text(S.label, cx, top + 40 * U, 800, fitPx(S.label, 800, 17 * U, cw), CI.steel, 'center', 3 * U);
+    text(S.street, cx, top + 82 * U, 600, fitPx(S.street, 600, 25 * U, cw), CI.ink, 'center');
+    text(S.city, cx, top + 116 * U, 400, fitPx(S.city, 400, 25 * U, cw), CI.ink, 'center');
+    const tS = 26 * U, pw = measure(S.tel, 700, tS) + 74 * U, px = cx - pw / 2, py = top + 146 * U;
+    ctx.fillStyle = CI.navy; rr(px, py, pw, 58 * U, 29 * U); ctx.fill(); text(S.tel, px + pw / 2 + 13 * U, py + 38 * U, 700, tS, WHITE, 'center');
+    ctx.strokeStyle = WHITE; ctx.lineWidth = 2.4 * U; ctx.beginPath(); ctx.arc(px + 32 * U, py + 29 * U, 10 * U, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = CI.gold; ctx.beginPath(); ctx.arc(px + 32 * U, py + 29 * U, 3.6 * U, 0, Math.PI * 2); ctx.fill();
+    ctx.restore(); });
+  const wl = T.web + '   ·   ' + T.mail, wS = fitPx(wl, 700, 24 * U, bw - 80 * U); text(wl, W / 2, by + 424 * U, 700, wS, CI.navy, 'center');
   ctx.restore();
-  rise(T.resp, W / 2, by + bh + 60 * U, 600, 24 * U, LBLUE, s0 + 3.0, 'center');
+  rise(T.resp, W / 2, by + bh + 52 * U, 600, 24 * U, LBLUE, s0 + 3.0, 'center');
 }
 
 const DRAW = { intro: sIntro, open: sOpen, markt: sMarkt, grund: sGrund, mandate: sMandate, direkt: sDirekt, messen: sMessen, award: sAward, werte: sWerte, outro: sOutro };
