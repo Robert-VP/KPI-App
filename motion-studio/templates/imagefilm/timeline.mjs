@@ -34,7 +34,7 @@ export const TXT = {
     ['Ahlen · Stuttgart', 'Mandate in ganz Deutschland, Österreich und der Schweiz.'],
     ['Diskret', 'Auf Wunsch unter unserem Logo – Ihre Strategie bleibt geschützt.'],
     ['Gewährleistung', 'Bewährt sich eine Besetzung nicht, besetzen wir ohne zusätzliche Kosten nach.']],
-    passion: ['Was wir tun, tun wir aus Leidenschaft –', 'und mit echter Neugier auf unsere Branche.'] },
+    haltung: 'UNSERE HALTUNG', passion: ['Was wir tun, tun wir aus Leidenschaft', 'und mit echter Neugier auf unsere Branche'] },   // Zeile 2 in Marine, goldener Punkt wie bei den Claims
   outro: { claim: 'Wir finden die Richtigen', cta: 'Sprechen wir über Ihre Position.', ctaSub: 'Erstgespräch vereinbaren – kostenfrei und unverbindlich.',
     tel: '02528 / 9501-77', web: 'voss-partner.de', resp: 'Antwort innerhalb von 24 Stunden.' },
 };

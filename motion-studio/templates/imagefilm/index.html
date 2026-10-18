@@ -252,7 +252,7 @@ function sAward(s0) {
 }
 // 8) Worauf Sie sich verlassen können
 function sWerte(s0) {
-  const T = TXT.werte, y0 = H * (LAND ? 0.24 : 0.2);
+  const T = TXT.werte, y0 = H * (LAND ? 0.19 : 0.2);
   eyebrow(T.eyebrow, M, y0, s0 + 0.2, CI.navy);
   const cols = LAND ? 4 : 2, gap = 24 * U, tw = (CW - (cols - 1) * gap) / cols, th = (LAND ? 300 : 300) * U, ty = y0 + 60 * U;
   T.tiles.forEach(([ti, tx], i) => { const q = sp(s0 + 0.6 + i * 0.5, 220, 18); if (q <= 0) return; const x = M + (i % cols) * (tw + gap), y = ty + Math.floor(i / cols) * (th + gap);
@@ -260,8 +260,13 @@ function sWerte(s0) {
     ctx.fillStyle = CI.gold; rr(x + 32 * U, y + 34 * U, 46 * U, 7 * U, 3.5 * U); ctx.fill();
     text(ti, x + 32 * U, y + 100 * U, 800, fitPx(ti, 800, 36 * U, tw - 64 * U), CI.ink, 'left', -0.5 * U);
     wrapLines(tx, tw - 64 * U, 400, 24 * U).forEach((l, j) => text(l, x + 32 * U, y + 150 * U + j * 34 * U, 400, 24 * U, CI.grau)); ctx.restore(); });
-  const pS = (LAND ? 46 : 38) * U, py = ty + (LAND ? 1 : 2) * (th + gap) + (LAND ? 70 : 60) * U;   // Haltung: Leidenschaft und Neugier
-  T.passion.forEach((l, i) => rise(l, M, py + pS + i * pS * 1.25, 800, pS, CI.navy, s0 + 3.4 + i * 0.15, 'left', -0.6 * U));
+  // Haltung: als eigener Block in der Claim-Typografie (Zeile 1 Tinte, Zeile 2 Marine, goldener Punkt)
+  const pS = Math.min(...T.passion.map((l) => fitPx(l, 800, (LAND ? 58 : 46) * U, CW))), ey = ty + (LAND ? 1 : 2) * (th + gap) + (LAND ? 76 : 70) * U;
+  eyebrow(T.haltung, M, ey, s0 + 2.8, CI.navy);
+  const l1 = wrapLines(T.passion[0], CW, 800, pS), l2 = wrapLines(T.passion[1], CW, 800, pS); let y = ey + 30 * U + pS;
+  l1.forEach((l, i) => rise(l, M, y + i * pS * 1.12, 800, pS, CI.ink, s0 + 3.2 + i * 0.12, 'left', -1 * U)); y += l1.length * pS * 1.12;
+  l2.forEach((l, i) => rise(l, M, y + i * pS * 1.12, 800, pS, CI.navy, s0 + 3.8 + i * 0.12, 'left', -1 * U));
+  goldDot(M + measure(l2.at(-1), 800, pS, -1 * U), y + (l2.length - 1) * pS * 1.12, pS, s0 + 4.4);
 }
 // 9) Outro: Logo, Claim, Call to Action
 function sOutro(s0) {
