@@ -1,16 +1,16 @@
-// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 100 s, 16:9 und 4:5), mit Logo-Intro. Eigene Formulierungen, keine konkreten Mandate.
+// Imagefilm Voß & Partner für Kunden und potenzielle Kunden (120 BPM, 104 s, 16:9 und 4:5), mit Logo-Intro. Eigene Formulierungen, keine konkreten Mandate.
 // Neun Kapitel, Wechsel jeweils mit dem goldenen Dreiecks-Mosaik. Texte aus voss-partner.de (Website-Repository),
 // Positionen fiktiv, angelehnt an die Art der Mandate von Voß & Partner.
-export const BPM = 120, DUR = 100;
+export const BPM = 120, DUR = 104;
 const B = 60 / BPM;
 export const bt = (n) => n * B;
-export const WIPES = [4, 12, 22, 32, 44, 62, 70, 82, 90];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
+export const WIPES = [4, 12, 22, 32, 48, 66, 74, 86, 94];                       // Mosaik-Übergänge (s), Bild gedeckt nach +0,37 s
 export const COVER = 0.37;
 export const SCENES = ['intro', 'open', 'markt', 'grund', 'mandate', 'direkt', 'messen', 'award', 'werte', 'outro'];
 export const STAGE = { intro: 'light', open: 'navy', markt: 'light', grund: 'light', mandate: 'dark', direkt: 'navy', messen: 'light', award: 'navy', werte: 'light', outro: 'navy' };
 export const sceneStart = (i) => (i === 0 ? 0 : WIPES[i - 1] + COVER);
 // Musik: Stimmung folgt dem Inhalt (Beats). ruhig → Groove → treibend (Direktansprache) → Aufbau (Messen) → Höhepunkt (Auszeichnung) → warm aus
-export const SECTIONS = '0:intro,24:light,44:full,64:perc,88:drive,124:drive,132:build,140:peak,164:full,180:perc,192:outro';
+export const SECTIONS = '0:intro,24:light,44:full,64:perc,96:drive,132:drive,140:build,148:peak,172:full,188:perc,200:outro';
 
 export const TXT = {
   intro: { line: 'SEIT 1992' },                                                  // farbiges Originallogo als kurzes Intro
@@ -18,10 +18,10 @@ export const TXT = {
     sub: 'Seit 1992 besetzen wir Schlüsselpositionen in der Gebäudetechnik, Versorgungstechnik und in industriell geprägten Umfeldern.' },
   markt: { eyebrow: 'MARKTKENNTNIS', label: 'Seit über drei Jahrzehnten zuhause in:',
     chips: ['Technische Gebäudeausrüstung', 'Versorgungstechnik', 'Heizungs- & Sanitärtechnik', 'Kälte- & Klimatechnik', 'Lüftungstechnik', 'Gebäudeautomation',
-      'MSR/Elektrotechnik', 'Energietechnik', 'Rohrleitungsbau', 'Tiefbau', 'Umwelttechnologie', 'Anlagenbau'] },
+      'MSR/Elektrotechnik', 'Energietechnik', 'Rohrleitungsbau', 'Tiefbau', 'Umwelttechnologie', 'Anlagenbau', 'Armaturentechnik'] },
   grund: { eyebrow: 'UNSER GRUNDSATZ', lines: ['Breit in den Positionen.', 'Tief in der Branche.'], note: 'Jede Ebene – in den Märkten, die wir seit 1992 kennen.',
-    tiers: [['Geschäftsführung', 'Geschäftsführer · Vorstand · CFO · COO'], ['Leitung', 'Vertriebsleitung · Niederlassungsleitung · Leiter Service · Werksleitung'], ['Fachkräfte', 'Projektingenieure · Fachplaner · Außendienstmitarbeiter · Servicetechniker']] },
-  mandate: { eyebrow: 'POSITIONEN, DIE WIR BESETZEN', head: 'Unterschiedliche Ebenen. Eine Branche.', note: 'Beispielhafte Positionen – unsere Mandate bleiben vertraulich.' },
+    tiers: [['Geschäftsführung', 'Unternehmensleitung und C-Level'], ['Leitung', 'Bereichs-, Abteilungs- und Standortleitung'], ['Fachkräfte', 'Vertrieb · Technik · Planung · Service']] },
+  mandate: { eyebrow: 'POSITIONEN, DIE WIR BESETZEN', head: 'Unterschiedliche Ebenen. Ein Fokus: Technik.', note: 'Beispielhafte Positionen – unsere Mandate bleiben vertraulich.' },
   direkt: { eyebrow: 'ECHTE DIREKTANSPRACHE', head: ['Wir warten nicht', 'auf Bewerbungen'],
     sub: 'Wir identifizieren und gewinnen gezielt Kandidaten, die heute erfolgreich sind – und morgen Ihr Team verstärken.',
     viz: 'Wir sprechen die Menschen an, die heute erfolgreich arbeiten.', procHead: 'Vier Schritte. Klar und planbar.',
@@ -34,21 +34,30 @@ export const TXT = {
     ['Ahlen · Stuttgart', 'Mandate in ganz Deutschland, Österreich und der Schweiz.'],
     ['Diskret', 'Auf Wunsch unter unserem Logo – Ihre Strategie bleibt geschützt.'],
     ['Gewährleistung', 'Bewährt sich eine Besetzung nicht, besetzen wir ohne zusätzliche Kosten nach.']],
-    haltung: 'UNSERE HALTUNG', passion: ['Was wir tun, tun wir aus Leidenschaft', 'und mit echter Neugier auf unsere Branche'] },   // Zeile 2 in Marine, goldener Punkt wie bei den Claims
+    haltung: 'UNSERE HALTUNG', passion: ['Was wir tun, tun wir aus Leidenschaft', 'und mit echter Neugier auf unsere Branchen'] },   // Zeile 2 in Marine, goldener Punkt wie bei den Claims
   outro: { claim: 'Wir finden die Richtigen', cta: 'Sprechen wir über Ihre Position.', ctaSub: 'Erstgespräch vereinbaren – kostenfrei und unverbindlich.',
     sites: [{ label: 'AHLEN · STAMMSITZ', street: 'Münsterstraße 124', city: '59227 Ahlen', tel: '02528 / 9501-77' },     // laut voss-partner.de/kontakt
       { label: 'STUTTGART · NIEDERLASSUNG', street: 'Moserstraße 20', city: '70182 Stuttgart', tel: '0711 / 3346-45' }],
     web: 'voss-partner.de', mail: 'info@voss-partner.de', resp: 'Antwort innerhalb von 24 Stunden.' },
 };
 // Fiktive, typische Positionen (keine konkreten Mandate): [Ebene, Titel, Branche] – von der Fachkraft bis zur Geschäftsführung
-export const MANDATE = [
-  [['GESCHÄFTSFÜHRUNG', 'Geschäftsführer (m/w/d)', 'Technische Gebäudeausrüstung'], ['GESCHÄFTSFÜHRUNG', 'CFO (m/w/d)', 'Versorgungstechnik'], ['LEITUNG', 'Werkleiter (m/w/d)', 'Komponentenfertigung Lüftungstechnik'],
-   ['VERTRIEBSLEITUNG', 'Head of Sales (m/w/d)', 'Gebäudeautomation'], ['LEITUNG', 'Technischer Leiter (m/w/d)', 'Umwelttechnologie'], ['LEITUNG', 'Kaufmännischer Leiter (m/w/d)', 'SHK-Großhandel']],
-  [['VERTRIEBSLEITUNG', 'Vertriebsleiter (m/w/d)', 'Kälte- und Klimatechnik'], ['LEITUNG', 'Leiter Kundendienst (m/w/d)', 'Wärmepumpentechnik'], ['LEITUNG', 'Leiter Akademie & Schulung (m/w/d)', 'Heizungstechnik'],
-   ['LEITUNG', 'Niederlassungsleiter (m/w/d)', 'Technischer Großhandel'], ['LEITUNG', 'Projektleiter Großprojekte (m/w/d)', 'Rohrleitungsbau'], ['LEITUNG', 'Leiter Produktmanagement (m/w/d)', 'MSR-/Elektrotechnik']],
-  [['FACH', 'Projektingenieur (m/w/d)', 'Tiefbau'], ['FACH', 'Fachplaner (m/w/d)', 'Technische Gebäudeausrüstung'], ['VERTRIEB', 'Key Account Manager (m/w/d)', 'Energietechnik'],
-   ['VERTRIEB', 'Gebietsverkaufsleiter (m/w/d)', 'Sanitärtechnik'], ['FACH', 'Inbetriebnehmer (m/w/d)', 'Gebäudeautomation'], ['FACH', 'Servicetechniker (m/w/d)', 'Industriekälte'],
-   ['VERTRIEB', 'Technischer Berater (m/w/d)', 'Wasseraufbereitung'], ['FACH', 'Konstrukteur (m/w/d)', 'Anlagenbau']],
+export const MANDATE = [   // flach, nach Ebene sortiert; die Szene verteilt sie auf 4 (16:9) bzw. 5 (4:5) Reihen, jede Reihe zieht einmal ganz durch
+  ['GESCHÄFTSFÜHRUNG', 'Geschäftsführer (m/w/d)', 'Technische Gebäudeausrüstung'], ['GESCHÄFTSFÜHRUNG', 'CFO (m/w/d)', 'Versorgungstechnik'],
+  ['GESCHÄFTSFÜHRUNG', 'Technischer Geschäftsführer (m/w/d)', 'Armaturentechnik'], ['GESCHÄFTSFÜHRUNG', 'COO (m/w/d)', 'Anlagenbau'],
+  ['GESCHÄFTSFÜHRUNG', 'Prokurist (m/w/d)', 'Technischer Großhandel'], ['VERTRIEBSLEITUNG', 'Head of Sales (m/w/d)', 'Gebäudeautomation'],
+  ['LEITUNG', 'Werkleiter (m/w/d)', 'Komponentenfertigung Lüftungstechnik'], ['LEITUNG', 'Technischer Leiter (m/w/d)', 'Umwelttechnologie'],
+  ['LEITUNG', 'Kaufmännischer Leiter (m/w/d)', 'SHK-Großhandel'], ['LEITUNG', 'Leiter Forschung & Entwicklung (m/w/d)', 'Kältetechnik'],
+  ['VERTRIEBSLEITUNG', 'Vertriebsleiter (m/w/d)', 'Kälte- und Klimatechnik'], ['VERTRIEBSLEITUNG', 'Vertriebsleiter (m/w/d)', 'Industriearmaturen'],
+  ['VERTRIEBSLEITUNG', 'Exportleiter (m/w/d)', 'Pumpen- und Armaturentechnik'], ['LEITUNG', 'Leiter Kundendienst (m/w/d)', 'Wärmepumpentechnik'],
+  ['LEITUNG', 'Leiter Akademie & Schulung (m/w/d)', 'Heizungstechnik'], ['LEITUNG', 'Niederlassungsleiter (m/w/d)', 'Technischer Großhandel'],
+  ['LEITUNG', 'Projektleiter Großprojekte (m/w/d)', 'Rohrleitungsbau'], ['LEITUNG', 'Leiter Produktmanagement (m/w/d)', 'MSR-/Elektrotechnik'],
+  ['LEITUNG', 'Leiter Qualitätsmanagement (m/w/d)', 'Ventiltechnik'], ['LEITUNG', 'Leiter Einkauf & Supply Chain (m/w/d)', 'Haustechnik'],
+  ['FACH', 'Projektingenieur (m/w/d)', 'Tiefbau'], ['FACH', 'Fachplaner (m/w/d)', 'Technische Gebäudeausrüstung'],
+  ['VERTRIEB', 'Key Account Manager (m/w/d)', 'Energietechnik'], ['VERTRIEB', 'Key Account Manager Versorger (m/w/d)', 'Wasser- und Gasarmaturen'],
+  ['VERTRIEB', 'Gebietsverkaufsleiter (m/w/d)', 'Sanitärtechnik'], ['VERTRIEB', 'Vertriebsingenieur (m/w/d)', 'Lüftungstechnik'],
+  ['FACH', 'Anwendungstechniker (m/w/d)', 'Klimatechnik'], ['FACH', 'Produktmanager (m/w/d)', 'Armaturen'],
+  ['FACH', 'Entwicklungsingenieur (m/w/d)', 'Gebäudeautomation'], ['VERTRIEB', 'Technischer Berater (m/w/d)', 'Wasseraufbereitung'],
+  ['FACH', 'Konstrukteur (m/w/d)', 'Anlagenbau'],
 ];
 // Messen laut Website (Abschnitt „Wo Sie uns treffen“), ohne Stand
 export const MESSEN = [['Data Centre World', 'Frankfurt'], ['IFAT', 'München'], ['Intersolar', 'München'], ['FeuerTrutz', 'Nürnberg'], ['Chillventa', 'Nürnberg'], ['gedatec', 'Berlin'],

@@ -157,21 +157,23 @@ function sGrund(s0) {
 function sMandate(s0) {
   const T = TXT.mandate, y0 = H * (LAND ? 0.14 : 0.13), hS = (LAND ? 58 : 52) * U;
   eyebrow(T.eyebrow, M, y0, s0 + 0.2, LBLUE);
-  const hl = wrapLines(T.head, CW, 800, hS); hl.forEach((l, i) => rise(l, M, y0 + 30 * U + hS + i * hS * 1.12, 800, hS, WHITE, s0 + 0.4 + i * 0.12, 'left', -1 * U));
-  const cw = (LAND ? 540 : 480) * U, ch = 136 * U, gap = 22 * U, rowY = y0 + 30 * U + hS * (1 + 1.12 * hl.length) + 50 * U;
-  MANDATE.forEach((row, r) => { const q = st(s0 + 0.7 + r * 0.25, 160); if (q <= 0) return; const total = row.length * (cw + gap), speed = [46, 38, 54][r] * U, dir = r % 2 ? 1 : -1;
-    const off = ((t - s0) * speed * dir + r * 210 * U) % total, y = rowY + r * (ch + gap);
-    ctx.save(); ctx.globalAlpha = q; ctx.translate(0, (1 - q) * 40 * U);
-    for (let k = -1; k <= Math.ceil(W / (cw + gap)) + 1; k++) { const it = row[((k % row.length) + row.length) % row.length], x = k * (cw + gap) + off - (off > 0 ? total : 0) + M * 0.5; const xx = ((x % total) + total) % total - (cw + gap);
-      for (const bx of [xx, xx + total]) { if (bx > W || bx + cw < 0) continue;
-        ctx.fillStyle = 'rgba(255,255,255,0.08)'; rr(bx, y, cw, ch, 18 * U); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.5 * U; ctx.stroke();
-        text(it[0], bx + 24 * U, y + 36 * U, 800, 15 * U, CI.gold, 'left', 3 * U);
-        text(it[1], bx + 24 * U, y + 76 * U, 700, fitPx(it[1], 700, 27 * U, cw - 48 * U), WHITE);
-        text(it[2], bx + 24 * U, y + 110 * U, 400, fitPx(it[2], 400, 19 * U, cw - 48 * U), LBLUE); } }
-    ctx.restore(); });
-  const fg = ctx.createLinearGradient(0, 0, W, 0); fg.addColorStop(0, 'rgba(10,22,38,0.9)'); fg.addColorStop(0.07, 'rgba(10,22,38,0)'); fg.addColorStop(0.93, 'rgba(15,61,99,0)'); fg.addColorStop(1, 'rgba(15,61,99,0.9)');
-  ctx.fillStyle = fg; ctx.fillRect(0, rowY - 10 * U, W, 3 * (ch + gap) + 20 * U);
-  rise(T.note, M, rowY + 3 * (ch + gap) + 40 * U, 400, 21 * U, LBLUE, s0 + 1.6);
+  const hl = (LAND ? [T.head] : T.head.split(/(?<=\.) /)).flatMap((l) => wrapLines(l, CW, 800, hS)); hl.forEach((l, i) => rise(l, M, y0 + 30 * U + hS + i * hS * 1.12, 800, hS, WHITE, s0 + 0.4 + i * 0.12, 'left', -1 * U));   // 4:5: Umbruch nach dem Punkt
+  // Alle Positionen sichtbar: auf 4 bzw. 5 Reihen verteilt, jede Reihe zieht einmal von Anfang bis Ende durch (gerade Reihen nach links, ungerade nach rechts)
+  const NR = LAND ? 4 : 5, cw = (LAND ? 470 : 430) * U, ch = (LAND ? 124 : 128) * U, gap = (LAND ? 18 : 20) * U, rowY = y0 + 30 * U + hS * (1 + 1.12 * hl.length) + (LAND ? 40 : 50) * U;
+  const per = Math.ceil(MANDATE.length / NR), dur = WIPES[SCENES.indexOf('mandate')] - s0, p0 = s0 + 1.0, p1 = s0 + dur - 1.2, pp = (t - p0) / (p1 - p0);
+  const pan = pp <= 0 ? 0 : pp >= 1 ? 1 : pp < 0.08 ? pp * pp / 0.16 : pp > 0.92 ? 1 - (1 - pp) * (1 - pp) / 0.16 : (pp - 0.04) / 0.92;   // weich an, gleichmäßig, weich aus
+  for (let r = 0; r < NR; r++) { const row = MANDATE.slice(r * per, (r + 1) * per); if (!row.length) continue; const q = st(s0 + 0.7 + r * 0.2, 160); if (q <= 0) continue;
+    const total = row.length * (cw + gap) - gap, travel = Math.max(0, total - CW), x0 = M - (r % 2 ? travel * (1 - pan) : travel * pan), y = rowY + r * (ch + gap);
+    ctx.save(); ctx.globalAlpha = q; ctx.translate((1 - q) * (r % 2 ? -60 : 60) * U, 0);
+    row.forEach((it, k) => { const bx = x0 + k * (cw + gap); if (bx > W || bx + cw < 0) return;
+      ctx.fillStyle = 'rgba(255,255,255,0.08)'; rr(bx, y, cw, ch, 18 * U); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.5 * U; ctx.stroke();
+      text(it[0], bx + 24 * U, y + 34 * U, 800, 15 * U, CI.gold, 'left', 3 * U);
+      text(it[1], bx + 24 * U, y + 72 * U, 700, fitPx(it[1], 700, 26 * U, cw - 48 * U), WHITE);
+      text(it[2], bx + 24 * U, y + 104 * U, 400, fitPx(it[2], 400, 19 * U, cw - 48 * U), LBLUE); });
+    ctx.restore(); }
+  const fg = ctx.createLinearGradient(0, 0, W, 0); fg.addColorStop(0, 'rgba(10,22,38,0.9)'); fg.addColorStop(0.05, 'rgba(10,22,38,0)'); fg.addColorStop(0.95, 'rgba(15,61,99,0)'); fg.addColorStop(1, 'rgba(15,61,99,0.9)');
+  ctx.fillStyle = fg; ctx.fillRect(0, rowY - 10 * U, W, NR * (ch + gap) + 20 * U);
+  rise(T.note, M, rowY + NR * (ch + gap) + 36 * U, 400, 21 * U, LBLUE, s0 + 1.6);
 }
 // 5) Echte Direktansprache: Haltung → Visualisierung → vier Schritte
 function personIcon(x, y, s) { ctx.beginPath(); ctx.arc(x, y - s * 0.55, s * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(x, y + s * 0.55, s * 0.72, s * 0.5, 0, Math.PI, 0); ctx.fill(); }

@@ -169,8 +169,8 @@ function epic(K, only) {   // K: Transposition (0 = D-Moll), only: nur diese Kap
     ost(b, c, 0.55, 2); drums(b, 1, 0.6); timp(b, c.r + 12, 0.5); });
   prog('grund', ['Dm', 'Dm', 'Bb', 'Bb', 'C'], (b, c, k) => { if (k === 0) { taiko(b, 1, 40); crash(b, 0.7); } if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24)], (k === 4 ? 1 : 2) * BAR, 1); hornChord(b, tri(c, 12), (k === 4 ? 1 : 2) * BAR * 0.95, 0.8); }
     ost(b, c, 0.62); drums(b, 1, 0.75); if (k === 4) swell(NEXT('grund'), 1.5); });
-  prog('mandate', ['Gm', 'Gm', 'Dm', 'Dm', 'A', 'A'], (b, c, k) => { if (k === 0) { impact(b, 0.6, c); } if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24)], 2 * BAR, 1.1); choir(b, tri(c, 24), 2 * BAR * 0.95, 0.45); }
-    ost(b, c, 0.72); [0, 1.5, 3].forEach((q) => braam(b + q * beat, 0.25, [c.r, c.r + 12], 0.35)); drums(b, 2, 0.8); if (k === 5) { timpRoll(b + BAR / 2, BAR / 2, c.r + 12, 0.8); swell(b + BAR, 1.6); } });
+  prog('mandate', ['Gm', 'Gm', 'Dm', 'Dm', 'Bb', 'Bb', 'A', 'A'], (b, c, k) => { if (k === 0) { impact(b, 0.6, c); } if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24)], 2 * BAR, 1.1); choir(b, tri(c, 24), 2 * BAR * 0.95, 0.45); }
+    ost(b, c, 0.72); [0, 1.5, 3].forEach((q) => braam(b + q * beat, 0.25, [c.r, c.r + 12], 0.35)); drums(b, 2, 0.8); if (b + BAR >= NEXT('mandate') - 1e-6) { timpRoll(b + BAR / 2, BAR / 2, c.r + 12, 0.8); swell(b + BAR, 1.6); } });
   prog('direkt', ['Dm', 'Dm', 'Bb', 'Bb', 'F', 'F', 'C', 'C', 'Dm'], (b, c, k) => { if (k === 0) { impact(b, 0.95, c); hornLine(theme(b, 0, 8), 1.0); hornLine(theme(b, 0, 8), 0.4, 12); }
     if (k % 2 === 0) { ens(b, [c.r + 12, ...tri(c, 24), c.r + 36], (k === 8 ? 1 : 2) * BAR, 1.2); choir(b, tri(c, 24), (k === 8 ? 1 : 2) * BAR * 0.95, 0.6); }
     ost(b, c, 0.85); drums(b, 3, 0.9); if (k === 8) hornChord(b, tri(c, 12), BAR, 0.9); });
