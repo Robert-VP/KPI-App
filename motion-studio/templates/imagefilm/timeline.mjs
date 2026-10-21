@@ -67,6 +67,9 @@ export const MESSEN = [['Data Centre World', 'Frankfurt'], ['IFAT', 'München'],
 export const REEL = { u0: 1.6, v0: 0.75, a: 0.95 };
 export const reelPos = (u) => { const x = Math.max(0, u - REEL.u0); return REEL.v0 * x + REEL.a * x * x; };
 
+// Jahreszähler 1992 → 2026 in der Marktkenntnis: beschleunigt (Anteil 0…1 abhängig von der Zeit nach Szenenstart)
+export const YEARS = { u0: 0.5, len: 2.4, pow: 2 };
+export const yearAt = (u) => Math.min(1, Math.max(0, (u - YEARS.u0) / YEARS.len)) ** YEARS.pow;
 const r4 = (x) => Math.round(x * 10000) / 10000;
 const S0 = SCENES.map((_, i) => sceneStart(i));
 const at = (scene, u) => S0[SCENES.indexOf(scene)] + u;
@@ -75,7 +78,7 @@ export const CUES = (() => {
   WIPES.forEach((w) => { c.push({ t: w, sfx: 'whoosh', pan: 0 }); c.push({ t: w + 0.37, sfx: 'thump' }); });
   c.push({ t: 0.25, sfx: 'whoosh', pan: 0 }, { t: 0.45, sfx: 'thump' }, { t: 1.2, sfx: 'tick', pan: 0.3 });
   c.push({ t: at('open', 0.3), sfx: 'pop', pan: -0.5 }, { t: at('open', 1.6), sfx: 'thump' }, { t: at('open', 2.4), sfx: 'thump' }, { t: at('open', 2.9), sfx: 'pop', pan: 0.3 });
-  for (let i = 0; i < 12; i++) c.push({ t: at('markt', 0.5 + i * 0.16), sfx: 'tick', pan: 0.3 });
+  for (let k = 1, last = -1; k <= 34; k++) { const u = YEARS.u0 + YEARS.len * (k / 34) ** (1 / YEARS.pow); if (u - last >= 0.06) { c.push({ t: at('markt', u), sfx: 'tick', pan: 0.3 }); last = u; } }   // ein Tick pro Jahr, solange hörbar getrennt
   TXT.markt.chips.forEach((_, i) => c.push({ t: at('markt', 2.8 + i * 0.12), sfx: 'pop', pan: -0.6 + (i % 6) * 0.24 }));
   c.push({ t: at('grund', 0.4), sfx: 'thump' }, { t: at('grund', 1.2), sfx: 'thump' });
   [0, 1, 2].forEach((i) => c.push({ t: at('grund', 2.6 + i * 0.8), sfx: 'pop', pan: 0.4 }));

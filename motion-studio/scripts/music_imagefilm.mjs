@@ -1,4 +1,5 @@
 // node scripts/music_imagefilm.mjs --style epic|techno|hybrid [--groove out/music_imagefilm_groove.wav] [--out out/x.wav] [--sfxgain 0.5]
+//   andere Vorlagen: --style techno --sections "0:intro,4:perc,…" --dur 28 --cues cues.json
 // Alternative Musiken für den Imagefilm, komplett im Code synthetisiert (lizenzfrei, deterministisch).
 // Der Ablauf folgt den Kapiteln aus templates/imagefilm/timeline.mjs (Wechsel auf dem Raster der Mosaik-Übergänge), die SFX der Vorlage werden dazugemischt.
 //   epic    1 · Episch, Richtung Hans Zimmer: Streicher-Ostinato, Hörner-Thema, Kriegstrommeln, Pauken, Chor, Solostimme, D-Moll, Schluss in D-Dur
@@ -12,7 +13,10 @@ const argv = process.argv;
 const sarg = (k, d) => { const i = argv.indexOf('--' + k); return i > 0 ? argv[i + 1] : d; };
 const STYLE = sarg('style', 'epic'), OUT = sarg('out', `out/music_imagefilm_${STYLE}.wav`), SG = Number(sarg('sfxgain', 0.5));
 if (!['epic', 'techno', 'hybrid'].includes(STYLE)) throw new Error('unknown style ' + STYLE);
-const BPM = TL.BPM, DUR = TL.DUR, SR = 48000, N = Math.round(DUR * SR), TAU = Math.PI * 2;
+// Ohne --sections folgt die Musik dem Imagefilm. Mit --sections "Beat:Stufe,…" --dur --cues (nur techno) passt sie zu jeder anderen Vorlage, z. B. dem Job-Alarm.
+const SECS = sarg('sections', '');
+if (SECS && STYLE !== 'techno') throw new Error('--sections gibt es nur für --style techno');
+const BPM = Number(sarg('bpm', TL.BPM)), DUR = SECS ? Number(sarg('dur', 30)) : TL.DUR, SR = 48000, N = Math.round(DUR * SR), TAU = Math.PI * 2;
 const beat = 60 / BPM, step = beat / 4, BAR = beat * 4;
 const G = {}; TL.SCENES.forEach((s, i) => { G[s] = i === 0 ? 0 : TL.WIPES[i - 1]; });   // Kapitelgrenzen = Beginn des Mosaik-Wechsels
 const NEXT = (s) => { const i = TL.SCENES.indexOf(s); return i + 1 < TL.SCENES.length ? G[TL.SCENES[i + 1]] : DUR; };
@@ -22,6 +26,7 @@ const mtof = (m) => 440 * 2 ** ((m - 69) / 12);
 let seed = 23;
 const rnd = () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const noise = () => rnd() * 2 - 1;
+const CUE_LIST = SECS ? (sarg('cues', '') ? JSON.parse(readFileSync(sarg('cues'), 'utf8')) : []) : TL.CUES;
 
 /* ---------- Busse ---------- */
 const bus = () => [new Float32Array(N), new Float32Array(N)];
@@ -237,43 +242,55 @@ function lead(t0, m, len, g = 1) {   // Supersaw-Lead, links/rechts verteilt
   voice(t0, len + 0.5, (t) => { f.run(sub(), 1600, 0.7); return f.lp * adsr(t, 0.02, 0.3, 0.75, len, 0.45) * g; }, [out(MUS, 0, 0.09)]);
 }
 
-function techno() {
+// Abschnitte für den Techno: im Imagefilm aus den Kapiteln, sonst aus --sections (Stufen wie bei music_deephouse.mjs)
+function technoSegments() {
+  if (!SECS) {
+    const LV = { intro: 0, open: 1, markt: 2, grund: 3, mandate: 4, direkt: 5, messen: 5, award: 6, werte: 2, outro: 1 };
+    const CUT = { intro: 450, open: 700, markt: 1200, grund: 1800, mandate: 2400, direkt: 3200, messen: 3200, award: 4200, werte: 1500, outro: 900 };
+    const KIND = { intro: 'intro', messen: 'build', award: 'peak', outro: 'outro' };
+    return TL.SCENES.map((s) => ({ t0: G[s], t1: NEXT(s), lv: LV[s], cut: CUT[s], kind: KIND[s] || '', hit: ['open', 'direkt', 'award'].includes(s), soft: s === 'open', logo: s === 'intro' || s === 'outro' ? S0(s) : null }));
+  }
+  const L = { intro: [0, 450], light: [2, 1200], full: [3, 1800], perc: [4, 2400], lift: [4, 2600], drive: [5, 3200], build: [5, 3200], peak: [6, 4200], outro: [1, 900] };
+  const sec = SECS.split(',').map((x) => { const [b, l] = x.split(':'); return { t0: Number(b) * beat, l: l.trim() }; });
+  return sec.map((x, i) => ({ t0: x.t0, t1: i + 1 < sec.length ? sec[i + 1].t0 : DUR, lv: L[x.l][0], cut: L[x.l][1], kind: ['intro', 'build', 'peak', 'outro'].includes(x.l) ? x.l : '',
+    hit: x.l === 'peak' || (i > 0 && sec[i - 1].l === 'intro'), soft: false, logo: (x.l === 'intro' && i === 0) || x.l === 'outro' ? x.t0 : null }));
+}
+function techno(SEG) {
   const CH = { Am: [33, 3], F: [29, 4], G: [31, 4], A: [33, 4], D: [38, 4] };
   const ch = (n) => ({ r: CH[n][0], th: CH[n][1] });
   const tri = (c, o) => [c.r + o, c.r + o + c.th, c.r + o + 7];
   const base = 69, motif = (maj) => [base - 5, base, base + (maj ? 4 : 3)];
-  const LV = { intro: 0, open: 1, markt: 2, grund: 3, mandate: 4, direkt: 5, messen: 5, award: 6, werte: 2, outro: 1 };
-  const CUT = { intro: 450, open: 700, markt: 1200, grund: 1800, mandate: 2400, direkt: 3200, messen: 3200, award: 4200, werte: 1500, outro: 900 };
   const MEL = [[[0, 76, 1.5], [1.5, 79, 1.5], [3, 81, 1]], [[0, 76, 4]], [[0, 77, 1.5], [1.5, 76, 1.5], [3, 72, 1]], [[0, 74, 4]]];
-  const logo = (s, maj) => LOGO[s].forEach((d, i) => bell(S0(s) + d, motif(maj)[i], 1));
-  logo('intro', false); riser(2.4, 1.6, 0.8);
-  for (const s of TL.SCENES) {
-    const lv = LV[s], names = s === 'outro' ? ['A', 'D', 'A', 'A', 'A'] : ['Am', 'Am', 'F', 'G'], stop = s === 'messen' ? G.award - 0.4 : Infinity;
-    if (['open', 'direkt', 'award'].includes(s)) { crash(G[s], 1); subDrop(G[s], s === 'award' ? 1 : 0.7); } else if (lv >= 1) crash(G[s], 0.6);
-    bars(G[s], NEXT(s), (b, k) => {
-      const c = ch(names[k % names.length]), build = s === 'messen' && k >= 2, end = s === 'outro' && k >= 2;
-      const cut = (t) => (s === 'messen' ? CUT.messen + 4000 * (t - G.messen) / (G.award - G.messen) : CUT[s]) * (1 + 0.25 * Math.sin(TAU * t / (BAR * 2)));
-      if (lv >= 1 && !build && !end) for (let q = 0; q < 4; q++) { kick(b + q * beat, s === 'open' ? 0.85 : 1);
+  const logo = (t0, kind, maj) => LOGO[kind].forEach((d, i) => bell(t0 + d, motif(maj)[i], 1));
+  const intro = SEG.find((x) => x.kind === 'intro' && x.logo !== null); if (intro) { logo(intro.logo, 'intro', false); riser(intro.t1 - 1.6, 1.6, 0.8); }
+  for (const x of SEG) {
+    const lv = x.lv, nb = Math.round((x.t1 - x.t0) / BAR), endFrom = Math.max(0, nb - 3), names = x.kind === 'outro' ? ['A', 'D', 'A', 'A', 'A'].slice(-Math.max(nb, 1)) : ['Am', 'Am', 'F', 'G'];
+    const stop = x.kind === 'build' ? x.t1 - 0.4 : Infinity;
+    if (x.hit) { crash(x.t0, 1); subDrop(x.t0, x.kind === 'peak' ? 1 : 0.7); } else if (lv >= 1) crash(x.t0, 0.6);
+    bars(x.t0, x.t1, (b, k) => {
+      const c = ch(names[k % names.length]), build = x.kind === 'build' && k >= nb - 2, end = x.kind === 'outro' && k >= endFrom;
+      const cut = (t) => (x.kind === 'build' ? x.cut + 4000 * (t - x.t0) / (x.t1 - x.t0) : x.cut) * (1 + 0.25 * Math.sin(TAU * t / (BAR * 2)));
+      if (lv >= 1 && !build && !end) for (let q = 0; q < 4; q++) { kick(b + q * beat, x.soft ? 0.85 : 1);
         for (const n of [1, 2, 3]) tbass(b + q * beat + n * step, c.r + 12 + (n === 3 && lv >= 5 ? 12 : 0), step * 0.8, 300 + 80 * lv); }
       for (let i = 0; i < 16; i++) { const t = b + i * step; if (t >= stop) break;
         if (lv >= 1 && !end && i % 4 === 2) hat(t, lv >= 2 && !build, 0.8); else if (lv >= 4 && !end) hat(t, false, i % 2 ? 0.35 : 0.5);
         const pat = [0, 7, 12, c.th + 12, 7, 12, c.th + 24, 12]; arp(t, c.r + 36 + pat[i % 8] - 12, cut(t), i % 4 === 0 ? 1 : 0.7, i % 2 ? 0.35 : -0.35); }
       if (lv >= 3 && !build && !end) { clap(b + beat); clap(b + 3 * beat); }
       if (lv >= 4 && !build && !end) for (const [n, f, p] of [[3, 360, 0.4], [7, 300, -0.5], [10, 250, 0.5], [15, 300, -0.3]]) perc(b + n * step, f, p);
-      tpad(b, tri(c, 36), Math.min(BAR * (end && k === 4 ? 1.4 : 0.95), stop - b), s === 'award' ? 2200 : 900 + 0.2 * CUT[s], lv >= 5 ? 1.1 : 0.9);
-      if (s === 'award') for (const [q, m, l] of MEL[k % 4]) lead(b + q * beat, m, l * beat * 0.95, 1);
-      if (s === 'outro' && k === 2) { lead(b, 81, 4.2, 0.8); lead(b, 76, 4.2, 0.6); lead(b, 73, 4.2, 0.6); subDrop(b, 0.8); crash(b, 0.8); }
+      tpad(b, tri(c, 36), Math.min(BAR * (end && k === nb - 1 ? 1.4 : 0.95), stop - b), x.kind === 'peak' ? 2200 : 900 + 0.2 * x.cut, lv >= 5 ? 1.1 : 0.9);
+      if (x.kind === 'peak') for (const [q, m, l] of MEL[k % 4]) lead(b + q * beat, m, l * beat * 0.95, 1);
+      if (x.kind === 'outro' && k === endFrom) { const len = Math.min(4.2, DUR - b - 0.6); lead(b, 81, len, 0.8); lead(b, 76, len, 0.6); lead(b, 73, len, 0.6); subDrop(b, 0.8); crash(b, 0.8); }
     });
   }
-  snareRoll(G.messen + 2 * BAR, 2 * BAR - 0.4, 1); riser(G.messen + BAR, 3 * BAR - 0.4);
-  logo('outro', true);
+  for (const x of SEG.filter((y) => y.kind === 'build')) { snareRoll(x.t1 - 2 * BAR, 2 * BAR - 0.4, 1); riser(x.t0 + BAR, x.t1 - 0.4 - (x.t0 + BAR)); }
+  for (const x of SEG.filter((y) => y.kind === 'outro' && y.logo !== null)) logo(x.logo, 'outro', true);
 }
 
 /* ---------- Arrangement ---------- */
 const HYB = [[0, G.markt], [G.award, G.werte], [G.outro, DUR]];   // Mischform: hier episch, sonst Groove
 if (STYLE === 'epic') epic(0);
 else if (STYLE === 'hybrid') epic(-5, ['intro', 'open', 'award', 'outro']);
-else techno();
+else techno(technoSegments());
 
 /* ---------- SFX der Vorlage ---------- */
 const SX = {
@@ -284,7 +301,7 @@ const SX = {
   tick: (t0, p, g) => voice(t0, 0.03, (t) => Math.sin(TAU * 4000 * t) * Math.exp(-t * 400) * 0.3, [out(SFX, p, g)]),
   ding: (t0, p, g) => voice(t0, 0.6, (t) => (Math.sin(TAU * 1320 * t) + 0.5 * Math.sin(TAU * 1980 * t)) * Math.exp(-t * 6) * 0.3, [out(SFX, p, g)]),
 };
-for (const c of TL.CUES) (SX[c.sfx] || SX.click)(c.t, c.pan || 0, SG);
+for (const c of CUE_LIST) (SX[c.sfx] || SX.click)(c.t, c.pan || 0, SG);
 
 /* ---------- Effekte ---------- */
 function reverb(inL, inR, room, damp) {   // Freeverb
@@ -334,4 +351,4 @@ const sat = Math.tanh;   // sanfte Sättigung fängt die Spitzen der Schläge ab
 for (let i = 0; i < N; i++) { const fd = i > N - fade ? (N - i) / fade : 1;
   buf.writeInt16LE(Math.round(Math.max(-1, Math.min(1, sat(ML[i] * g))) * 0.89 * fd * 32767), 44 + i * 4); buf.writeInt16LE(Math.round(Math.max(-1, Math.min(1, sat(MR[i] * g))) * 0.89 * fd * 32767), 46 + i * 4); }
 writeFileSync(OUT, buf);
-console.log(`wrote ${OUT} (${STYLE}, ${DUR}s @ ${BPM} BPM, ${TL.CUES.length} sfx cues)`);
+console.log(`wrote ${OUT} (${STYLE}, ${DUR}s @ ${BPM} BPM, ${CUE_LIST.length} sfx cues)`);

@@ -16,7 +16,7 @@
 <canvas id="c"></canvas>
 <script type="module">
 import { clamp, lerp, spring, springType, hash } from '../../lib/motion.js';
-import { DUR, WIPES, COVER, SCENES, STAGE, sceneStart, TXT, MANDATE, MESSEN, reelPos } from './timeline.mjs';
+import { DUR, WIPES, COVER, SCENES, STAGE, sceneStart, TXT, MANDATE, MESSEN, reelPos, yearAt } from './timeline.mjs';
 
 /* ============================================================
    Imagefilm Voß & Partner für Kunden. Neun Kapitel im CI der Stellenanzeigen:
@@ -127,7 +127,8 @@ function sOpen(s0) {
 function sMarkt(s0) {
   const T = TXT.markt, y0 = H * (LAND ? 0.2 : 0.24), yS = (LAND ? 230 : 170) * U, lS = (LAND ? 42 : 36) * U, chS = (LAND ? 31 : 26) * U, chH = (LAND ? 70 : 58) * U;
   eyebrow(T.eyebrow, M, y0, s0 + 0.2, CI.navy);
-  const yr = Math.round(lerp(1992, 2026, ease((t - s0 - 0.5) / 2.0))), yp = st(s0 + 0.4, 200);
+  const yr = Math.floor(lerp(1992, 2026, yearAt(t - s0))),   // langsam beginnen, dann immer schneller
+    yp = st(s0 + 0.4, 200);
   if (yp > 0) { ctx.save(); ctx.globalAlpha = clamp(yp * 1.5); text(String(yr), M - 6 * U, y0 + 30 * U + yS * 0.86, 800, yS, CI.navy, 'left', -4 * U); ctx.restore(); }
   rise(T.label, M, y0 + 30 * U + yS * 0.86 + 70 * U, 600, lS, CI.ink, s0 + 1.3);
   let x = M, y = y0 + 30 * U + yS * 0.86 + 120 * U;
