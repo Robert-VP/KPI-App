@@ -1,13 +1,18 @@
-// node scripts/music_trailer.mjs --style rock|funk|trap [--dur 20] [--out out/x.wav]
+// node scripts/music_trailer.mjs --style rock|funk|trap [--dur 20] [--out out/x.wav] [--timeline templates/jobalarm-trailer/timeline.mjs]
+// Mit --timeline (nur rock): Länge, Abschnitte (MUSIC: full, lead, hit, end in Takten) und SFX-Cues aus der Vorlage.
 // Hörproben für den Job-Alarm-Trailer in Richtung der GTA-VI-Trailer-Stimmung, eigene Kompositionen, im Code synthetisiert (lizenzfrei).
 //   rock  A · 80er-Rockballade, 94 BPM, H-Moll/D-Dur (Bm – G – D – A): Gitarren (Karplus-Strong), große Gated-Drums, warme Orgel – melancholisch, Roadmovie
 //   funk  B · 80er-Funk-Pop, 112 BPM, E-Moll (Em7 – A7): Slap-Bass, Funk-Gitarre, Bläser-Stöße, Claps – sonnig, Miami-Strand
 //   trap  C · moderner Hip-Hop/Trap, 140 BPM halbtaktig, F-Moll: 808-Bass mit Glide, Hi-Hat-Rolls, dunkle Glocken – Straße, Nacht
 import { writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const argv = process.argv;
 const sarg = (k, d) => { const i = argv.indexOf('--' + k); return i > 0 ? argv[i + 1] : d; };
-const STYLE = sarg('style', 'rock'), DUR = Number(sarg('dur', 20)), OUT = sarg('out', `out/trailer_${STYLE}.wav`);
+const TLP = sarg('timeline', ''), TL = TLP ? await import(pathToFileURL(resolve(TLP)).href) : null;
+const STYLE = sarg('style', 'rock'), DUR = TL ? TL.DUR : Number(sarg('dur', 20)), OUT = sarg('out', `out/trailer_${STYLE}.wav`);
+const ARR = TL ? TL.MUSIC : { full: 2, lead: [4, 1e9], hit: -1, end: 1e9 };
 const BPM = { rock: 94, funk: 112, trap: 140 }[STYLE]; if (!BPM) throw new Error('unknown style ' + STYLE);
 const SR = 48000, N = Math.round(DUR * SR), TAU = Math.PI * 2, beat = 60 / BPM, step = beat / 4, BAR = beat * 4;
 const mtof = (m) => 440 * 2 ** ((m - 69) / 12);
@@ -63,13 +68,14 @@ const bars = Math.ceil(DUR / BAR);
 if (STYLE === 'rock') {   // Bm – G – D – A, Gitarren-Achtel, große Drums ab Takt 3, Melodie ab Takt 5
   const CH = [[47, [59, 62, 66, 71]], [43, [55, 59, 62, 67]], [50, [57, 62, 66, 69]], [45, [57, 61, 64, 69]]];
   const MEL = [[[0, 74, 1.5], [1.5, 73, 0.5], [2, 71, 2]], [[0, 71, 1], [1, 74, 1], [2, 76, 2]], [[0, 78, 1.5], [1.5, 76, 0.5], [2, 74, 2]], [[0, 73, 3], [3, 69, 1]]];
-  for (let b = 0; b < bars; b++) { const t0 = b * BAR, [r, ch] = CH[b % 4], full = b >= 2;
+  for (let b = 0; b < bars; b++) { const t0 = b * BAR, [r, ch] = b >= ARR.end ? [50, [50, 57, 62, 66, 69]] : CH[b % 4], full = b >= ARR.full && b < ARR.end;
+    if (b >= ARR.end) { strum(t0, ch, BAR * 1.6, { bright: 1, decay: 0.999, drive: 2.5, pan: -0.2, g: 1.2 }); organ(t0, [62, 66, 69, 74].map((m) => m - 12), BAR * 1.2, 1); bassGtr(t0, 38, BAR * 1.2, 1); crash(t0, 1.1); kick(t0, 1.1); continue; }
     organ(t0, ch.map((m) => m - 12), BAR * 0.98, full ? 1 : 0.7);
     for (let i = 0; i < 8; i++) { const tt = t0 + i * beat / 2; if (i === 0 || (full && i === 4)) strum(tt, ch, beat * 1.6, { bright: 0.9, decay: 0.997, drive: 2.5, pan: -0.4, g: 1 });
       else ks(tt, ch[i % 2 ? 1 : 0] - 12, beat * 0.3, { bright: 0.5, decay: 0.99, drive: 3, pan: 0.45, g: full ? 0.9 : 0.6 }); }
     if (full) { for (let q = 0; q < 4; q++) { if (q % 2 === 0) kick(t0 + q * beat); else snare(t0 + q * beat); } kick(t0 + 2.5 * beat, 0.7); for (let i = 0; i < 8; i++) hat(t0 + i * beat / 2, i % 2 ? 0.5 : 0.8);
-      for (let i = 0; i < 8; i++) bassGtr(t0 + i * beat / 2, r - 12, beat / 2 * 0.9, 1); if (b === 2) crash(t0); if (b % 4 === 3) [0, 1, 2, 3].forEach((k) => tom(t0 + 3 * beat + k * step, 50 - k * 4, 0.8)); }
-    if (b >= 4) for (const [q, m, l] of MEL[b % 4]) lead(t0 + q * beat, m, l * beat * 0.95, 0.9);
+      for (let i = 0; i < 8; i++) bassGtr(t0 + i * beat / 2, r - 12, beat / 2 * 0.9, 1); if (b === ARR.full || b === ARR.hit) crash(t0, b === ARR.hit ? 1.3 : 1); if (b === ARR.hit) snare(t0, 1.2); if (b % 4 === 3 || b === ARR.hit - 1 || b === ARR.end - 1) [0, 1, 2, 3].forEach((k) => tom(t0 + 3 * beat + k * step, 50 - k * 4, 0.8)); }
+    if (b >= ARR.lead[0] && b < ARR.lead[1]) for (const [q, m, l] of MEL[b % 4]) lead(t0 + q * beat, m, l * beat * 0.95, 0.9);
   }
 }
 if (STYLE === 'funk') {   // Em7 – A7, Slap-Bass, Chicken-Scratch-Gitarre, Bläser
@@ -97,6 +103,18 @@ if (STYLE === 'trap') {   // F-Moll, halbtaktig: Snare auf 3, 808 mit Glide, Hi-
   }
 }
 
+/* ---------- SFX der Vorlage ---------- */
+const SFX = bus();
+if (TL) { const SX = {
+  whoosh: (t0, p, g) => { const f = svf(); voice(t0, 0.5, (t) => { const w = Math.sin(Math.PI * Math.min(1, t / 0.5 * 1.2)); f.run(noise(), 600 + 3000 * t, 0.8); return f.bp * w * w * 0.9; }, [out(SFX, p, g)]); },
+  cut: (t0, p, g) => { const f = svf(); voice(t0 - 0.12, 0.2, (t) => { f.run(noise(), 1500 + 6000 * t, 0.9); return f.bp * Math.sin(Math.PI * t / 0.2) * 0.7; }, [out(SFX, p, g * 0.7)]); },
+  blip: (t0, p, g) => [0, 0.12].forEach((d, i) => voice(t0 + d, 0.1, (t) => Math.sign(Math.sin(TAU * (i ? 1320 : 990) * t)) * 0.18 * Math.exp(-t * 30), [out(SFX, p, g)])),
+  ding: (t0, p, g) => voice(t0, 0.6, (t) => (Math.sin(TAU * 1320 * t) + 0.5 * Math.sin(TAU * 1980 * t)) * Math.exp(-t * 6) * 0.3, [out(SFX, p, g)]),
+  pop: (t0, p, g) => voice(t0, 0.15, (t) => Math.sin(TAU * (900 * Math.exp(-t * 25) + 180) * t) * Math.exp(-t * 35) * 0.7, [out(SFX, p, g)]),
+  passed: (t0, p, g) => { [62, 66, 69, 74, 78].forEach((m, i) => { const s1 = saw(mtof(m)), f = svf(); voice(t0 + i * 0.015, 1.2, (t) => { f.run(s1(), 600 + 3000 * Math.exp(-t * 3), 0.9); return f.lp * Math.exp(-t * 2.2) * Math.min(1, t * 200) * 0.25; }, [out(SFX, p, g), out(REV, 0, g * 0.3)]); }); },   // Erfolgs-Stinger
+};
+  for (const c of TL.CUES) (SX[c.sfx] || SX.pop)(c.t, c.pan || 0, 0.5); }
+
 /* ---------- Effekte, Master ---------- */
 function reverb(inL, inR, room, damp) { const sc = SR / 44100, combs = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617], aps = [556, 441, 341, 225];
   const mk = (sp) => ({ c: combs.map((d) => ({ b: new Float32Array(Math.round((d + sp) * sc)), i: 0, f: 0 })), a: aps.map((d) => ({ b: new Float32Array(Math.round((d + sp) * sc)), i: 0 })) });
@@ -107,7 +125,7 @@ function pingpong(inL, inR, time, fb = 0.4) { const d = Math.round(time * SR), b
   for (let i = 0; i < N; i++) { const yL = bL[i2], yR = bR[i2]; lpL += 0.45 * (yL - lpL); lpR += 0.45 * (yR - lpR); bL[i2] = inL[i] + inR[i] + lpR * fb; bR[i2] = lpL * fb; i2 = (i2 + 1) % d; oL[i] = yL; oR[i] = yR; } return [oL, oR]; }
 const [rvL, rvR] = reverb(REV[0], REV[1], STYLE === 'rock' ? 0.86 : 0.8, 0.3), [dlL, dlR] = pingpong(DLY[0], DLY[1], step * 3, 0.38);
 const ML = new Float32Array(N), MR = new Float32Array(N); let hpL = 0, hpR = 0, xl = 0, xr = 0, pk = 0;
-for (let i = 0; i < N; i++) { const L = MUS[0][i] + dlL[i] + rvL[i] + DRY[0][i], R = MUS[1][i] + dlR[i] + rvR[i] + DRY[1][i]; hpL = 0.9974 * (hpL + L - xl); xl = L; hpR = 0.9974 * (hpR + R - xr); xr = R; ML[i] = hpL; MR[i] = hpR; pk = Math.max(pk, Math.abs(hpL), Math.abs(hpR)); }
+for (let i = 0; i < N; i++) { const L = MUS[0][i] + dlL[i] + rvL[i] + DRY[0][i] + SFX[0][i] * 1.4, R = MUS[1][i] + dlR[i] + rvR[i] + DRY[1][i] + SFX[1][i] * 1.4; hpL = 0.9974 * (hpL + L - xl); xl = L; hpR = 0.9974 * (hpR + R - xr); xr = R; ML[i] = hpL; MR[i] = hpR; pk = Math.max(pk, Math.abs(hpL), Math.abs(hpR)); }
 const g = 1.15 / pk, fade = Math.round(1.5 * SR), buf = Buffer.alloc(44 + N * 4);
 buf.write('RIFF', 0); buf.writeUInt32LE(36 + N * 4, 4); buf.write('WAVE', 8); buf.write('fmt ', 12); buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(2, 22); buf.writeUInt32LE(SR, 24);
 buf.writeUInt32LE(SR * 4, 28); buf.writeUInt16LE(4, 32); buf.writeUInt16LE(16, 34); buf.write('data', 36); buf.writeUInt32LE(N * 4, 40);
