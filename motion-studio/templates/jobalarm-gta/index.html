@@ -62,12 +62,12 @@ function drawSun(cx, cy, r) {   // gestreifte Synthwave-Sonne
   sctx.globalCompositeOperation = 'source-over';
   const s = r / 300; ctx.drawImage(SUNC, cx - 320 * s, cy - 320 * s, 640 * s, 640 * s);
 }
-function drawWorld(day) {
+function drawWorld(day, f) {
   const g = ctx.createLinearGradient(0, -400, 0, HZ);
-  g.addColorStop(0, mix('#05010d', '#1a0538', day)); g.addColorStop(0.45, mix('#0d0322', '#5b1478', day)); g.addColorStop(0.8, mix('#1c0636', '#c22d86', day)); g.addColorStop(1, mix('#2a0a44', '#ff7a45', day));
+  g.addColorStop(0, mix('#05010d', f > 0 ? '#7a1a72' : '#1a0538', day * (1 - f) + f)); g.addColorStop(0.45, mix('#0d0322', '#5b1478', day)); g.addColorStop(0.8, mix('#1c0636', '#c22d86', day)); g.addColorStop(1, mix('#2a0a44', '#ff7a45', day));
   ctx.fillStyle = g; ctx.fillRect(-1200, -1600, 3480, HZ + 1600);
   for (let i = 0; i < 90; i++) { const a = (1 - day) * 0.9 * (0.5 + 0.5 * Math.sin(t * 2 + i)); if (a <= 0.02) continue; ctx.fillStyle = `rgba(255,255,255,${a})`; ctx.fillRect(hash(i) * 1080, hash(i + 50) * 900 - 200, 3, 3); }
-  const sy = HZ - 280 + (1 - day) * 560;   // Sonne steigt aus dem Wasser
+  const sy = HZ - 280 + (1 - day) * 560 - 880 * f;   // Sonne steigt aus dem Wasser und am Ende hoch hinter das Logo
   const SX = 470, halo = ctx.createRadialGradient(SX, sy, 100, SX, sy, 700); halo.addColorStop(0, `rgba(255,90,150,${0.55 * day})`); halo.addColorStop(1, 'rgba(255,90,150,0)'); ctx.fillStyle = halo; ctx.fillRect(-200, sy - 700, 1480, 1400);
   drawSun(SX, sy, 300);
   // Skyline: hinten violett, vorne dunkel mit Fenstern
@@ -81,7 +81,7 @@ function drawWorld(day) {
   for (let k = 0; k < 40; k++) { const y = HZ + 6 + Math.pow(k / 40, 1.6) * 760, wdt = (260 - k * 4.5) * (0.6 + 0.4 * noise1(k * 3 + t * 2)), off = (noise1(k * 7 + t) - 0.5) * 40;
     ctx.fillStyle = `rgba(255,${150 - k * 2},${90 + k * 2},${(0.85 - k / 50) * day})`; ctx.fillRect(SX - wdt / 2 + off, y, wdt, 3 + k * 0.25); }
   // Neon-Raster auf dem Wasser, läuft auf die Kamera zu
-  ctx.save(); ctx.strokeStyle = `rgba(255,70,200,${0.35 * day + 0.08})`; ctx.lineWidth = 2; ctx.shadowColor = '#ff3fb4'; ctx.shadowBlur = 8;
+  ctx.save(); ctx.globalAlpha = 1 - f; ctx.strokeStyle = `rgba(255,70,200,${0.35 * day + 0.08})`; ctx.lineWidth = 2; ctx.shadowColor = '#ff3fb4'; ctx.shadowBlur = 8;
   for (let k = 0; k < 14; k++) { const z = ((k + (t * 0.9) % 1) / 14), y = HZ + Math.pow(z, 2.2) * 780; ctx.beginPath(); ctx.moveTo(-600, y); ctx.lineTo(1680, y); ctx.stroke(); }
   for (let k = -12; k <= 12; k++) { ctx.beginPath(); ctx.moveTo(SX + k * 18, HZ); ctx.lineTo(SX + k * 220, 1930); ctx.stroke(); }
   ctx.restore();
@@ -103,21 +103,9 @@ function palm(x, y, s, flip, a = 1) {
   ctx.restore();
 }
 
-/* ---------- Untere Skyline (Endkomposition) ---------- */
-const SKY2 = (() => { const out = []; let x = 140, i = 0; while (x < 1080) { const w = 34 + hash(i * 5.3 + 9) * 60, h = 40 + hash(i * 2.7 + 4) * (x > 500 ? 230 : 110); out.push([x, w, h, i]); x += w + 4 + hash(i * 8.1) * 10; i++; } return out; })();
-function bottomCity(a) {
-  if (a <= 0) return; ctx.save(); ctx.globalAlpha = a; const base = Y(1835);
-  const haze = ctx.createLinearGradient(0, Y(1500), 0, base); haze.addColorStop(0, 'rgba(255,60,170,0)'); haze.addColorStop(0.7, 'rgba(255,80,150,0.55)'); haze.addColorStop(1, 'rgba(255,150,90,0.75)'); ctx.fillStyle = haze; ctx.fillRect(0, Y(1500), W, base - Y(1500));
-  SKY2.forEach(([x, w, h, i]) => { const xx = X(x), ww = X(w), hh = Y(h); ctx.fillStyle = '#1a0533'; ctx.fillRect(xx, base - hh, ww, hh); ctx.fillStyle = '#5e7cff'; ctx.fillRect(xx, base - hh, ww, 2);
-    for (let r = 0; r < hh / 16 - 1; r++) for (let q = 0; q < ww / 11 - 1; q++) { const n = hash(i * 97 + r * 13 + q * 5); if (n > 0.32) continue; ctx.fillStyle = n < 0.1 ? '#3ff0ff' : n < 0.2 ? '#ff7ad9' : '#ffd96b'; ctx.fillRect(xx + 4 + q * 11, base - hh + 8 + r * 16, 4, 6); } });
-  const wg = ctx.createLinearGradient(0, base, 0, H); wg.addColorStop(0, '#5a1660'); wg.addColorStop(1, '#0b0218'); ctx.fillStyle = wg; ctx.fillRect(0, base, W, H - base);
-  for (let k = 0; k < 22; k++) { const y = base + 4 + k * 4, x = X(150 + hash(k * 3) * 800), w = X(80 + hash(k * 7) * 260); ctx.fillStyle = `rgba(255,${120 + k * 4},180,${0.5 - k * 0.02})`; ctx.fillRect(x + Math.sin(t * 2 + k) * 10, y, w, 2); }
-  ctx.restore();
-}
-
 /* ---------- Chrom-Logo ---------- */
 function chrome(y0, y1) { const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#ffffff'); g.addColorStop(0.3, '#d6ecff'); g.addColorStop(0.5, '#8aa2ff'); g.addColorStop(0.53, '#2a1670'); g.addColorStop(0.75, '#ff7fd6'); g.addColorStop(1, '#fff1fb'); return g; }
-function drawLogo(cx, by, k, a) {
+function drawLogo(cx, by, k, a, so = 262, wo = 196) {   // so: Abstand der Zeile PERSONALBERATUNG unter der Grundlinie
   if (a <= 0) return; ctx.save(); ctx.globalAlpha *= a;
   const fs = 196 * k, slam = sp(T.logo, 210, 16);
   if (slam > 0) { ctx.save(); const sc = 1.7 - 0.7 * Math.min(1.4, slam); ctx.translate(cx, by - fs * 0.35); ctx.scale(sc, sc); ctx.translate(-cx, -(by - fs * 0.35)); ctx.globalAlpha *= clamp(slam * 3);
@@ -133,8 +121,8 @@ function drawLogo(cx, by, k, a) {
     ctx.save(); ctx.shadowColor = P.pink; ctx.shadowBlur = 36 * k * pulse(); ctx.lineWidth = 12 * k; ctx.strokeStyle = '#2a0640'; ctx.strokeText('Partner', 0, 0); ctx.restore();
     ctx.lineWidth = 3 * k; ctx.strokeStyle = '#ffffff'; ctx.strokeText('Partner', 0, 0); ctx.fillStyle = g; ctx.fillText('Partner', 0, 0); ctx.restore(); }
   const sw = ease((t - T.swoosh) / 0.6); if (sw > 0) { ctx.save(); ctx.shadowColor = P.cyan; ctx.shadowBlur = 24 * k; ctx.strokeStyle = P.cyan; ctx.lineCap = 'round'; ctx.lineWidth = 8 * k;
-    ctx.beginPath(); const x0 = cx - 200 * k, x1 = cx + 360 * k; ctx.moveTo(x0, by + 196 * k); for (let i = 1; i <= 30 * sw; i++) { const u = i / 30; ctx.lineTo(lerp(x0, x1, u), by + 196 * k - 34 * k * Math.sin(Math.PI * u * 0.8) - u * 18 * k); } ctx.stroke(); ctx.restore(); }
-  const sb = st(T.sub, 140); if (sb > 0) { ctx.save(); ctx.globalAlpha *= sb; ctx.translate(cx + 40 * k, by + 262 * k); ctx.rotate(-0.045);
+    ctx.beginPath(); const x0 = cx - 200 * k, x1 = cx + 360 * k; ctx.moveTo(x0, by + wo * k); for (let i = 1; i <= 30 * sw; i++) { const u = i / 30; ctx.lineTo(lerp(x0, x1, u), by + wo * k - 34 * k * Math.sin(Math.PI * u * 0.8) - u * 18 * k); } ctx.stroke(); ctx.restore(); }
+  const sb = st(T.sub, 140); if (sb > 0) { ctx.save(); ctx.globalAlpha *= sb; ctx.translate(cx + 40 * k, by + so * k); ctx.rotate(-0.045);
     glowText(TXT.sub, 0, 0, 600, 38 * k, '#ffffff', P.pink, 14 * k, 'center', 12 * k);
     glowText(TXT.since, 0, 46 * k, 600, 28 * k, '#ffffff', P.pink, 10 * k, 'center', 10 * k);
     ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2 * k; [[-250, -110], [110, 250]].forEach(([a, b]) => { ctx.beginPath(); ctx.moveTo(a * k * sb, 37 * k); ctx.lineTo(b * k * sb, 37 * k); ctx.stroke(); }); ctx.restore(); }
@@ -145,10 +133,10 @@ function star(x, y, r) { if (r <= 1) return; ctx.save(); ctx.translate(x, y); co
 
 /* ---------- Icons ---------- */
 function icon(kind, x, y, s) {
-  ctx.save(); ctx.translate(x, y); ctx.lineWidth = 7 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  if (kind === 0) { ctx.strokeStyle = P.gold; ctx.shadowColor = P.gold; ctx.shadowBlur = 14 * s; ctx.beginPath(); ctx.arc(-6 * s, -6 * s, 18 * s, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 10 * s; ctx.beginPath(); ctx.moveTo(8 * s, 8 * s); ctx.lineTo(24 * s, 24 * s); ctx.stroke(); }
-  if (kind === 1) { ctx.strokeStyle = '#ffffff'; ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 10 * s; ctx.lineWidth = 5 * s; rrPath(-30 * s, -20 * s, 60 * s, 40 * s, 4 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-30 * s, -18 * s); ctx.lineTo(0, 4 * s); ctx.lineTo(30 * s, -18 * s); ctx.stroke(); }
-  if (kind === 2) { ctx.fillStyle = P.gold; ctx.strokeStyle = P.gold; ctx.shadowColor = P.gold; ctx.shadowBlur = 14 * s; ctx.lineWidth = 7 * s; ctx.beginPath(); ctx.arc(0, -10 * s, 14 * s, Math.PI, 0); ctx.stroke(); rrPath(-24 * s, -10 * s, 48 * s, 36 * s, 6 * s); ctx.fill(); ctx.fillStyle = P.violet; ctx.shadowBlur = 0; ctx.beginPath(); ctx.arc(0, 4 * s, 5 * s, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-2.5 * s, 4 * s, 5 * s, 12 * s); }
+  ctx.save(); ctx.translate(x, y); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#ffffff'; ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 10 * s; ctx.lineWidth = 5 * s;
+  if (kind === 0) { rrPath(-30 * s, -16 * s, 60 * s, 40 * s, 5 * s); ctx.stroke(); rrPath(-11 * s, -26 * s, 22 * s, 10 * s, 3 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-30 * s, -2 * s); ctx.lineTo(30 * s, -2 * s); ctx.stroke(); }   // Aktentasche
+  if (kind === 1) { rrPath(-30 * s, -20 * s, 60 * s, 40 * s, 4 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-30 * s, -18 * s); ctx.lineTo(0, 4 * s); ctx.lineTo(30 * s, -18 * s); ctx.stroke(); }
+  if (kind === 2) { ctx.beginPath(); ctx.arc(0, -10 * s, 13 * s, Math.PI, 0); ctx.lineTo(13 * s, -4 * s); ctx.moveTo(-13 * s, -4 * s); ctx.lineTo(-13 * s, -10 * s); ctx.stroke(); rrPath(-22 * s, -4 * s, 44 * s, 32 * s, 6 * s); ctx.stroke(); }
   ctx.restore();
 }
 function bell(x, y, s, ring) {
@@ -163,25 +151,32 @@ function bell(x, y, s, ring) {
 function neonBox(x, y, w, h, r, col, glow, fill = 'rgba(20,2,30,0.78)') {
   ctx.save(); ctx.fillStyle = fill; rrPath(x, y, w, h, r); ctx.fill(); ctx.shadowColor = glow; ctx.shadowBlur = 26 * U * pulse(); ctx.strokeStyle = col; ctx.lineWidth = 5 * U; ctx.stroke(); ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.6 * U; ctx.stroke(); ctx.restore();
 }
-function missionBox() {
-  const q = sp(T.box, 200, 17); if (q <= 0) return; const x = X(52), y = Y(912), w = X(976), h = Y(316);
-  ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(W / 2, y + h / 2); ctx.transform(1, 0, -0.06, 1, 0, 0); ctx.scale(0.6 + 0.4 * q, 0.6 + 0.4 * q); ctx.translate(-W / 2, -(y + h / 2));
-  neonBox(x, y, w, h, 34 * U, P.pink, P.pink);
-  ctx.save(); ctx.translate(W / 2, y + Y(62)); ctx.rotate(-0.025); glowText(TXT.title, 0, 0, 600, 38 * U, '#ffffff', P.pink, 12 * U, 'center', 9 * U); ctx.restore();
-  const l1 = st(T.box + 0.25, 180), l2 = st(T.box + 0.5, 180);
-  if (l1 > 0) { ctx.globalAlpha = clamp(q * 2) * l1; glowText(TXT.box[0], x + X(66) + (1 - l1) * 40 * U, y + Y(168), 900, 88 * U, '#ffffff', 'rgba(255,255,255,0.6)', 10 * U); }
-  if (l2 > 0) { ctx.globalAlpha = clamp(q * 2) * l2; font(900, 98 * U); const g = ctx.createLinearGradient(0, y + Y(190), 0, y + Y(272)); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#ffb3e6');
-    glowText(TXT.box[1], x + X(110) + (1 - l2) * 40 * U, y + Y(272), 900, 98 * U, g, P.pink, 22 * U); }
-  ctx.globalAlpha = clamp(q * 2); bell(x + X(810), y + Y(220), 1.15 * U, Math.max(0, t - T.bell));
+function skewBox(x, y, w, h, r, sk) { ctx.save(); ctx.translate(x + w / 2, y + h / 2); ctx.transform(1, 0, sk, 1, 0, 0); rrPath(-w / 2, -h / 2, w, h, r); ctx.restore(); }
+function missionBox() {   // „NEUE MISSIONEN VERFÜGBAR!“ mit Job-Alarm-Etikett, wie auf dem Plakat
+  const q = sp(T.box, 200, 17); if (q <= 0) return; const x = X(66), y = Y(640), w = X(950), h = Y(250);
+  ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(W / 2, y + h / 2); ctx.scale(0.6 + 0.4 * q, 0.6 + 0.4 * q); ctx.translate(-W / 2, -(y + h / 2));
+  ctx.save(); ctx.fillStyle = 'rgba(30,4,44,0.72)'; skewBox(x, y, w, h, 30 * U, -0.12); ctx.fill(); ctx.shadowColor = P.pink; ctx.shadowBlur = 30 * U * pulse(); ctx.strokeStyle = P.pink; ctx.lineWidth = 6 * U; ctx.stroke(); ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2 * U; ctx.stroke(); ctx.restore();
+  const l1 = st(T.box + 0.2, 180), l2 = st(T.box + 0.45, 180);
+  ctx.save(); ctx.translate(W / 2 + 0.12 * (y + h / 2) + X(30), 0); ctx.transform(1, 0, -0.12, 1, 0, 0);   // Schrägstellung um die Boxmitte
+  if (l1 > 0) { ctx.globalAlpha = clamp(q * 2) * l1; font(900, 112 * U); ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+    ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.6)'; ctx.shadowBlur = 14 * U; ctx.lineWidth = 10 * U; ctx.strokeStyle = '#1b0638'; ctx.strokeText(TXT.title[0], 0, y + Y(118)); ctx.restore();
+    ctx.fillStyle = chrome(y + Y(30), y + Y(122)); ctx.fillText(TXT.title[0], 0, y + Y(118)); }
+  if (l2 > 0) { ctx.globalAlpha = clamp(q * 2) * l2; font(900, 120 * U); ctx.textAlign = 'center'; const g = ctx.createLinearGradient(0, y + Y(140), 0, y + Y(232)); g.addColorStop(0, '#ffb3ec'); g.addColorStop(0.5, '#ff3fb4'); g.addColorStop(1, '#ff1f6e');
+    ctx.save(); ctx.shadowColor = P.pink; ctx.shadowBlur = 26 * U; ctx.lineWidth = 10 * U; ctx.strokeStyle = '#2a0640'; ctx.strokeText(TXT.title[1], 0, y + Y(230)); ctx.restore(); ctx.lineWidth = 3 * U; ctx.strokeStyle = '#ffffff'; ctx.strokeText(TXT.title[1], 0, y + Y(230)); ctx.fillStyle = g; ctx.fillText(TXT.title[1], 0, y + Y(230)); }
+  ctx.textAlign = 'left'; ctx.restore();
+  const tq = sp(T.bell, 220, 16); if (tq > 0) { ctx.save(); ctx.globalAlpha = clamp(tq * 2); const tx = X(150), ty2 = Y(882), tw = X(790), th = Y(68); ctx.translate(W / 2, ty2 + th / 2); ctx.rotate(-0.035); ctx.scale(0.7 + 0.3 * tq, 0.7 + 0.3 * tq); ctx.translate(-W / 2, -(ty2 + th / 2));
+    const cg = ctx.createLinearGradient(tx, 0, tx + tw, 0); cg.addColorStop(0, '#3ff0ff'); cg.addColorStop(1, '#8af7ff'); ctx.shadowColor = P.cyan; ctx.shadowBlur = 24 * U * pulse(); ctx.fillStyle = cg; skewBox(tx, ty2, tw, th, 16 * U, -0.15); ctx.fill(); ctx.shadowBlur = 0;
+    font(800, 44 * U); ctx.fillStyle = '#1b0638'; ctx.textAlign = 'center'; ctx.fillText(TXT.tag, W / 2, ty2 + th / 2 + Y(15)); ctx.textAlign = 'left'; ctx.restore(); }
   ctx.restore();
 }
-const ROWY = [1308, 1428, 1540];
+const ROWY = [1068, 1188, 1302];
 function rows(dim) {
   TXT.rows.forEach((ln, i) => { const q = sp(T.rows[i], 220, 18); if (q <= 0) return; const cy = Y(ROWY[i]);
     ctx.save(); ctx.globalAlpha = clamp(q * 2) * dim; ctx.translate((1 - q) * -120 * U, 0);
-    neonBox(X(162), cy - Y(46), X(176), Y(92), 22 * U, P.pink, P.pink); icon(i, X(250), cy, 1.05 * U);
-    ctx.save(); ctx.strokeStyle = P.pink; ctx.shadowColor = P.pink; ctx.shadowBlur = 10 * U; ctx.lineWidth = 4 * U; ctx.beginPath(); ctx.moveTo(X(372), cy + Y(34)); ctx.lineTo(X(386), cy - Y(34)); ctx.stroke(); ctx.restore();
-    ln.forEach((s, j) => glowText(s, X(412), cy + (ln.length === 1 ? Y(14) : Y(-6 + j * 46)), 800, 42 * U, '#ffffff', 'rgba(255,80,200,0.55)', 8 * U));
+    neonBox(X(202), cy - Y(44), X(108), Y(88), 20 * U, P.pink, P.pink, 'rgba(30,4,44,0.6)'); icon(i, X(256), cy + Y(2), 1.0 * U);
+    ctx.save(); ctx.strokeStyle = P.cyan; ctx.shadowColor = P.cyan; ctx.shadowBlur = 10 * U; ctx.lineWidth = 4 * U; ctx.beginPath(); ctx.moveTo(X(342), cy + Y(32)); ctx.lineTo(X(352), cy - Y(32)); ctx.stroke();
+    if (i < 2) { ctx.globalAlpha *= 0.7; ctx.lineWidth = 2 * U; ctx.beginPath(); ctx.moveTo(X(340), cy + Y(60)); ctx.lineTo(X(860), cy + Y(58)); ctx.stroke(); } ctx.restore();
+    ln.forEach((s, j) => glowText(s, X(380), cy + (ln.length === 1 ? Y(14) : Y(-8 + j * 44)), 800, 40 * U, '#ffffff', 'rgba(255,80,200,0.55)', 8 * U));
     ctx.restore(); });
 }
 function notif() {
@@ -193,16 +188,17 @@ function notif() {
   glowText(TXT.notif[1], x + X(140), y + Y(94), 600, 28 * U, '#ffffff', 'rgba(0,0,0,0)', 0); glowText(TXT.notif[2], x + X(140), y + Y(130), 600, 26 * U, '#ffb3e6', 'rgba(0,0,0,0)', 0);
   ctx.restore();
 }
-function cta() {
-  const q = sp(T.cta, 200, 16); if (q <= 0) return; const pr = t >= T.press ? 1 : 0, push = Math.exp(-Math.max(0, t - T.press) * 9) * (t >= T.press ? 1 : 0);
-  const w = X(820), h = Y(118), x = W / 2 - w / 2, y = Y(1660);
-  ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(W / 2, y + h / 2); const k = (0.7 + 0.3 * q) * (1 - 0.06 * push); ctx.scale(k, k); ctx.translate(-W / 2, -(y + h / 2));
+function cta() {   // Knopf „Jetzt Job-Alarm aktivieren“, wird gedrückt; darunter „Link in der Bio“
+  const q = sp(T.cta, 200, 16); if (q <= 0) return; const pr = t >= T.press && t < T.poster - 0.4, push = t >= T.press ? Math.exp(-(t - T.press) * 9) : 0;
+  const w = X(930), h = Y(124), x = W / 2 - w / 2, y = Y(1662);
+  ctx.save(); ctx.globalAlpha = clamp(q * 2); ctx.translate(W / 2, y + h / 2); ctx.rotate(-0.035); const k = (0.7 + 0.3 * q) * (1 - 0.06 * push); ctx.scale(k, k); ctx.translate(-W / 2, -(y + h / 2));
   const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, pr ? '#18c8a0' : '#ff2a7a'); g.addColorStop(1, pr ? '#3ff0ff' : '#ff5fd2');
-  ctx.save(); ctx.shadowColor = pr ? P.cyan : P.pink; ctx.shadowBlur = (36 + 40 * push) * U * pulse(); ctx.fillStyle = g; rrPath(x, y, w, h, h / 2); ctx.fill(); ctx.restore();
-  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3 * U; rrPath(x, y, w, h, h / 2); ctx.stroke();
-  glowText(pr ? '✓ ' + TXT.done : TXT.cta, W / 2, y + h / 2 + Y(18), 900, 52 * U, '#ffffff', 'rgba(255,255,255,0.7)', 12 * U, 'center', 3 * U);
-  glowText(TXT.url, W / 2, y + h + Y(70), 800, 44 * U, '#ffffff', P.pink, 18 * U, 'center');
+  ctx.save(); ctx.shadowColor = pr ? P.cyan : P.pink; ctx.shadowBlur = (36 + 40 * push) * U * pulse(); ctx.fillStyle = g; skewBox(x, y, w, h, 34 * U, -0.12); ctx.fill(); ctx.restore();
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3 * U; skewBox(x, y, w, h, 34 * U, -0.12); ctx.stroke();
+  glowText(pr ? TXT.done : TXT.cta, W / 2, y + h / 2 + Y(22), 900, 64 * U, '#ffffff', 'rgba(255,255,255,0.7)', 12 * U, 'center');
   ctx.restore();
+  const bq = st(T.cta + 0.4, 160); if (bq > 0) { ctx.save(); ctx.globalAlpha = bq; glowText(TXT.bio, W / 2, Y(1826), 800, 50 * U, '#ffffff', P.pink, 16 * U, 'center');
+    const off = 6 * U * Math.sin(t * 8); glowText('»', W / 2 - X(240) + off, Y(1826), 900, 56 * U, P.cyan, P.cyan, 16 * U, 'center'); glowText('«', W / 2 + X(240) - off, Y(1826), 900, 56 * U, P.cyan, P.cyan, 16 * U, 'center'); ctx.restore(); }
 }
 
 /* ---------- Bild ---------- */
@@ -211,36 +207,24 @@ function seek(time) {
   const f = ease((t - T.frame) / 1.5), day = ease((t - T.rise) / 1.6);
   const shake = Math.exp(-Math.max(0, t - T.logo) * 10) * (t >= T.logo ? 1 : 0) * 14 * U;
   ctx.translate(Math.sin(t * 90) * shake, Math.cos(t * 77) * shake);
-  // Hintergrund (nachts) und untere Skyline der Endkomposition
-  const bg = ctx.createRadialGradient(W / 2, H * 0.55, 0, W / 2, H * 0.55, H * 0.8); bg.addColorStop(0, '#2a0846'); bg.addColorStop(1, '#07010f'); ctx.fillStyle = bg; ctx.fillRect(-40, -40, W + 80, H + 80);
-  bottomCity(f);
-  // Welt im Rahmen: erst bildfüllend, dann im Neon-Dreieck wie auf dem Plakat
-  const TRI = [[X(58), Y(166)], [X(1030), Y(146)], [X(560), Y(908)], [X(560), Y(908)]], RECT = [[-40, -40], [W + 40, -40], [W + 40, H + 40], [-40, H + 40]];
-  const shape = RECT.map((p, i) => [lerp(p[0], TRI[i][0], f), lerp(p[1], TRI[i][1], f)]);
-  ctx.save(); polyPath(shape, 44 * U * f); ctx.clip();
-  const s = lerp(U, 0.477 * U, f), tx = lerp(0, X(327), f), ty = lerp(0, Y(-144), f);
-  ctx.save(); ctx.translate(tx, ty); ctx.scale(s, s * VY / U); drawWorld(day); ctx.restore(); ctx.restore();
-  if (f > 0) { ctx.save(); ctx.globalAlpha = f; polyPath(shape, 44 * U * f); const sg = ctx.createLinearGradient(0, Y(150), 0, Y(900)); sg.addColorStop(0, P.pink); sg.addColorStop(0.55, '#b44dff'); sg.addColorStop(1, P.cyan);
-    ctx.shadowColor = P.pink; ctx.shadowBlur = 34 * U * pulse(); ctx.strokeStyle = sg; ctx.lineWidth = 8 * U; ctx.stroke(); ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2 * U; ctx.stroke(); ctx.restore(); }
-  // Palmen
-  palm(lerp(X(-190), X(250), f), lerp(Y(1990), Y(690), f), lerp(1.25, 0.6, f) * U, false);
-  palm(lerp(X(1270), X(1050), f), lerp(Y(2010), Y(1720), f), lerp(1.15, 0.5, f) * U, true);
-  palm(X(30), Y(1960), 0.62 * U, false, f);
-  // Logo: groß über der Sonne, dann wie auf dem Plakat im Dreieck
-  drawLogo(lerp(W / 2, X(560), f), lerp(Y(640), Y(430), f), lerp(1.12, 0.92, f) * U, 1);
+  // Welt bildfüllend; am Ende neigt sich die Kamera (Horizont tiefer, Sonne hoch hinter dem Logo) wie auf dem Plakat
+  ctx.save(); ctx.translate(0, Y(210) * f); ctx.scale(U, VY); drawWorld(day, f); ctx.restore();
+  // Palmen: erst am Rand, dann wie auf dem Plakat (oben links, Mitte links, rechts)
+  palm(lerp(X(-190), X(-40), f), lerp(Y(1990), Y(900), f), lerp(1.25, 0.95, f) * U, false);
+  palm(lerp(X(1270), X(1060), f), lerp(Y(2010), Y(1100), f), lerp(1.15, 0.88, f) * U, true);
+  palm(X(-80), Y(1500), 0.9 * U, false, f);
+  // Logo: groß über der Sonne, dann oben wie auf dem Plakat
+  drawLogo(lerp(W / 2, X(575), f), lerp(Y(640), Y(332), f), lerp(1.12, 1.3, f) * U, 1, lerp(262, 182, f), lerp(196, 150, f));
   // Einstieg: Schriftzug flackert an
   if (t < T.titleOut + 0.4) { const on = t > T.title && (t > T.title + 0.7 || hash(Math.floor(t * 22)) > 0.45), out = ease((t - T.titleOut) / 0.35);
-    if (on) { ctx.save(); ctx.globalAlpha = 1 - out; ctx.translate(W / 2, Y(900) - out * Y(120)); ctx.scale(1 - 0.3 * out, 1 - 0.3 * out); glowText(TXT.title, 0, 0, 800, 70 * U, '#ffffff', P.pink, 40 * U, 'center', 4 * U);
-      ctx.strokeStyle = P.cyan; ctx.shadowColor = P.cyan; ctx.shadowBlur = 20 * U; ctx.lineWidth = 4 * U; ctx.beginPath(); ctx.moveTo(-X(320), Y(40)); ctx.lineTo(X(320), Y(40)); ctx.stroke(); ctx.restore(); } }
+    if (on) { ctx.save(); ctx.globalAlpha = 1 - out; ctx.translate(W / 2, Y(880) - out * Y(120)); ctx.scale(1 - 0.3 * out, 1 - 0.3 * out); TXT.title.forEach((l, i) => glowText(l, 0, i * Y(100), 800, 90 * U, '#ffffff', P.pink, 40 * U, 'center', 4 * U));
+      ctx.strokeStyle = P.cyan; ctx.shadowColor = P.cyan; ctx.shadowBlur = 20 * U; ctx.lineWidth = 4 * U; ctx.beginPath(); ctx.moveTo(-X(320), Y(140)); ctx.lineTo(X(320), Y(140)); ctx.stroke(); ctx.restore(); } }
   const dim = 1 - 0.35 * clamp((t - T.cta) / 0.4);
   missionBox(); rows(dim); cta(); notif();
-  // Plakat als Schlussbild, die Adresse bleibt stehen
+  // Plakat als Schlussbild
   const pq = clamp((t - T.poster - 0.12) / 0.08), fl = Math.max(0, 1 - Math.abs(t - T.poster - 0.16) / 0.22);   // Neon-Blitz, darunter wechselt das Bild
-  if (POSTER && pq > 0) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = pq; const z = 1.06 - 0.06 * ease((t - T.poster) / (DUR - T.poster)), pw = W * z, ph = W * z * POSTER.naturalHeight / POSTER.naturalWidth;
-    ctx.drawImage(POSTER, (W - pw) / 2, (H - ph) / 2, pw, ph);
-    const gb = ctx.createLinearGradient(0, H * 0.82, 0, H); gb.addColorStop(0, 'rgba(7,1,15,0)'); gb.addColorStop(1, 'rgba(7,1,15,0.9)'); ctx.fillStyle = gb; ctx.fillRect(0, H * 0.82, W, H * 0.18);
-    const uq = st(T.poster + 0.6, 160); ctx.globalAlpha = pq * uq; glowText('Jetzt aktivieren:', W / 2, Y(1800), 800, 36 * U, '#ffffff', P.pink, 12 * U, 'center', 2 * U);
-    glowText(TXT.url, W / 2, Y(1862), 900, 52 * U, '#ffffff', P.pink, 22 * U, 'center'); ctx.restore(); }
+  if (POSTER && pq > 0) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = pq; const z = 1.05 - 0.05 * ease((t - T.poster) / (DUR - T.poster)), pw = W * z, ph = W * z * POSTER.naturalHeight / POSTER.naturalWidth;
+    ctx.drawImage(POSTER, (W - pw) / 2, (H - ph) / 2, pw, ph); ctx.restore(); }
   if (fl > 0) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); const fg = ctx.createLinearGradient(0, 0, 0, H); fg.addColorStop(0, `rgba(255,140,230,${fl})`); fg.addColorStop(0.5, `rgba(255,255,255,${fl})`); fg.addColorStop(1, `rgba(63,240,255,${fl})`); ctx.fillStyle = fg; ctx.fillRect(0, 0, W, H); ctx.restore(); }
   // Retro: feine Scanlines und Vignette
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(0,0,0,0.07)'; for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 1.5);

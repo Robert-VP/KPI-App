@@ -1,6 +1,6 @@
 // Job-Alarm-Reel im Neon-Look der 80er (Vorlage: poster.png), 9:16, 120 BPM, 24 s = 12 Takte.
-// Ablauf: Schriftzug flackert → Sonne geht auf, Chrom-Logo → Bild zieht sich ins Neon-Dreieck → Missions-Box mit Glocke
-// → drei Vorteile (dazu eine Job-Alarm-Mail aufs Handy) → Knopf „Job-Alarm aktivieren“ → Übergang ins Plakat, Adresse bleibt stehen.
+// Ablauf: Schriftzug flackert → Sonne geht auf, Chrom-Logo → Kamera neigt sich, Logo nach oben wie auf dem Plakat → „Neue Missionen verfügbar!“
+// → drei Vorteile (dazu eine Job-Alarm-Mail aufs Handy) → Knopf „Jetzt Job-Alarm aktivieren“ → Neon-Blitz ins Plakat.
 export const BPM = 120, DUR = 24;
 const B = 60 / BPM;
 export const bt = (n) => n * B;
@@ -13,8 +13,8 @@ export const T = {
   swoosh: bt(6),
   flare: bt(7),
   sub: bt(8),        // PERSONALBERATUNG · SEIT 1992
-  frame: bt(12),     // Bild zieht sich ins Neon-Dreieck (bis bt(15))
-  box: bt(16),       // Missions-Box
+  frame: bt(12),     // Kamera neigt sich, Logo wandert nach oben (bis bt(15))
+  box: bt(16),       // „Neue Missionen verfügbar!“
   bell: bt(18),
   rows: [bt(20), bt(24), bt(28)],
   notif: [bt(25), bt(30)],   // Job-Alarm-Mail kommt aufs Handy
@@ -24,12 +24,12 @@ export const T = {
   posterIn: 1.0,
 };
 export const TXT = {
-  title: 'NEW MISSIONS AVAILABLE!',
+  title: ['NEUE MISSIONEN', 'VERFÜGBAR!'],
   sub: 'PERSONALBERATUNG', since: 'SEIT 1992',
-  box: ['Der Voß & Partner', 'Job-Alarm.'],
-  rows: [['Passende Stellenangebote', 'für deine Suche.'], ['Automatisch & bequem', 'direkt in dein Postfach.'], ['Diskret und kostenlos.']],
+  tag: 'Der Voß & Partner Job-Alarm.',
+  rows: [['Passende Stellenangebote', 'für deine Suche.'], ['Automatisch direkt', 'in dein Postfach.'], ['Diskret und kostenlos.']],
   notif: ['Voß & Partner · Job-Alarm', 'Neue Stelle: Gebietsverkaufsleiter (m/w/d)', 'Kälte- und Klimatechnik · Bayern West'],
-  cta: 'JOB-ALARM AKTIVIEREN', done: 'JOB-ALARM AKTIV', url: 'voss-partner.de/stellenangebote',
+  cta: 'Jetzt Job-Alarm aktivieren', done: '✓ Job-Alarm aktiv', bio: 'Link in der Bio',
 };
 // Musik (scripts/music_synthwave.mjs): Abschnitte in Beats
 export const SECTIONS = '0:intro,4:drive,16:lead,32:lift,40:outro';
