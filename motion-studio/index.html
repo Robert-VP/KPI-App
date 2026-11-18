@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Showreel — seek(t)</title>
+<style>
+  html, body { margin: 0; background: #F2EFE9; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { clamp, lerp, spring, track, springType, hash } from './lib/motion.js';
+
+// ---------- canvas / layout ----------
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const W = window.innerWidth, H = window.innerHeight;
+c.width = W; c.height = H;
+const u = Math.min(W / 1080, H / 1500);     // design unit: 9:16 → 1, 1:1 and 16:9 → 0.72
+const cx = W / 2, cy = H / 2;
+
+const PAPER = '#F2EFE9', INK = '#141311', ACC = '#FF4A1F';
+const DISPLAY = '"Inter Display"', MONO = '"DejaVu Sans Mono"';
+const B = 0.5;                                // 120 BPM → one beat = 0.5 s
+const bt = (n) => n * B;
+
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, s) => { s = clamp(s); const A = hex(a), Bc = hex(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, Bc[i], s))).join(',')})`; };
+const rr = (x, y, w, h, r) => { r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2); ctx.beginPath(); ctx.roundRect(x, y, w, h, r); };
+const font = (fam, size, weight = 900) => { ctx.font = `${weight} ${size * u}px ${fam}`; };
+const sstep = (x) => { x = clamp(x); return x * x * (3 - 2 * x); };
+
+function cursor(x, y, s = 1) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s * u, s * u);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 34); ctx.lineTo(8, 26); ctx.lineTo(15, 40); ctx.lineTo(21, 37); ctx.lineTo(14, 24); ctx.lineTo(25, 23); ctx.closePath();
+  ctx.fillStyle = INK; ctx.fill(); ctx.strokeStyle = PAPER; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+  ctx.restore();
+}
+function typed(str, t0, step, x, y, size, color, fam = MONO) {
+  const n = Math.min(str.length, Math.max(0, Math.floor((t - t0) / step) + 1));
+  if (t < t0) return;
+  font(fam, size, 500); ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(str.slice(0, n), x, y);
+  if (n < str.length) { const w = ctx.measureText(str.slice(0, n)).width; ctx.fillRect(x + w + 4 * u, y - size * u * 0.8, size * u * 0.55, size * u * 0.95); }
+}
+
+let t = 0;
+
+// ---------- shots ----------
+// S1  0.0–2.5  hook: three lines slam in, accent sweep, crush to a bar
+function s1() {
+  if (t > 2.6) return;
+  const lines = ['MAKE', 'IT', 'MOVE'];
+  const size = 300, x0 = cx - 470 * u;
+  const crush = t >= bt(4) ? spring(t - bt(4), 90, 20) : 0;
+  const sy = Math.max(0.0001, 1 - crush);
+  ctx.save(); ctx.translate(0, cy); ctx.scale(1, sy); ctx.translate(0, -cy);
+  font(DISPLAY, size); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  lines.forEach((s, i) => {
+    const s0 = spring(t - bt(i), 120, 17);
+    if (s0 <= 0) return;
+    const y = cy + (-300 + i * 300 + 110) * u + (1 - s0) * 1500 * u;
+    ctx.save(); ctx.translate(x0, y); ctx.rotate((1 - s0) * 0.12); ctx.fillStyle = INK; ctx.fillText(s, 0, 0);
+    if (i === 2 && t >= bt(3)) {
+      const sw = spring(t - bt(3), 220, 24);
+      const tw = ctx.measureText(s).width + 50 * u;
+      ctx.save(); ctx.beginPath(); ctx.rect(-25 * u, -size * 0.78 * u, tw * sw, size * 0.95 * u); ctx.clip();
+      ctx.fillStyle = ACC; ctx.fillRect(-25 * u, -size * 0.78 * u, tw, size * 0.95 * u);
+      ctx.fillStyle = PAPER; ctx.fillText(s, 0, 0); ctx.restore();
+    }
+    ctx.restore();
+  });
+  ctx.restore();
+}
+
+// S2  2.0–4.9  bar → 30 tiles, diagonal flip wave reveals accent, typed caption
+const COLS = 5, ROWS = 6, TILE = 130, GAP = 24;
+const gw = COLS * TILE + (COLS - 1) * GAP, gh = ROWS * TILE + (ROWS - 1) * GAP;
+function tilePos(i) { const cc = i % COLS, r = Math.floor(i / COLS); return [cx + (-gw / 2 + cc * (TILE + GAP)) * u, cy + (-gh / 2 + r * (TILE + GAP)) * u]; }
+function s2() {
+  if (t < bt(4) || t > 5.2) return;
+  const barW = 900 * u, barH = 24 * u;
+  const bar = spring(t - bt(4), 90, 20);
+  if (t < bt(5)) { ctx.fillStyle = ACC; ctx.fillRect(cx - barW / 2 * bar, cy - barH / 2, barW * bar, barH); return; }
+  for (let i = 0; i < COLS * ROWS; i++) {
+    const cc = i % COLS, r = Math.floor(i / COLS);
+    const sp = spring(t - bt(5) - i * 0.015, 130, 19);
+    const [gx, gy] = tilePos(i);
+    const bx = cx - barW / 2 + (i / (COLS * ROWS)) * barW, by = cy - barH / 2;
+    const x = lerp(bx, gx, sp), y = lerp(by, gy, sp), w = lerp(barW / (COLS * ROWS), TILE * u, sp), h = lerp(barH, TILE * u, sp);
+    const flip = spring(t - (bt(6) + (cc + r) * 0.125), 170, 20);
+    const sx = Math.cos(flip * Math.PI);
+    // S3 convergence: tiles fly into the centre circle
+    const conv = spring(t - bt(9) - i * 0.012, 110, 17);
+    const fx = lerp(x + w / 2, cx, conv), fy = lerp(y + h / 2, cy, conv), fs = 1 - conv;
+    if (fs <= 0.01) continue;
+    ctx.save(); ctx.translate(fx, fy); ctx.scale(Math.abs(sx) * fs, fs);
+    ctx.fillStyle = flip < 0.5 ? INK : ACC;
+    rr(-w / 2, -h / 2, w, h, lerp(2, 18, sp) * u); ctx.fill(); ctx.restore();
+  }
+  if (t < bt(9)) typed('30 TILES · ONE SPRING EACH', bt(5.5), 0.0625, cx - gw / 2 * u, cy + (gh / 2 + 76) * u, 36, INK);
+}
+
+// S3  4.5–7.5  one shape never cuts: circle → button → loader → check, cursor drives it
+function shapeState() {
+  const w = track(t, [[0, 0], [bt(9), 240], [bt(10.5), 540], [bt(12), 780], [bt(14), 220], [bt(15), 920]], 120, 18);
+  const h = track(t, [[0, 0], [bt(9), 240], [bt(10.5), 150], [bt(12), 28], [bt(14), 220], [bt(15), 760]], 120, 18);
+  const r = track(t, [[0, 0], [bt(9), 120], [bt(10.5), 75], [bt(12), 14], [bt(14), 110], [bt(15), 44]], 120, 18);
+  return { w: w * u, h: h * u, r: r * u, fill: t < bt(10.5) ? ACC : INK };
+}
+function s3() {
+  if (t < bt(9) - 0.05 || t > bt(19)) return;
+  const { w, h, r, fill } = shapeState();
+  const grow = spring(t - bt(9), 120, 18);
+  // card collapse at 9.5 handled in s4; here we draw the shape through 9.5
+  const collapse = t >= bt(19) ? spring(t - bt(19), 150, 22) : 0;
+  ctx.save(); ctx.translate(cx, cy); ctx.scale(Math.max(grow, 0.001), Math.max(grow * (1 - collapse), 0.001));
+  ctx.fillStyle = fill; rr(-w / 2, -h / 2, w, h, r); ctx.fill();
+  ctx.clip();
+  // button label: enters after morph starts, leaves before the next one
+  const lbl = clamp(spring(t - bt(10.7), 200, 26) - spring(t - bt(11.8), 300, 30));
+  if (lbl > 0.01) { font(DISPLAY, 60, 800); ctx.fillStyle = PAPER; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.save(); ctx.scale(1, lbl); ctx.fillText('RENDER', 0, 6 * u); ctx.restore(); }
+  // loader progress: four steps on 8th notes
+  if (t >= bt(12) && t < bt(14)) {
+    const p = track(t, [[bt(12.2), 0], [bt(12.5), 0.3], [bt(12.75), 0.55], [bt(13), 0.72], [bt(13.5), 1]], 160, 22);
+    ctx.fillStyle = ACC; rr(-w / 2, -h / 2, w * clamp(p), h, r); ctx.fill();
+  }
+  // success check
+  if (t >= bt(14) && t < bt(15.2)) {
+    const d = spring(t - bt(14.15), 180, 24); ctx.strokeStyle = PAPER; ctx.lineWidth = 18 * u; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const p1 = [-52, 4], p2 = [-14, 42], p3 = [58, -40];
+    ctx.beginPath(); ctx.moveTo(p1[0] * u, p1[1] * u);
+    const seg = d * 2; const a = clamp(seg), b = clamp(seg - 1);
+    ctx.lineTo(lerp(p1[0], p2[0], a) * u, lerp(p1[1], p2[1], a) * u);
+    if (b > 0) ctx.lineTo(lerp(p2[0], p3[0], b) * u, lerp(p2[1], p3[1], b) * u);
+    ctx.stroke();
+  }
+  // S4 card content
+  if (t >= bt(15)) s4card(w, h);
+  ctx.restore();
+  // loader percent (outside the clip)
+  if (t >= bt(12.2) && t < bt(14)) {
+    const p = track(t, [[bt(12.2), 0], [bt(12.5), 0.3], [bt(12.75), 0.55], [bt(13), 0.72], [bt(13.5), 1]], 160, 22);
+    font(MONO, 34, 500); ctx.fillStyle = INK; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(`${Math.round(clamp(p) * 100).toString().padStart(3, ' ')}%`, cx + w / 2, cy - 36 * u);
+    ctx.textAlign = 'left'; ctx.fillText('rendering frames', cx - w / 2, cy - 36 * u);
+  }
+  // cursor
+  const kx = [[bt(8.5), 760], [bt(10), 30], [bt(11.5), 60], [bt(12.6), 330], [bt(14.2), 40], [bt(15.5), 760]];
+  const ky = [[bt(8.5), 900], [bt(10), 40], [bt(11.5), 30], [bt(12.6), 40], [bt(14.2), 50], [bt(15.5), 900]];
+  const px = cx + track(t, kx, 90, 16) * u, py = cy + track(t, ky, 90, 16) * u;
+  const click = (t0) => clamp(spring(t - t0, 400, 24) - spring(t - t0 - 0.12, 400, 24));
+  const press = click(bt(10.5)) + click(bt(12)) + click(bt(14));
+  if (t >= bt(8.6) && t < bt(15.4)) cursor(px, py, 2.2 * (1 - 0.18 * press));
+}
+
+// S4  7.5–9.5  dashboard card: label, counting number, chart draws itself, bars rise
+function s4card(w, h) {
+  const x0 = -w / 2 + 60 * u, y0 = -h / 2 + 80 * u;
+  const en = spring(t - bt(15.3), 140, 20);
+  if (en <= 0) return;
+  font(MONO, 30, 500); ctx.fillStyle = PAPER; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.globalAlpha = 1;
+  ctx.fillText('RENDER STATS', x0, y0);
+  ctx.fillStyle = ACC; ctx.fillRect(x0 + 230 * u, y0 - 24 * u, 22 * u * en, 22 * u);
+  const v = 98.4 * clamp(spring(t - bt(15.4), 28, 11));
+  font(MONO, 230, 700); ctx.fillStyle = PAPER;
+  ctx.fillText(v.toFixed(1), x0 - 10 * u, y0 + 240 * u);
+  font(MONO, 30, 500); ctx.fillText('% FRAMES ON THE BEAT', x0, y0 + 300 * u);
+  // bars
+  const bw = 60, bgap = 28, n = 9, baseY = y0 + 600 * u, bx0 = x0;
+  for (let i = 0; i < n; i++) {
+    const hgt = (90 + 190 * hash(i * 3.7 + 1)) * u;
+    const s = spring(t - bt(16) - i * 0.0625, 150, 20);
+    ctx.fillStyle = i === 6 ? ACC : PAPER;
+    ctx.fillRect(bx0 + i * (bw + bgap) * u, baseY, bw * u, -hgt * Math.max(0, s));
+  }
+  // line chart over the bars
+  const pts = []; for (let i = 0; i < n; i++) pts.push([bx0 + (i * (bw + bgap) + bw / 2) * u, baseY - (120 + 200 * hash(i * 5.1 + 9)) * u]);
+  const draw = spring(t - bt(16.5), 40, 13);
+  ctx.strokeStyle = ACC; ctx.lineWidth = 10 * u; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath(); let len = 0; const segs = [];
+  for (let i = 1; i < n; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(d); len += d; }
+  let rem = draw * len; ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < n && rem > 0; i++) { const f = clamp(rem / segs[i - 1]); ctx.lineTo(lerp(pts[i - 1][0], pts[i][0], f), lerp(pts[i - 1][1], pts[i][1], f)); rem -= segs[i - 1]; }
+  if (draw > 0) ctx.stroke();
+}
+
+// S5  9.5–12.0  vertical type carousel (3D cylinder), typed seek(t), baseline from collapsed card
+const WORDS = ['CODE', 'MOTION', 'SOUND', 'LOOP'];
+function s5() {
+  if (t < bt(19) || t > bt(24.5)) return;
+  const en = spring(t - bt(19), 150, 22);
+  // baseline: the collapsed card becomes a line
+  const lw = lerp(920, 1000, en) * u;
+  const out = t >= bt(24) ? spring(t - bt(24), 200, 26) : 0;
+  ctx.fillStyle = INK; ctx.fillRect(cx - lw / 2 * (1 - out), cy + 300 * u, lw * (1 - out), 8 * u);
+  const ang = track(t, [[bt(19), 0], [bt(20), 1], [bt(21), 2], [bt(22), 3], [bt(23), 4]], 110, 17) * (Math.PI / 2);
+  const R = 300 * u;
+  const leave = t >= bt(24) ? spring(t - bt(24), 220, 26) : 0;
+  font(DISPLAY, 190); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const items = WORDS.map((w, i) => { const a = i * Math.PI / 2 - ang; return { w, y: Math.sin(a) * R, z: Math.cos(a), i }; }).sort((p, q) => p.z - q.z);
+  for (const it of items) {
+    if (it.z < 0.22) continue;
+    const sc = (0.5 + 0.5 * it.z) * en * (1 - leave);
+    ctx.save(); ctx.translate(cx, cy + it.y * en); ctx.scale(sc, sc * Math.max(0.05, it.z));
+    ctx.fillStyle = it.i === 1 ? ACC : INK; ctx.fillText(it.w, 0, 0); ctx.restore();
+  }
+  if (t < bt(24)) typed('window.seek(t)', bt(20), 0.125, cx - 500 * u, cy + 380 * u, 48, INK);
+}
+
+// S6  12.0–15.0  lockup: two lines from the sides, accent square turns on the beat, exit = crush → loop seam
+function s6() {
+  if (t < bt(24) || t > bt(30)) return;
+  if (t < bt(29) + 0.2) {
+  const crush = t >= bt(29) ? spring(t - bt(29), 250, 32) : 0;
+  const sy = Math.max(0.0001, 1 - crush);
+  ctx.save(); ctx.translate(0, cy); ctx.scale(1, sy); ctx.translate(0, -cy);
+  const a = spring(t - bt(24), 100, 16), b = spring(t - bt(24.5), 100, 16);
+  font(DISPLAY, 220); ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left'; ctx.fillStyle = INK;
+  ctx.fillText('MOTION', cx - 500 * u - (1 - a) * 1400 * u, cy - 60 * u);
+  ctx.textAlign = 'right';
+  ctx.fillText('STUDIO', cx + 500 * u + (1 - b) * 1400 * u, cy + 190 * u);
+  // accent square: 90° per beat with a tiny overshoot
+  const rot = track(t, [[bt(24.5), 0], [bt(25), 1], [bt(26), 2], [bt(27), 3], [bt(28), 4]], 220, 19) * Math.PI / 2;
+  const sq = spring(t - bt(24.5), 160, 20);
+  ctx.save(); ctx.translate(cx - 440 * u, cy + 120 * u); ctx.rotate(rot); ctx.scale(sq, sq);
+  ctx.fillStyle = ACC; ctx.fillRect(-60 * u, -60 * u, 120 * u, 120 * u); ctx.restore();
+  typed('rendered from code · 60 fps · 120 bpm', bt(25), 0.04, cx - 500 * u, cy + 300 * u, 38, INK);
+  ctx.restore();
+  }
+  // the crushed block leaves as a line that shrinks to nothing exactly before the loop seam
+  if (t >= bt(29)) {
+    const crush = spring(t - bt(29), 250, 32);
+    const lw = 1000 * u * crush * (1 - sstep((t - 14.6) / 0.3));
+    ctx.fillStyle = ACC; ctx.fillRect(cx - lw / 2, cy - 4 * u, lw, 8 * u);
+  }
+}
+
+function dots() {
+  ctx.fillStyle = 'rgba(20,19,17,0.10)';
+  const p = 60 * u;
+  for (let x = (cx % p); x < W; x += p) for (let y = (cy % p); y < H; y += p) { ctx.beginPath(); ctx.arc(x, y, 2 * u, 0, Math.PI * 2); ctx.fill(); }
+}
+
+window.seek = (tt) => {
+  t = tt;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+  ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+  dots();
+  s2(); s1(); s3(); s5(); s6();
+};
+window.seek(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Job-Alarm Neon 3</title>
+<style>
+  @font-face { font-family: 'Kanit'; font-style: italic; font-weight: 600; src: url('../jobalarm-gta/fonts/Kanit-600i.woff2'); }
+  @font-face { font-family: 'Kanit'; font-style: italic; font-weight: 800; src: url('../jobalarm-gta/fonts/Kanit-800i.woff2'); }
+  html, body { margin: 0; background: #07010f; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { clamp, lerp, spring, hash } from '../../lib/motion.js';
+import { T, CAM, PT, TXT, DUR } from './timeline.mjs';
+
+/* ============================================================
+   Fassung 3: Die Kamera fährt über das Plakat (Gesichter → Logo → Missions-Box → Vorteile → Knopf → ganzes Plakat).
+   Darüber liegen animierte Effekte im Plakat-Koordinatensystem: Glanz auf dem Chrom, klingelnde Glocke,
+   aufleuchtende Vorteile, Knopfdruck, „Link in der Bio“. window.seek(t) ist eine reine Funktion der Zeit.
+   ============================================================ */
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+const W = window.innerWidth, H = window.innerHeight; c.width = W; c.height = H;
+const U = W / 1080, PINK = '#ff3fb4', CYAN = '#3ff0ff';
+let t = 0;
+const sp = (t0, k = 170, d = 20) => spring(t - t0, k, d);
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const pulse = () => 0.8 + 0.2 * Math.exp(-((t % 0.5) / 0.5) * 6);
+const img = new Image(); img.src = 'poster.png';
+
+function glowText(str, x, y, w, px, fill, glow, blur, align = 'left', ls = 0) {
+  ctx.font = `italic ${w} ${px}px "Kanit"`; ctx.letterSpacing = `${ls}px`; ctx.textAlign = align;
+  ctx.save(); ctx.shadowColor = glow; ctx.shadowBlur = blur; ctx.fillStyle = fill; ctx.fillText(str, x, y); ctx.restore();
+  ctx.fillStyle = fill; ctx.fillText(str, x, y); ctx.letterSpacing = '0px'; ctx.textAlign = 'left';
+}
+function rrPath(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function star(x, y, r) { if (r <= 1) return; ctx.save(); ctx.translate(x, y); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,220,250,0.6)'); g.addColorStop(1, 'rgba(255,120,220,0)'); ctx.fillStyle = g; ctx.fillRect(-r, -r, 2 * r, 2 * r);
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r * 0.07, 0); ctx.lineTo(0, r); ctx.lineTo(-r * 0.07, 0); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(-r, 0); ctx.lineTo(0, r * 0.07); ctx.lineTo(r, 0); ctx.lineTo(0, -r * 0.07); ctx.closePath(); ctx.fill(); ctx.restore(); }
+
+// Kamera: zwischen den Schlüsselpunkten weich überblenden, im Bild bleiben
+function cam() {
+  let i = 0; while (i + 1 < CAM.length && CAM[i + 1][0] <= t) i++; const a = CAM[i], b = CAM[Math.min(i + 1, CAM.length - 1)];
+  const u = b[0] > a[0] ? ease((t - a[0]) / (b[0] - a[0])) : 0, z = lerp(a[3], b[3], u), pw = img.naturalWidth || 941, ph = img.naturalHeight || 1672;
+  const hw = pw / 2 / z, hh = (pw * H / W) / 2 / z;
+  return { x: clamp(lerp(a[1], b[1], u), hw, pw - hw), y: clamp(lerp(a[2], b[2], u), hh, ph - hh), z, s: W / pw * z };
+}
+
+function seek(time) {
+  t = time; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = '#07010f'; ctx.fillRect(0, 0, W, H);
+  if (t >= T.drop) {
+    const k = cam(), shake = Math.exp(-(t - T.drop) * 8) * 10 * U;
+    ctx.save(); ctx.translate(W / 2 + Math.sin(t * 90) * shake, H / 2 + Math.cos(t * 70) * shake); ctx.scale(k.s, k.s); ctx.translate(-k.x, -k.y);
+    ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, 0, 0);
+    const pu = pulse();
+    // Glanz über das Chrom-Logo
+    const gl = clamp((t - T.glint) / 0.8); if (gl > 0 && gl < 1) { const [[x0, y0], [x1, y1]] = PT.logo; star(lerp(x0, x1, gl), lerp(y0, y1, gl), 60 * Math.sin(Math.PI * gl)); }
+    [[330, 300, 0.3], [520, 190, 1.7], [640, 330, 3.1]].forEach(([x, y, ph], i) => star(x, y, 22 * Math.max(0, Math.sin(t * 2.2 + ph)) ** 6));
+    // Glocke klingelt: Wellen
+    T.bell.forEach((b) => { const u = t - b; if (u < 0 || u > 1.2) return; const [bx, by] = PT.bell; ctx.save(); ctx.strokeStyle = PINK; ctx.shadowColor = PINK; ctx.shadowBlur = 16; ctx.lineWidth = 4;
+      for (let i = 0; i < 3; i++) { const rr = 40 + (u * 90 + i * 22), a = Math.max(0, 1 - u / 1.2) * (1 - i * 0.25); ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(bx, by, rr, -0.5, 0.5); ctx.stroke(); ctx.beginPath(); ctx.arc(bx, by, rr, Math.PI - 0.5, Math.PI + 0.5); ctx.stroke(); } ctx.restore(); });
+    // Vorteile leuchten nacheinander auf
+    PT.rows.forEach(([x, y, w, h], i) => { const u = t - T.rows[i]; if (u < 0) return; const flash = Math.exp(-u * 3), keep = 0.35 * pu;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(-0.06); ctx.shadowColor = PINK; ctx.shadowBlur = 30 + 40 * flash; ctx.strokeStyle = `rgba(255,120,220,${Math.min(1, keep + flash)})`; ctx.lineWidth = 5; rrPath(-w / 2, -h / 2, w, h, 16); ctx.stroke();
+      ctx.globalAlpha = flash * 0.5; ctx.fillStyle = '#ffffff'; rrPath(-w / 2, -h / 2, w, h, 16); ctx.fill(); ctx.restore(); });
+    // Knopf: pulsiert, wird gedrückt
+    { const [bx, by, bw, bh] = PT.btn, u = t - T.press; ctx.save(); ctx.translate(bx, by); ctx.rotate(-0.04);
+      ctx.shadowColor = PINK; ctx.shadowBlur = 40 * pu; ctx.strokeStyle = `rgba(255,140,230,${0.5 * pu})`; ctx.lineWidth = 6; rrPath(-bw / 2, -bh / 2, bw, bh, 40); ctx.stroke();
+      if (u >= 0 && u < 1) { ctx.globalAlpha = Math.exp(-u * 4) * 0.7; ctx.fillStyle = '#ffffff'; rrPath(-bw / 2, -bh / 2, bw, bh, 40); ctx.fill();
+        ctx.globalAlpha = Math.max(0, 1 - u); ctx.strokeStyle = CYAN; ctx.shadowColor = CYAN; ctx.lineWidth = 6; const g = 1 + u * 0.25; rrPath(-bw / 2 * g, -bh / 2 * g - u * 30, bw * g, bh * g + u * 60, 40); ctx.stroke(); }
+      ctx.restore(); }
+    // „Link in der Bio“ unter dem Knopf
+    const bq = clamp((t - (T.press - 1)) / 0.4); if (bq > 0) { ctx.save(); ctx.globalAlpha = bq; const [lx, ly] = PT.bio, off = 5 * Math.sin(t * 8);
+      glowText(TXT.bio, lx, ly, 800, 40, '#ffffff', PINK, 14, 'center'); glowText('»', lx - 190 + off, ly, 800, 44, CYAN, CYAN, 14, 'center'); glowText('«', lx + 190 - off, ly, 800, 44, CYAN, CYAN, 14, 'center'); ctx.restore(); }
+    ctx.restore();
+    // Lichtstreifen fährt bei jedem Kameraschwenk durchs Bild
+    CAM.forEach(([ct], i) => { if (i === 0) return; const u = (t - (ct - 1)) / 0.9; if (u <= 0 || u >= 1) return; ctx.save(); ctx.globalCompositeOperation = 'screen'; const x = lerp(-W * 0.6, W * 1.6, u);
+      const g = ctx.createLinearGradient(x - 220 * U, 0, x + 220 * U, 0); g.addColorStop(0, 'rgba(255,80,200,0)'); g.addColorStop(0.5, 'rgba(255,170,230,0.28)'); g.addColorStop(1, 'rgba(63,240,255,0)');
+      ctx.setTransform(1, 0, -0.35, 1, 0, 0); ctx.fillStyle = g; ctx.fillRect(x - 400 * U, 0, 800 * U + H * 0.35, H); ctx.restore(); });
+    // Job-Alarm-Mail ploppt auf
+    const [na, nb] = T.notif, q = sp(na, 200, 18) - sp(nb, 200, 22); if (q > 0.001) { const x = 40 * U, w = 1000 * U, h = 150 * U, y = 60 * U + (q - 1) * 240 * U;
+      ctx.save(); ctx.globalAlpha = clamp(q * 1.5); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 30 * U; ctx.fillStyle = 'rgba(30,8,50,0.93)'; rrPath(x, y, w, h, 30 * U); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(63,240,255,0.8)'; ctx.lineWidth = 2.5 * U; ctx.stroke(); ctx.fillStyle = PINK; rrPath(x + 28 * U, y + 32 * U, 86 * U, 86 * U, 20 * U); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 4 * U; rrPath(x + 46 * U, y + 58 * U, 50 * U, 34 * U, 4 * U); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x + 46 * U, y + 60 * U); ctx.lineTo(x + 71 * U, y + 78 * U); ctx.lineTo(x + 96 * U, y + 60 * U); ctx.stroke();
+      glowText(TXT.notif[0], x + 140 * U, y + 54 * U, 800, 32 * U, '#ffffff', 'rgba(0,0,0,0)', 0); glowText('jetzt', x + w - 30 * U, y + 54 * U, 600, 26 * U, '#c9a8ff', 'rgba(0,0,0,0)', 0, 'right');
+      glowText(TXT.notif[1], x + 140 * U, y + 94 * U, 600, 28 * U, '#ffffff', 'rgba(0,0,0,0)', 0); glowText(TXT.notif[2], x + 140 * U, y + 130 * U, 600, 26 * U, '#ffb3e6', 'rgba(0,0,0,0)', 0); ctx.restore(); }
+    // Blitz beim Drop
+    const fl = Math.max(0, 1 - (t - T.drop) / 0.35); if (fl > 0) { ctx.fillStyle = `rgba(255,220,250,${fl})`; ctx.fillRect(0, 0, W, H); }
+  }
+  // Einstieg: Schriftzug flackert an
+  if (t < T.drop) { const on = t > T.title && (t > T.title + 0.7 || hash(Math.floor(t * 22)) > 0.45), out = ease((t - T.titleOut) / 0.25);
+    if (on) { ctx.save(); ctx.globalAlpha = 1 - out; ctx.translate(W / 2, H * 0.47); TXT.title.forEach((l, i) => glowText(l, 0, i * 104 * U, 800, 92 * U, '#ffffff', PINK, 40 * U, 'center', 5 * U));
+      ctx.strokeStyle = CYAN; ctx.shadowColor = CYAN; ctx.shadowBlur = 20 * U; ctx.lineWidth = 4 * U; ctx.beginPath(); ctx.moveTo(-320 * U, 140 * U); ctx.lineTo(320 * U, 140 * U); ctx.stroke(); ctx.restore(); } }
+  // Retro: Scanlines und Vignette
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(0,0,0,0.06)'; for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 1.5);
+  const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.38, W / 2, H / 2, H * 0.78); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.4)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+}
+await document.fonts.load('italic 800 40px "Kanit"'); await document.fonts.load('italic 600 40px "Kanit"'); await img.decode();
+window.seek = seek;
+seek(0);
+</script>
+</body>
+</html>

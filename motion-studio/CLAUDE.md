@@ -1,0 +1,43 @@
+# Motion studio rules
+
+## Render contract
+- Every film is a pure function of time: window.seek(t) paints frame t.
+- No CSS transitions, no setTimeout, no requestAnimationFrame in render mode,
+  no state carried between frames. Seeded noise only, never Math.random.
+- Render with `node render.mjs`. Encode H.264 yuv420p, CRF 16.
+- The page is one HTML file (index.html) with one canvas `#c` and `window.seek(t)`.
+- Use closed-form springs from lib/motion.js. Any value with more than one target uses `track()`.
+  Tiny overshoot on UI, none on type.
+
+## Look
+- Default CI for every video in this studio is the Voß & Partner job-ad CI (docs/style_guide.md):
+  canvas #F4F5F6, ink #111418, marine #0F3556, steel #2E6FB2, gold #E8C33C as the only accent, Inter 400/600/700/800
+  from assets/vp-tools/font. Logo: assets/vp-tools/logo/logo-hell.png. Layout, motif and footer band follow
+  templates/stellenanzeige/index.html, which is a 1:1 port of the generator's renderCIHell().
+- A job-ad video: `bash scripts/anzeige.sh templates/stellenanzeige 12` (edit templates/stellenanzeige/job.js first).
+- Job-ad videos always keep the established look: the ad 1:1 (logo top left, footer band at the bottom edge, QR, job alarm), 60 fps,
+  rendered with anzeige.sh. Instagram Reel = the 9:16 file, LinkedIn = the 4:5 file. No separate social layouts.
+- Banned: centered title on a gradient, everything fading in,
+  corner labels and frame borders, glow on UI, generic particle bursts.
+- One display font, one UI font. One accent color unless the brief says otherwise.
+- Every 2 to 4 seconds something new must happen on screen.
+
+## Sound
+- Music and sound effects are synthesized in code unless a track is supplied.
+- Place hits on the measured beat grid (beats.json). Loudness -14 LUFS.
+- Music: `node scripts/music.mjs` → out/music.wav. Beat grid: `python3 beats.py <track> > beats.json`.
+- Mix: `bash scripts/mix.sh` → out/final.mp4 (loudnorm to -14 LUFS).
+
+## Loop before you show me anything
+1. Render one frame per beat as a contact sheet (`bash scripts/review.sh`) and LOOK at it.
+2. Score it 1-10 on: hook in first 2s, readability at phone size,
+   motion quality, variety, brand accuracy, sound sync.
+3. Fix the 3 worst problems. Repeat until every score is 8+.
+4. Only then do the full render.
+
+## Repo notes
+- Headless Chromium is pre-installed for Playwright (PLAYWRIGHT_BROWSERS_PATH). Never run `playwright install`.
+- Quick preview: `node render.mjs --fps 30 --sub 1 --dur 15` (fast). Final: `node render.mjs --fps 60 --sub 4`.
+- Frames are captured as JPEG q95 by default (PNG encoding of video backgrounds is ~15x slower). `--png` forces lossless.
+- Long films: render in chunks with `--start` (e.g. 23 s each, frame-aligned) and join with the ffmpeg concat demuxer; a background task is stopped after 2 hours.
+- Keep real product assets in ./assets, references in ./refs, music in ./audio, docs in ./docs.
