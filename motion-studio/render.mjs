@@ -16,7 +16,9 @@ const OUT = sarg('out', 'out/silent.mp4');
 const PNG = argv.includes('--png'), SHOT = PNG ? { type: 'png' } : { type: 'jpeg', quality: arg('q', 95) };
 mkdirSync(dirname(OUT), { recursive: true });
 
-const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] }); // lets index.html import lib/motion.js as an ES module from file://
+const LAUNCH = { args: ['--allow-file-access-from-files'] };
+// Passt der vorinstallierte Browser nicht zur Playwright-Version, direkt die Binärdatei nehmen (PW_CHROMIUM oder /opt/pw-browsers/chromium_headless_shell)
+const browser = await chromium.launch(LAUNCH).catch(() => chromium.launch({ ...LAUNCH, executablePath: process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium_headless_shell' })); // lets index.html import lib/motion.js as an ES module from file://
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 page.on('pageerror', (e) => { console.error('page error:', e.message); });
 await page.goto('file://' + PAGE + sarg('query', ''));  // --query '?job=jobs/x.js'
